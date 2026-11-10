@@ -33,7 +33,7 @@
       "restore"
     ]
   },
-  "supply_revision": "offline-local-git-20261110",
+  "supply_revision": "offline-ipv4-only-20261110",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -78,5 +78,12 @@
     "source_epoch_seconds": 1794272400,
     "local_git_contract_tests": 6,
     "local_git_runtime_tests": "MCP status/history/diff/read/commit/restore; stale revisions and links refused; restart persistence; traced and without strace"
+  },
+  "network_compatibility": {
+    "ipv6_required": false,
+    "ipv6_unavailable_result": "EAFNOSUPPORT at socket creation; reported separately from EPERM",
+    "missing_ipv6_route_table": "accepted only when AF_INET6 socket creation returns EAFNOSUPPORT",
+    "service_isolation": "systemd PrivateUsers/PrivateNetwork and seccomp remain required",
+    "validation": "10 regression tests; full UI/MCP/Git with inherited AF_INET6 EAFNOSUPPORT simulation; full normal-kernel workflow without strace"
   }
 }

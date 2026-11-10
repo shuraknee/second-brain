@@ -6,6 +6,7 @@ Test-host namespace facilities are NOT a dependency of the supply.
 """
 import json
 import argparse
+import importlib.util
 import os
 import re
 from pathlib import Path
@@ -24,6 +25,19 @@ TRACE = '--trace' in sys.argv
 
 def inside():
     work = Path(sys.argv[sys.argv.index('--work') + 1])
+    ipv6_simulated = '--simulate-no-ipv6' in sys.argv
+    if ipv6_simulated:
+        spec = importlib.util.spec_from_file_location('ipv6_fixture', str(ROOT / 'tests/test_ipv6.py'))
+        fixture = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fixture)
+        fixture.simulate_no_ipv6()
+    guard = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'tools/egress_guard.py'), '--self-test'],
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+    guard_checks = json.loads(guard.stdout)
+    if ipv6_simulated:
+        for checks in [guard_checks, guard_checks['child_inherits_filter']]:
+            assert checks['public_ipv6'] == 'unavailable:EAFNOSUPPORT (socket creation)'
+            assert checks['public_ipv4'] == checks['loopback'] == 'EPERM'
     deployed = work / 'произвольный каталог % $ с пробелами' / 'длинный путь установки'
     for name in ['tools', 'templates']:
         shutil.copytree(ROOT / name, deployed / name, ignore=shutil.ignore_patterns('__pycache__'))
@@ -60,8 +74,9 @@ def inside():
         raise AssertionError('Readiness timeout')
     server = start()
     ingress = None
-    result = {'python': sys.version.split()[0], 'checks': {}, 'passed': False,
+    result = {'python': sys.version.split()[0], 'checks': {'egress_guard': guard_checks}, 'passed': False,
               'binary_sha256': json.loads((deployed / 'manifest.json').read_text())['binary_sha256'],
+              'ipv6_kernel_errno_simulated': ipv6_simulated,
               'scope': 'development-host runtime test; not target-host acceptance'}
     try:
         if TRACE:
@@ -214,6 +229,7 @@ def host():
     parser = argparse.ArgumentParser()
     parser.add_argument('--apparmor-profile')
     parser.add_argument('--trace', action='store_true', help='Development-only syscall observation')
+    parser.add_argument('--simulate-no-ipv6', action='store_true', help='Test-only inherited EAFNOSUPPORT for AF_INET6')
     parser.add_argument('--browser-python', type=Path)
     parser.add_argument('--browser', type=Path)
     args = parser.parse_args()
@@ -246,6 +262,8 @@ def host():
         str(Path(sys.executable).resolve()), '-I', '-B', str(ROOT / 'tests/offline_runtime.py'), '--inside', '--work', str(work)]
     if args.trace:
         command += ['--trace']
+    if args.simulate_no_ipv6:
+        command += ['--simulate-no-ipv6']
     if args.browser_python:
         command += ['--browser-python', str(args.browser_python), '--browser', str(args.browser)]
     output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=180)

@@ -5,6 +5,7 @@ The ingress/proxy service is finalized after the target probe and URL/port choic
 This process starts only the guarded native SilverBullet server, never downloads.
 """
 import argparse
+import errno
 import hashlib
 import json
 import os
@@ -27,10 +28,26 @@ def network_proof():
     routes = Path('/proc/net/route').read_text()
     if interfaces != ['lo'] or len(routes.splitlines()) != 1:
         raise RuntimeError('Refusing host network: only lo and no IPv4 routes required')
-    ipv6 = Path('/proc/net/ipv6_route').read_text()
-    if any(line.split()[-1] != 'lo' for line in ipv6.splitlines()):
+    try:
+        ipv6 = Path('/proc/net/ipv6_route').read_text()
+        ipv6_status = 'route-table-checked'
+    except FileNotFoundError:
+        # A missing proc entry alone is not evidence that IPv6 is disabled.
+        # Confirm the kernel refuses the family; never connect as a probe.
+        try:
+            connection = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        except OSError as error:
+            if error.errno != errno.EAFNOSUPPORT:
+                raise
+        else:
+            connection.close()
+            raise RuntimeError('IPv6 is available but its route table cannot be verified')
+        ipv6 = None
+        ipv6_status = 'unavailable:EAFNOSUPPORT (socket creation)'
+    if ipv6 is not None and any(line.split()[-1] != 'lo' for line in ipv6.splitlines()):
         raise RuntimeError('Refusing external IPv6 routes')
     return {'interfaces': interfaces, 'ipv4_routes': routes, 'ipv6_routes': ipv6,
+            'ipv6_status': ipv6_status,
             'namespace': os.readlink('/proc/self/ns/net')}
 
 

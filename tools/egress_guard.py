@@ -79,7 +79,16 @@ def negative_controls():
         ('loopback', socket.AF_INET, ('127.0.0.1', 9)),
         ('public_ipv6', socket.AF_INET6, ('2001:db8::10', 443)),
     ]:
-        with socket.socket(family, socket.SOCK_STREAM) as connection:
+        try:
+            connection = socket.socket(family, socket.SOCK_STREAM)
+        except OSError as error:
+            # ipv6.disable=1 / a kernel without AF_INET6 is compatible with
+            # IPv4 operation. This does not claim that connect was exercised.
+            if family == socket.AF_INET6 and error.errno == errno.EAFNOSUPPORT:
+                checks[name] = 'unavailable:EAFNOSUPPORT (socket creation)'
+                continue
+            raise
+        with connection:
             try:
                 connection.connect(address)
             except OSError as error:

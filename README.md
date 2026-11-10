@@ -18,6 +18,11 @@ SilverBullet сохранено в `LICENSE.silverbullet.md`. Другие ли�
 и необходимые исходники компонентов включены в `licenses/`. См.
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) и [LICENSING.md](LICENSING.md).
 
+Запуск — две пользовательские службы systemd: сервер в отдельном сетевом
+namespace и входной шлюз через Unix-сокет. Docker/Podman и контейнерных образов
+нет. ОС должна разрешать PrivateUsers/PrivateNetwork для user-службы.
+IPv6 необязателен; отключённое в ядре семейство AF_INET6 поддерживается.
+
 ## Быстрая установка через агента
 
 Откройте выбранный релиз и передайте агенту ссылку **«Для ИИ»** из его описания,
@@ -35,8 +40,8 @@ SilverBullet сохранено в `LICENSE.silverbullet.md`. Другие ли�
 
 ## Получить готовые файлы
 
-Во вкладке Releases текущего репозитория выберите **offline-local-git-20261110**.
-Скачайте `silverbullet-linux-x86_64-py39-offline-local-git-20261110.tar.gz` и одноимённый
+Во вкладке Releases текущего репозитория выберите **offline-ipv4-only-20261110**.
+Скачайте `silverbullet-linux-x86_64-py39-offline-ipv4-only-20261110.tar.gz` и одноимённый
 `.sha256`. Инструкции agent.md и INSTALL.md приложены отдельно.
 Получение файлов выполняется заранее через разрешённый браузер/канал.
 

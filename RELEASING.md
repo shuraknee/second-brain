@@ -62,6 +62,7 @@ Runtime-архив собирается только по allowlist tools/build_
 В checkout с установленным Python >=3.9 и локальным bin/silverbullet:
 
 ```sh
+"$PYTHON" -I -B tests/test_ipv6.py -v
 "$PYTHON" -I -B tests/test_install.py -v
 "$PYTHON" -I -B tests/test_package.py -v
 ```
