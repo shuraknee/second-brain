@@ -36,7 +36,7 @@ def collect():
         'systemd': command(['systemctl', '--version']),
         'user_manager': command(['systemctl', '--user', 'is-system-running']),
         'selinux': command(['getenforce']),
-        'tools': {name: shutil.which(name) for name in ['bwrap', 'unshare', 'strace', 'git', 'findmnt']},
+        'tools': {name: shutil.which(name) for name in ['bwrap', 'unshare', 'git', 'findmnt']},
         'unprivileged_userns': read('/proc/sys/kernel/unprivileged_userns_clone'),
         'max_user_namespaces': read('/proc/sys/user/max_user_namespaces'),
         'apparmor_userns_restriction': read('/proc/sys/kernel/apparmor_restrict_unprivileged_userns')}

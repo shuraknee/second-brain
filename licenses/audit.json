@@ -4551,6 +4551,10 @@
       "sha256": "5647be074c8edf7339fd863055923a8fc80bc5610a8d4661ec3b767b9d392c27"
     },
     {
+      "path": "licenses/rust-runtime/GCC-13-copyright.txt",
+      "sha256": "20390f8a6f3b1e4d7cb45dd8652dabb259bbef688cbad839bcdb0b9ba7252f79"
+    },
+    {
       "path": "licenses/rust-runtime/GCC-exception-3.1.txt",
       "sha256": "a3966c9410ef94a1efbfa9ec04e9c1994026a70623fbf0885ce36737bfba3b54"
     },
@@ -4614,5 +4618,11 @@
       "path": "licenses/sources/option-ext-0.2.0.crate",
       "sha256": "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
     }
-  ]
+  ],
+  "offline_rebuild_review": {
+    "upstream_and_patch_license": "MIT",
+    "patch_sha256": "18ea3e1180bde0846bcddf36d95c6487fb6775c189e87b74b0ed216ac368048c",
+    "new_dependency_versions": 0,
+    "third_party_dependency_sources_changed": false
+  }
 }

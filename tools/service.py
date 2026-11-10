@@ -62,8 +62,6 @@ def main():
     binary = ROOT / 'bin/silverbullet'
     if hashlib.sha256(binary.read_bytes()).hexdigest() != manifest['binary_sha256']:
         raise RuntimeError('Pinned SilverBullet hash mismatch')
-    if not __import__('shutil').which('strace'):
-        raise RuntimeError('strace must be prepared before start; installation is never automatic')
     os.umask(0o077)
     data = Path(raw_data)
     data.mkdir(parents=True, exist_ok=True)
@@ -85,11 +83,8 @@ def main():
            'LANG': 'C.UTF-8', 'RUST_LOG': 'info', 'SB_RUNTIME_API': '0',
            'SB_SHELL_BACKEND': 'off', 'SB_HOSTNAME': '127.0.0.1',
            'SB_PORT': str(config['backend_port'])}
-    def command(label, arguments):
-        return [config.get('strace_binary', __import__('shutil').which('strace')), '-f', '-qq', '-s', '128', '-e',
-                'trace=connect,socket,sendto,sendmsg,sendmmsg', '-e',
-                'raw=sendto,sendmsg,sendmmsg', '-o', str(audit / (label + '.trace')),
-                sys.executable, '-I', '-B', str(ROOT / 'tools/egress_guard.py'),
+    def command(arguments):
+        return [sys.executable, '-I', '-B', str(ROOT / 'tools/egress_guard.py'),
                 '--', str(binary)] + arguments
     if not (data / 'users.json').exists():
         if (data / 'initial-credentials.json').exists():
@@ -98,7 +93,7 @@ def main():
         secret_fd = os.open(str(data / 'initial-credentials.json'), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         with os.fdopen(secret_fd, 'w') as stream:
             json.dump(credentials, stream)
-        provisioning = subprocess.run(command('setup-network', ['setup', str(data), '--admin',
+        provisioning = subprocess.run(command(['setup', str(data), '--admin',
             credentials['username'] + ':' + credentials['password'],
             '--space', config.get('space_name', 'Second Brain'), '--at', '/']),
             env=env, check=False, close_fds=True)
@@ -112,7 +107,7 @@ def main():
         server_config = json.loads((data / 'server.json').read_text())
         if server_config.get('primaryUrl') != config['public_url'] or server_config.get('runtimeApi') is not False or server_config.get('search', {}).get('model'):
             raise RuntimeError('Existing settings differ from the approved offline profile')
-    process = subprocess.Popen(command('server-network', [str(data)]), env=env, close_fds=True, start_new_session=True)
+    process = subprocess.Popen(command([str(data)]), env=env, close_fds=True, start_new_session=True)
     children.append(process)
     for attempt in range(100):
         if process.poll() is not None:

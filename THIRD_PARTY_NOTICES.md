@@ -10,8 +10,8 @@ endorsement is implied.
 - Original project: https://github.com/silverbulletmd/silverbullet
 - Copyright 2022, Zef Hemel and the respective upstream contributors.
 - License: MIT; the unmodified notice is in `LICENSE.silverbullet.md`.
-- Distributed binary: unmodified upstream Linux x86_64 release asset.
-- Exact source revision and binary SHA256: `manifest.json`.
+- Distributed binary: locally rebuilt Linux x86_64 offline variant; the reviewed upstream changes are in patches/offline.patch.
+- Pinned upstream source, original/current binary SHA256 and patch SHA256: `manifest.json`.
 - Corresponding upstream source archive URL is recorded in that manifest.
 
 The MIT license in the root `LICENSE` applies to our installer/wrapper and its
@@ -69,10 +69,13 @@ The upstream binary identifies Rust 1.99.1, source revision
 `58cf8f9c35b355199727627d07ae34a4e2846d67`. `licenses/rust-runtime/` preserves
 the copyright documents and license texts from the matching official compiler
 distribution, including `COPYRIGHT-library.html`, plus musl's COPYRIGHT notice.
+GCC compiler-support notices are retained in `licenses/rust-runtime/GCC-13-copyright.txt`,
+including the GCC Runtime Library Exception; the matching exception/license texts
+are also retained in that directory. This notice collection is conservative.
 Runtime exceptions and component-specific notices remain in force. Additional
 license texts in that directory are not a relicense of this wrapper.
 
-Python, systemd, strace and libseccomp are separately installed system components;
+Python, systemd and libseccomp are separately installed system components;
 their executables/libraries are not redistributed inside this runtime archive.
 
 Copyright-holder names and public upstream contact details in legal notices are

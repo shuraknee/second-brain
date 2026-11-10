@@ -127,7 +127,7 @@ def main():
     maximum = resource.getrlimit(resource.RLIMIT_NOFILE)[0]
     os.closerange(3, min(maximum, 1048576))
     apply()
-    print('SERVER_GUARD: seccomp=loaded no_new_privs=1 outgoing=deny', flush=True)
+    print('SERVER_GUARD: seccomp=loaded no_new_privs=1 outgoing=deny pid=%d' % os.getpid(), flush=True)
     env = {key: value for key, value in os.environ.items()
            if key in ['PATH', 'HOME', 'TMPDIR', 'LANG', 'TZ', 'RUST_LOG'] or key.startswith('SB_')}
     os.execvpe(arguments[1], arguments[1:], env)

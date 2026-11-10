@@ -7,6 +7,7 @@ Test-host namespace facilities are NOT a dependency of the supply.
 import json
 import argparse
 import os
+import re
 from pathlib import Path
 import shutil
 import signal
@@ -18,6 +19,7 @@ import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
+TRACE = '--trace' in sys.argv
 
 
 def inside():
@@ -39,8 +41,15 @@ def inside():
     config.write_text(json.dumps(settings))
     log = open(str(work / 'service.log'), 'w')
     def start():
-        return subprocess.Popen([sys.executable, '-I', '-B', str(deployed / 'tools/service.py'),
-                                 '--config', str(config)], stdout=log, stderr=log)
+        command = [sys.executable, '-I', '-B', str(deployed / 'tools/service.py'), '--config', str(config)]
+        if TRACE:
+            command = ['strace', '-f', '-qq', '-s', '128', '-e',
+                       'trace=connect,socket,sendto,sendmsg,sendmmsg,clone,clone3,fork,vfork', '-e',
+                       'raw=sendto,sendmsg,sendmmsg', '-o', str(work / ('network-%d.trace' % time.time_ns()))] + command
+        return subprocess.Popen(command, stdout=log, stderr=log, start_new_session=True)
+    def stop(process):
+        os.killpg(process.pid, signal.SIGTERM)
+        process.wait(timeout=15)
     def ready(process):
         for attempt in range(150):
             if process.poll() is not None:
@@ -52,9 +61,29 @@ def inside():
     server = start()
     ingress = None
     result = {'python': sys.version.split()[0], 'checks': {}, 'passed': False,
+              'binary_sha256': json.loads((deployed / 'manifest.json').read_text())['binary_sha256'],
               'scope': 'development-host runtime test; not target-host acceptance'}
     try:
+        if TRACE:
+            for operation in ['upgrade', 'upgrade-edge']:
+                trace_path = work / (operation + '.trace')
+                outcome = subprocess.run(['strace', '-f', '-qq', '-e', 'trace=network', '-o', str(trace_path),
+                                          str(deployed / 'bin/silverbullet'), operation],
+                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                assert outcome.returncode != 0 and 'Offline build' in outcome.stderr
+                trace = trace_path.read_text()
+                assert 'connect(' not in trace and 'SOCK_DGRAM' not in trace and 'SOCK_RAW' not in trace
+            result['checks']['upgrade_commands_fail_without_network_calls'] = True
         ready(server)
+        if not TRACE:
+            assert shutil.which('strace') is None
+            result['checks']['runtime_without_strace_available'] = True
+        guard_pids = re.findall(r'SERVER_GUARD: .* pid=(\d+)', (work / 'service.log').read_text())
+        assert len(guard_pids) == 2
+        status = Path('/proc/' + guard_pids[-1] + '/status').read_text()
+        assert re.search(r'^NoNewPrivs:\s+1$', status, re.M)
+        assert re.search(r'^Seccomp:\s+2$', status, re.M)
+        result['checks']['actual_server_seccomp_and_no_new_privs'] = True
         secret = json.loads((data / 'initial-credentials.json').read_text())
         assert secret['username'] == 'test-only'
         assert (data / 'initial-credentials.json').stat().st_mode & 0o777 == 0o600
@@ -99,14 +128,17 @@ def inside():
         policy = json.loads((data / 'server.json').read_text())
         assert policy['runtimeApi'] is False and policy['search'] == {}
         result['checks']['no_optional_download_features_enabled'] = True
-        setup_trace = (data / 'audit/setup-network.trace').read_text()
-        trace = (data / 'audit/server-network.trace').read_text()
-        for text in [setup_trace, trace]:
-            assert 'connect(' not in text and 'SOCK_DGRAM' not in text and 'SOCK_RAW' not in text, text
-        result['checks']['server_setup_and_http_no_outbound_attempts'] = True
+        browser_report = None
+        if '--browser-python' in sys.argv:
+            browser_python = sys.argv[sys.argv.index('--browser-python') + 1]
+            browser = sys.argv[sys.argv.index('--browser') + 1]
+            browser_report = work / 'browser-before-restart.json'
+            subprocess.run([browser_python, '-I', '-B', str(ROOT / 'tests/browser_workflow.py'),
+                            '--browser', browser, '--credentials', str(data / 'initial-credentials.json'),
+                            '--report', str(browser_report)], check=True)
+            result['checks']['browser_before_restart'] = json.loads(browser_report.read_text())['checks']
         # Stop only our supervisor; its owned groups must clean up all children.
-        server.terminate()
-        server.wait(timeout=15)
+        stop(server)
         assert not (runtime / 'g.sock').exists()
         try:
             socket.create_connection(('127.0.0.1', 3097), timeout=.2).close()
@@ -122,6 +154,45 @@ def inside():
         with opener.open(base + '/.well-known/oauth-authorization-server', timeout=5) as response:
             assert json.load(response)['issuer'] == base
         result['checks']['restart_preserves_account_and_settings'] = True
+        if browser_report:
+            report_after = work / 'browser-after-restart.json'
+            subprocess.run([browser_python, '-I', '-B', str(ROOT / 'tests/browser_workflow.py'),
+                            '--browser', browser, '--credentials', str(data / 'initial-credentials.json'),
+                            '--report', str(report_after), '--previous-report', str(browser_report)], check=True)
+            result['checks']['browser_after_restart'] = json.loads(report_after.read_text())['checks']
+        if TRACE:
+            pids = set(re.findall(r'SERVER_GUARD: .* pid=(\d+)', (work / 'service.log').read_text()))
+            all_lines = []
+            for path in work.glob('network-*.trace'):
+                all_lines.extend(path.read_text().splitlines())
+            # Rust can make calls on any Tokio thread, not only the main PID.
+            edges = []
+            for line in all_lines:
+                parent = re.match(r'^(\d+)\s+', line)
+                child = re.search(r'=\s*(\d+)\s*$', line)
+                if parent and child and re.search(r'\b(?:clone3?|fork|vfork)(?:\(| resumed>)', line):
+                    edges.append((parent[1], child[1]))
+            roots = len(pids)
+            while True:
+                descendants = {child for parent, child in edges if parent in pids}
+                if descendants <= pids:
+                    break
+                pids |= descendants
+            lines = [line for line in all_lines if line.split() and line.split()[0] in pids]
+            assert lines, 'No server trace lines captured'
+            for line in lines:
+                assert 'connect(' not in line and 'SOCK_DGRAM' not in line and 'SOCK_RAW' not in line, line
+                assert 'sendmsg(' not in line and 'sendmmsg(' not in line, line
+                if 'sendto(' in line:
+                    arguments = line.split('sendto(', 1)[1].split(')', 1)[0].split(',')
+                    assert len(arguments) == 6 and arguments[4].strip() in ['0', '0x0', 'NULL'], line
+            (work / 'server-only.trace').write_text('\n'.join(lines) + '\n')
+            result['checks']['server_setup_and_workflow_no_outbound_attempts'] = True
+            result['trace_coverage'] = {'setup_server_processes': roots,
+                                        'all_server_tasks_including_threads': len(pids),
+                                        'connect_attempts': 0, 'datagram_or_raw_attempts': 0}
+        else:
+            result['outbound_attempt_observation'] = 'not measured: tracing disabled'
         result['checks']['arbitrary_target_spaces_unicode_percent_dollar'] = True
         result['checks']['target_longer_than_unix_socket_limit'] = len(os.fsencode(deployed)) > 104
         assert result['checks']['target_longer_than_unix_socket_limit']
@@ -129,10 +200,10 @@ def inside():
     finally:
         for child in [ingress, server]:
             if child is not None and child.poll() is None:
-                child.terminate()
+                stop(child) if child is server else child.terminate()
                 child.wait(timeout=15)
         log.close()
-        for name in ['setup-network.trace', 'server-network.trace', 'network-namespace.json']:
+        for name in ['network-namespace.json']:
             if (data / 'audit' / name).exists():
                 shutil.copy2(data / 'audit' / name, work / name)
         (work / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
@@ -142,6 +213,9 @@ def inside():
 def host():
     parser = argparse.ArgumentParser()
     parser.add_argument('--apparmor-profile')
+    parser.add_argument('--trace', action='store_true', help='Development-only syscall observation')
+    parser.add_argument('--browser-python', type=Path)
+    parser.add_argument('--browser', type=Path)
     args = parser.parse_args()
     if sys.version_info[:2] != (3, 9):
         raise RuntimeError('Run with the existing local Python 3.9')
@@ -150,6 +224,17 @@ def host():
         raise RuntimeError('Prior test work exists; inspect rather than overwrite')
     work.mkdir(mode=0o700)
     interpreter_root = Path(sys.executable).resolve().parents[1]
+    extras = []
+    if args.trace:
+        if not shutil.which('strace'):
+            raise RuntimeError('Tracing test requires strace; deployment does not')
+    elif shutil.which('strace'):
+        extras += ['--ro-bind', '/dev/null', str(Path(shutil.which('strace')).resolve())]
+    if bool(args.browser_python) != bool(args.browser):
+        raise RuntimeError('Both browser-python and browser must be provided')
+    if args.browser_python:
+        extras += ['--ro-bind', str(args.browser_python.parent.parent), str(args.browser_python.parent.parent),
+                   '--ro-bind', str(args.browser.parent), str(args.browser.parent)]
     command = (['aa-exec', '-p', args.apparmor_profile, '--'] if args.apparmor_profile else []) + ['bwrap', '--unshare-all',
         '--die-with-parent', '--new-session', '--cap-drop', 'ALL',
         '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin',
@@ -157,17 +242,21 @@ def host():
         '--ro-bind', '/etc', '/etc', '--proc', '/proc', '--dev', '/dev',
         '--tmpfs', '/tmp', '--tmpfs', '/home', '--ro-bind', str(ROOT), str(ROOT),
         '--bind', str(work), str(work), '--ro-bind', str(interpreter_root), str(interpreter_root),
-        '--clearenv', '--setenv', 'PATH', os.defpath, '--setenv', 'HOME', str(work),
+        *extras, '--clearenv', '--setenv', 'PATH', os.defpath, '--setenv', 'HOME', str(work),
         str(Path(sys.executable).resolve()), '-I', '-B', str(ROOT / 'tests/offline_runtime.py'), '--inside', '--work', str(work)]
-    output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=90)
+    if args.trace:
+        command += ['--trace']
+    if args.browser_python:
+        command += ['--browser-python', str(args.browser_python), '--browser', str(args.browser)]
+    output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=180)
     (ROOT / 'evidence/isolated-runtime.log').write_text(output.stdout)
     if output.returncode:
         raise RuntimeError(output.stdout)
     report = json.loads((work / 'result.json').read_text())
     assert report['passed']
     (ROOT / 'evidence/python39-isolated-runtime.json').write_text(json.dumps(report, indent=2) + '\n')
-    # Preserve payload-free audit traces, never retain test credentials/accounts.
-    for name in ['setup-network.trace', 'server-network.trace', 'network-namespace.json']:
+    # Preserve payload-free audit proofs, never retain test credentials/accounts.
+    for name in ['network-namespace.json'] + (['server-only.trace'] if args.trace else []):
         shutil.copy2(work / name, ROOT / 'evidence' / ('candidate-' + name))
     shutil.rmtree(work)
     print(json.dumps(report, indent=2))

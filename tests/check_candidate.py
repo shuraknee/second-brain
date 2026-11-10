@@ -25,7 +25,8 @@ def main():
                               str(ROOT / 'bin/silverbullet'), 'version'],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     assert version.returncode == 0, version.stderr
-    assert 'g0fbe7b51' in version.stdout
+    manifest = json.loads((ROOT / 'manifest.json').read_text())
+    assert manifest['binary_version'] in version.stdout
     result['checks']['pinned_server_version_under_guard'] = version.stdout.strip()
     pending = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'tools/service.py'), '--config',
                               str(ROOT / 'config/service.example.json')],

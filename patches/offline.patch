@@ -1,0 +1,3611 @@
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -294,6 +293,0 @@
+-version = "0.21.7"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
+-
+-[[package]]
+-name = "base64"
+@@ -330,6 +323,0 @@
+-
+-[[package]]
+-name = "bitflags"
+-version = "1.3.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
+@@ -421,9 +408,0 @@
+-]
+-
+-[[package]]
+-name = "bs58"
+-version = "0.5.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
+-dependencies = [
+- "tinyvec",
+@@ -644 +622,0 @@
+- "serde",
+@@ -1038,31 +1015,0 @@
+-
+-[[package]]
+-name = "defmt"
+-version = "1.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e2953bfe4f93bbd20cc71198842756f77d161884c99ebbabc41d80231ded88d1"
+-dependencies = [
+- "bitflags 1.3.2",
+- "defmt-macros",
+-]
+-
+-[[package]]
+-name = "defmt-macros"
+-version = "1.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bad9c72e7ca2137e0dc3813245a0d282fd6daad32fd800af018306a9169b5fe8"
+-dependencies = [
+- "defmt-parser",
+- "proc-macro2",
+- "quote",
+- "syn 2.0.119",
+-]
+-
+-[[package]]
+-name = "defmt-parser"
+-version = "1.0.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "10d60334b3b2e7c9d91ef8150abfb6fa4c1c39ebbcf4a81c2e346aad939fee3e"
+-dependencies = [
+- "thiserror 2.0.21",
+-]
+@@ -1772,6 +1718,0 @@
+-version = "0.12.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
+-
+-[[package]]
+-name = "hashbrown"
+@@ -1806,6 +1746,0 @@
+-
+-[[package]]
+-name = "hex"
+-version = "0.4.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+@@ -2103,11 +2037,0 @@
+-version = "1.9.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
+-dependencies = [
+- "autocfg",
+- "hashbrown 0.12.3",
+- "serde",
+-]
+-
+-[[package]]
+-name = "indexmap"
+@@ -2120,2 +2043,0 @@
+- "serde",
+- "serde_core",
+@@ -2130 +2052 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -2195,9 +2116,0 @@
+-version = "0.10.5"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+-dependencies = [
+- "either",
+-]
+-
+-[[package]]
+-name = "itertools"
+@@ -2216,54 +2128,0 @@
+-
+-[[package]]
+-name = "jiff"
+-version = "0.2.37"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0ab1baf72f08796de0260609515130699b890ac25f30e610ad894bc5856cafdb"
+-dependencies = [
+- "defmt",
+- "jiff-core",
+- "jiff-static",
+- "jiff-tzdb-platform",
+- "log",
+- "portable-atomic",
+- "portable-atomic-util",
+- "serde_core",
+- "windows-link",
+-]
+-
+-[[package]]
+-name = "jiff-core"
+-version = "0.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5e52fe76043ccecc9005d2305ebaadf7d7fc0cc89ca6baa10a94d6bc68c7128c"
+-dependencies = [
+- "defmt",
+- "log",
+-]
+-
+-[[package]]
+-name = "jiff-static"
+-version = "0.2.37"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "378268a1116ad67ae6228701118ac9f491d78fda38a40a1f1a9e1348de6f7212"
+-dependencies = [
+- "jiff-core",
+- "proc-macro2",
+- "quote",
+- "syn 2.0.119",
+-]
+-
+-[[package]]
+-name = "jiff-tzdb"
+-version = "0.1.8"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "142bd39932ad231f10513df9ab62661fead8719872150b7ad02a2df79f4e141e"
+-
+-[[package]]
+-name = "jiff-tzdb-platform"
+-version = "0.1.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "875a5a69ac2bab1a891711cf5eccbec1ce0341ea805560dcd90b7a2e925132e8"
+-dependencies = [
+- "jiff-tzdb",
+-]
+@@ -2322 +2181 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -2586 +2445 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -2604 +2463 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -2707,20 +2565,0 @@
+-name = "oauth2"
+-version = "5.0.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "51e219e79014df21a225b1860a479e2dcd7cbd9130f4defd4bd0e191ea31d67d"
+-dependencies = [
+- "base64 0.22.1",
+- "chrono",
+- "getrandom 0.2.17",
+- "http",
+- "rand 0.8.8",
+- "reqwest 0.12.28",
+- "serde",
+- "serde_json",
+- "serde_path_to_error",
+- "sha2 0.10.9",
+- "thiserror 1.0.69",
+- "url",
+-]
+-
+-[[package]]
+@@ -2732 +2571 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -2774,31 +2612,0 @@
+-name = "openidconnect"
+-version = "4.0.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0d8c6709ba2ea764bbed26bce1adf3c10517113ddea6f2d4196e4851757ef2b2"
+-dependencies = [
+- "base64 0.21.7",
+- "chrono",
+- "dyn-clone",
+- "ed25519-dalek",
+- "hmac",
+- "http",
+- "itertools 0.10.5",
+- "log",
+- "oauth2",
+- "p256",
+- "p384",
+- "rand 0.8.8",
+- "rsa",
+- "serde",
+- "serde-value",
+- "serde_json",
+- "serde_path_to_error",
+- "serde_plain",
+- "serde_with",
+- "sha2 0.10.9",
+- "subtle",
+- "thiserror 1.0.69",
+- "url",
+-]
+-
+-[[package]]
+@@ -2809,9 +2616,0 @@
+-
+-[[package]]
+-name = "ordered-float"
+-version = "2.10.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "68f19d67e5a2795c94e73e0bb1cc1a7edeb2e28efd39e2e1c9b7a40c1108b11c"
+-dependencies = [
+- "num-traits",
+-]
+@@ -2975 +2774 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -2991,15 +2789,0 @@
+-]
+-
+-[[package]]
+-name = "portable-atomic"
+-version = "1.15.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "05c8b63e8d9609db387f0324918f81d68fe27748f084ef092fb35954d0539a85"
+-
+-[[package]]
+-name = "portable-atomic-util"
+-version = "0.2.8"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "10ab3eb7f3becc3a1cbc4f2c6f20267996cfc1a6467a873763411b136a122715"
+-dependencies = [
+- "portable-atomic",
+@@ -3096 +2880 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -3309 +3093 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -3329 +3113 @@
+- "itertools 0.14.0",
++ "itertools",
+@@ -3355 +3139 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -3603 +3387 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -3704,12 +3487,0 @@
+-version = "0.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4cd191f9397d57d581cddd31014772520aa448f65ef991055d7f61582c65165f"
+-dependencies = [
+- "dyn-clone",
+- "ref-cast",
+- "serde",
+- "serde_json",
+-]
+-
+-[[package]]
+-name = "schemars"
+@@ -3782,10 +3553,0 @@
+-name = "serde-value"
+-version = "0.7.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f3a1a3341211875ef120e117ea7fd5228530ae7e7036a779fdc9117be6b3282c"
+-dependencies = [
+- "ordered-float 2.10.1",
+- "serde",
+-]
+-
+-[[package]]
+@@ -3828 +3590 @@
+- "indexmap 2.14.2",
++ "indexmap",
+@@ -3848,9 +3609,0 @@
+-name = "serde_plain"
+-version = "1.0.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9ce1fc6db65a611022b23a0dec6975d63fb80a302cb3388835ff02c097258d50"
+-dependencies = [
+- "serde",
+-]
+-
+-[[package]]
+@@ -3869,33 +3621,0 @@
+-name = "serde_with"
+-version = "3.23.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "935177bb8c0cd8ca1a4e6d1a2ac8988bea69cab4f9d3a31311e012ad27868ea4"
+-dependencies = [
+- "base64 0.23.1",
+- "bs58",
+- "chrono",
+- "hex",
+- "indexmap 1.9.3",
+- "indexmap 2.14.2",
+- "jiff",
+- "schemars 0.9.0",
+- "schemars 1.2.2",
+- "serde_core",
+- "serde_json",
+- "serde_with_macros",
+- "time",
+-]
+-
+-[[package]]
+-name = "serde_with_macros"
+-version = "3.23.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1d607aa01a3cb0ad757d6fd216136910db3c97b102fe686585689615a02dbcdc"
+-dependencies = [
+- "darling 0.24.1",
+- "proc-macro2",
+- "quote",
+- "syn 3.0.6",
+-]
+-
+-[[package]]
+@@ -3907 +3627 @@
+- "indexmap 2.14.2",
++ "indexmap",
+@@ -4005 +3724,0 @@
+- "silverbullet-server-runtime-chrome",
+@@ -4029 +3747,0 @@
+- "openidconnect",
+@@ -4035 +3752,0 @@
+- "reqwest 0.12.28",
+@@ -4049,0 +3767 @@
++ "url",
+@@ -4067 +3784,0 @@
+- "reqwest 0.12.28",
+@@ -4074,0 +3792 @@
++ "url",
+@@ -4088 +3806 @@
+- "schemars 1.2.2",
++ "schemars",
+@@ -4134 +3851,0 @@
+- "reqwest 0.12.28",
+@@ -4322 +4039 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -4365 +4082 @@
+- "itertools 0.14.0",
++ "itertools",
+@@ -4414 +4131 @@
+- "itertools 0.14.0",
++ "itertools",
+@@ -4454 +4171 @@
+- "ordered-float 5.5.0",
++ "ordered-float",
+@@ -4466 +4183 @@
+- "itertools 0.14.0",
++ "itertools",
+@@ -4613 +4330 @@
+- "itertools 0.14.0",
++ "itertools",
+@@ -4716 +4433 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -4735 +4452 @@
+- "bitflags 2.13.2",
++ "bitflags",
+@@ -4953 +4669,0 @@
+- "serde_derive",
+@@ -5598 +5314 @@
+- "indexmap 2.14.2",
++ "indexmap",
+--- a/bin/silverbullet/Cargo.toml
++++ b/bin/silverbullet/Cargo.toml
+@@ -23 +22,0 @@
+-silverbullet-server-runtime-chrome = { path = "../../server-runtime-chrome" }
+@@ -42 +40,0 @@
+-silverbullet-server-runtime-chrome = { path = "../../server-runtime-chrome" }
+--- a/bin/silverbullet/src/multi.rs
++++ b/bin/silverbullet/src/multi.rs
+@@ -449,51 +449,2 @@
+-    use silverbullet_server_runtime_chrome::RuntimeUnavailable;
+-
+-    let (pool, availability) = match if single_instance {
+-        silverbullet_server_runtime_chrome::ChromeConfig::from_env(server_root)
+-    } else {
+-        silverbullet_server_runtime_chrome::ChromeConfig::from_env_for_multi(server_root)
+-    } {
+-        Ok(config) => match silverbullet_server_runtime_chrome::ChromePool::new(config) {
+-            Ok(pool) => (Some(pool), RuntimeAvailability::Available),
+-            Err(e) => {
+-                tracing::warn!("runtime API disabled: could not create the Chrome pool: {e}");
+-                (
+-                    None,
+-                    RuntimeAvailability::Failed {
+-                        message: e.to_string(),
+-                    },
+-                )
+-            }
+-        },
+-        Err(RuntimeUnavailable::DisabledByEnv) => {
+-            tracing::info!("runtime API disabled by SB_RUNTIME_API=0");
+-            (None, RuntimeAvailability::DisabledByEnv)
+-        }
+-        Err(RuntimeUnavailable::NoChrome) => {
+-            tracing::info!("runtime API disabled: no Chrome or Chromium found");
+-            (None, RuntimeAvailability::NoChrome)
+-        }
+-    };
+-    let profile_root = std::fs::canonicalize(server_root).unwrap_or_else(|_| server_root.into());
+-    let factory: RuntimeFactory = Arc::new(move |req: &RuntimeRequest| {
+-        let pool = pool.as_ref()?;
+-        if req.read_only {
+-            return None;
+-        }
+-        let page = silverbullet_server_runtime_chrome::SpacePage {
+-            server_url: req.server_url.clone(),
+-            headless_token: req.headless_token.to_string(),
+-            cookie_name: silverbullet_server::auth::headless_cookie_name(req.space_id),
+-            profile: silverbullet_server_runtime_chrome::profile_dir_name(
+-                &profile_root,
+-                req.space_id,
+-                req.username,
+-            ),
+-        };
+-        let logs = silverbullet_server::runtime::LogBuffer::new();
+-        let transport = pool.transport_for(page, logs.clone());
+-        Some(Box::new(silverbullet_server::runtime::ClientRuntime::new(
+-            transport, logs,
+-        )))
+-    });
+-    (factory, availability)
++    // Offline build: outbound implementation removed.
++    (Arc::new(|_req: &RuntimeRequest| None), RuntimeAvailability::DisabledByEnv)
+--- a/build/build_client.ts
++++ b/build/build_client.ts
+@@ -20,0 +21 @@
++    inject: ["./client/offline_network.ts"],
+--- a/build/version.ts
++++ b/build/version.ts
+@@ -12,43 +12 @@
+-  return new Promise<void>((resolve, reject) => {
+-    const gitProcess = spawn("git", ["describe", "--tags", "--long"], {
+-      stdio: ["ignore", "pipe", "pipe"],
+-    });
+-
+-    let stdout = "";
+-
+-    gitProcess.stdout?.on("data", (data) => {
+-      stdout += data.toString();
+-    });
+-
+-    gitProcess.on("close", async (code) => {
+-      let commitVersion = stdout.trim();
+-
+-      if (!commitVersion || code !== 0) {
+-        commitVersion = `${version}-${process.env.GITHUB_SHA || "unknown"}`;
+-      }
+-
+-      if (isForCommit(await readVersionFile(), commitVersion)) {
+-        resolve();
+-        return;
+-      }
+-
+-      const publicVersion = `${commitVersion}-${new Date()
+-        .toISOString()
+-        .split(".")[0]
+-        .replaceAll(":", "-")
+-        .concat("Z")}`;
+-
+-      try {
+-        await writeFile(
+-          "./version.json",
+-          `${JSON.stringify({ version: publicVersion })}\n`,
+-          "utf-8",
+-        );
+-        resolve();
+-      } catch (err) {
+-        reject(err);
+-      }
+-    });
+-
+-    gitProcess.on("error", reject);
+-  });
++  return writeFile("./version.json", JSON.stringify({version: "2.12.1-offline.1+0fbe7b51"}) + "\n");
+--- /dev/null
++++ b/client/offline_network.ts
+@@ -0,0 +1,34 @@
++// Offline build: reject external targets before calling browser transport APIs.
++const scope = globalThis as any;
++if (!scope.__silverbulletOfflineNetwork) {
++  scope.__silverbulletOfflineNetwork = true;
++  const origin = scope.location.origin;
++  const check = (input: any) => {
++    const url = new URL(input instanceof Request ? input.url : String(input), scope.location.href);
++    if (url.protocol === "data:" || (url.protocol === "blob:" && url.origin === origin)) return;
++    const normalOrigin = url.origin.replace(/^ws:/, "http:").replace(/^wss:/, "https:");
++    if (normalOrigin !== origin || !["http:", "https:", "ws:", "wss:"].includes(url.protocol)) {
++      throw new Error("Offline build: external network operation removed");
++    }
++  };
++  if (scope.fetch) {
++    const native = scope.fetch.bind(scope);
++    scope.fetch = (input: any, init?: any) => { check(input); return native(input, init); };
++  }
++  for (const name of ["WebSocket", "EventSource"]) {
++    if (scope[name]) {
++      const Native = scope[name];
++      scope[name] = new Proxy(Native, { construct(target, args) { check(args[0]); return Reflect.construct(target, args); } });
++    }
++  }
++  if (scope.XMLHttpRequest) {
++    const open = scope.XMLHttpRequest.prototype.open;
++    scope.XMLHttpRequest.prototype.open = function(method: any, url: any, ...args: any[]) {
++      check(url); return open.call(this, method, url, ...args);
++    };
++  }
++  if (scope.navigator?.sendBeacon) {
++    const beacon = scope.navigator.sendBeacon.bind(scope.navigator);
++    scope.navigator.sendBeacon = (url: any, data: any) => { check(url); return beacon(url, data); };
++  }
++}
+--- a/client/plugos/worker_runtime.ts
++++ b/client/plugos/worker_runtime.ts
+@@ -0,0 +1 @@
++import "../offline_network.ts";
+--- a/client/space_lua/stdlib/net.ts
++++ b/client/space_lua/stdlib/net.ts
+@@ -12,53 +12 @@
+-): Promise<ProxyFetchResponse> {
+-  // A table body is sent as JSON
+-  const requestBody =
+-    options.body &&
+-    typeof options.body !== "string" &&
+-    !(options.body instanceof Uint8Array)
+-      ? JSON.stringify(options.body)
+-      : options.body;
+-  const resp = await client.httpSpacePrimitives.authenticatedFetch(
+-    buildProxyUrl(client, url),
+-    {
+-      method: options.method,
+-      headers: buildProxyHeaders(options.headers),
+-      body: requestBody,
+-    },
+-  );
+-  if (resp.status !== 200) {
+-    return {
+-      ok: false,
+-      status: resp.status,
+-      headers: extractProxyHeaders(resp.headers),
+-      body: await resp.text(),
+-    };
+-  }
+-  // Read as ArrayBuffer first to safely handle empty responses (e.g.
+-  // PUT/DELETE returning 204 with Content-Type: application/json).
+-  // resp.arrayBuffer() never throws on an empty body, whereas
+-  // resp.json() would throw a SyntaxError.
+-  const rawBytes = new Uint8Array(await resp.arrayBuffer());
+-  let body: any;
+-  const contentTypeHeader =
+-    options.responseEncoding || resp.headers.get("x-proxy-header-content-type");
+-  const statusCode = +(resp.headers.get("x-proxy-status-code") || "200");
+-  if (rawBytes.length === 0) {
+-    body = null;
+-  } else if (contentTypeHeader?.startsWith("application/json")) {
+-    body = JSON.parse(new TextDecoder().decode(rawBytes));
+-  } else if (
+-    contentTypeHeader?.startsWith("application/xml") ||
+-    contentTypeHeader?.startsWith("text/")
+-  ) {
+-    body = new TextDecoder().decode(rawBytes);
+-  } else {
+-    body = rawBytes;
+-  }
+-  return {
+-    // The upstream's, not the proxy's (which answered 200)
+-    ok: statusCode >= 200 && statusCode < 300,
+-    status: statusCode,
+-    headers: extractProxyHeaders(resp.headers),
+-    body: body,
+-  };
+-}
++): Promise<ProxyFetchResponse> { throw new Error("Offline build: outbound HTTP proxy removed"); }
+--- a/client/spaces/http_space_primitives.ts
++++ b/client/spaces/http_space_primitives.ts
+@@ -249 +249 @@
+-      resp.headers.get("X-Space-Path") !== this.expectedSpacePath
++      decodeURIComponent(resp.headers.get("X-Space-Path")!) !== this.expectedSpacePath
+--- a/server-common/Cargo.toml
++++ b/server-common/Cargo.toml
+@@ -27 +27 @@
+-reqwest = { workspace = true }
++url = "2"
+--- a/server-common/build.rs
++++ b/server-common/build.rs
+@@ -6,4 +6 @@
+-    let build_ts_ms = std::time::SystemTime::now()
+-        .duration_since(std::time::UNIX_EPOCH)
+-        .map(|d| d.as_millis() as i64)
+-        .unwrap_or(1);
++    let build_ts_ms: i64 = 1794268800000; // Fixed source epoch for offline build.
+--- a/server-common/src/space/http.rs
++++ b/server-common/src/space/http.rs
+@@ -1,9 +1,3 @@
+-use std::io::Read;
+-use std::sync::RwLock;
+-
+-use crate::reconcile::{ReconcileRequest, ReconcileResponse};
+-use crate::revision::{etag_for_hash, hash_from_etag, CONTENT_REVISION_HEADER};
+-use crate::space::conditional::{ConditionalSpacePrimitives, WritePrecondition};
+-use crate::types::{range_read_error, FileMeta, SpaceError, SpacePrimitives};
+-
+-/// How to authenticate HTTP requests to the remote server.
++//! Offline build: remote HTTP storage transport removed.
++use crate::types::{FileMeta, SpaceError, SpacePrimitives};
++use crate::space::conditional::ConditionalSpacePrimitives;
+@@ -11,10 +5 @@
+-pub enum AuthCredential {
+-    /// Bearer token sent via Authorization header (token auth).
+-    Bearer(String),
+-    /// JWT sent as a cookie (password auth). Contains the cookie header value.
+-    Cookie(String),
+-}
+-
+-/// Slugify one component of the auth cookie name: every non-word character
+-/// becomes `_`. Mirrors the server's `\W` regex replacement (word chars are
+-/// Unicode alphanumerics plus `_`).
++pub enum AuthCredential { Bearer(String), Cookie(String) }
+@@ -51 +36 @@
+-    let (host_name, scoped_name) = reqwest::Url::parse(base_url)
++    let (host_name, scoped_name) = url::Url::parse(base_url)
+@@ -74,6 +59,7 @@
+-/// Optional re-auth info for password-based auth (username/password stored for JWT refresh).
+-struct ReAuthInfo {
+-    /// The remote base URL (without /.fs suffix), used to call /.auth
+-    remote_base_url: String,
+-    username: String,
+-    password: String,
++
++pub struct HttpSpacePrimitives;
++impl HttpSpacePrimitives {
++    pub fn new(_base_url: &str, _credential: Option<AuthCredential>) -> Self { Self }
++    pub fn new_with_reauth(_base_url: &str, _credential: Option<AuthCredential>,
++        _remote_base_url: &str, _username: &str, _password: &str) -> Self { Self }
++    pub fn with_client_headers(self, _client_id: Option<String>, _source: Option<String>) -> Self { self }
+@@ -81,10 +67,2 @@
+-
+-/// SpacePrimitives implementation backed by a remote SilverBullet server over HTTP.
+-/// Uses `reqwest::blocking` for synchronous operation on the sync thread.
+-pub struct HttpSpacePrimitives {
+-    client: reqwest::blocking::Client,
+-    base_url: String,
+-    credential: RwLock<Option<AuthCredential>>,
+-    re_auth: Option<ReAuthInfo>,
+-    client_id: Option<String>,
+-    source: Option<String>,
++fn offline() -> SpaceError {
++    SpaceError::Io(std::io::Error::other("Offline build: remote HTTP storage removed"))
+@@ -92,236 +70,6 @@
+-
+-impl HttpSpacePrimitives {
+-    pub fn new(base_url: &str, credential: Option<AuthCredential>) -> Self {
+-        let client = reqwest::blocking::Client::builder()
+-            .timeout(std::time::Duration::from_secs(30))
+-            .redirect(reqwest::redirect::Policy::none())
+-            .build()
+-            .expect("failed to build HTTP client");
+-        Self {
+-            client,
+-            base_url: base_url.trim_end_matches('/').to_string(),
+-            credential: RwLock::new(credential),
+-            re_auth: None,
+-            client_id: None,
+-            source: None,
+-        }
+-    }
+-
+-    /// Attach a client id and/or source, sent as `X-Client-Id`/`X-Source` on
+-    /// every mutating request (PUT/DELETE/reconcile POST), never on GETs.
+-    /// Best-effort attribution only (constraint 3) — never validated
+-    /// client-side, since the server tolerates and ignores malformed values.
+-    pub fn with_client_headers(
+-        mut self,
+-        client_id: Option<String>,
+-        source: Option<String>,
+-    ) -> Self {
+-        self.client_id = client_id;
+-        self.source = source;
+-        self
+-    }
+-
+-    fn apply_client_headers(
+-        &self,
+-        mut req: reqwest::blocking::RequestBuilder,
+-    ) -> reqwest::blocking::RequestBuilder {
+-        if let Some(client_id) = &self.client_id {
+-            req = req.header("X-Client-Id", client_id);
+-        }
+-        if let Some(source) = &self.source {
+-            req = req.header("X-Source", source);
+-        }
+-        req
+-    }
+-
+-    /// Create with re-authentication support for password-based auth.
+-    /// `remote_base_url` is the server root (without /.fs), used to call /.auth.
+-    pub fn new_with_reauth(
+-        base_url: &str,
+-        credential: Option<AuthCredential>,
+-        remote_base_url: &str,
+-        username: &str,
+-        password: &str,
+-    ) -> Self {
+-        let client = reqwest::blocking::Client::builder()
+-            .timeout(std::time::Duration::from_secs(30))
+-            .redirect(reqwest::redirect::Policy::none())
+-            .build()
+-            .expect("failed to build HTTP client");
+-        Self {
+-            client,
+-            base_url: base_url.trim_end_matches('/').to_string(),
+-            credential: RwLock::new(credential),
+-            re_auth: Some(ReAuthInfo {
+-                remote_base_url: remote_base_url.trim_end_matches('/').to_string(),
+-                username: username.to_string(),
+-                password: password.to_string(),
+-            }),
+-            client_id: None,
+-            source: None,
+-        }
+-    }
+-
+-    fn request(&self, method: reqwest::Method, path: &str) -> reqwest::blocking::RequestBuilder {
+-        let url = if path.is_empty() {
+-            format!("{}/", self.base_url)
+-        } else {
+-            format!("{}/{}", self.base_url, encode_page_uri(path))
+-        };
+-        tracing::debug!("[http] {method} {url}");
+-        let mut req = self.client.request(method, &url);
+-        req = req.header("X-Sync-Mode", "true");
+-        let cred = self.credential.read().unwrap();
+-        match cred.as_ref() {
+-            Some(AuthCredential::Bearer(token)) => {
+-                req = req.header("Authorization", format!("Bearer {token}"));
+-            }
+-            Some(AuthCredential::Cookie(cookie)) => {
+-                tracing::debug!(
+-                    "[http] Sending Cookie header: {}=<jwt>",
+-                    cookie.split('=').next().unwrap_or("?")
+-                );
+-                req = req.header("Cookie", cookie);
+-            }
+-            None => {}
+-        }
+-        req
+-    }
+-
+-    fn parse_file_meta(path: &str, headers: &reqwest::header::HeaderMap) -> FileMeta {
+-        let last_modified = headers
+-            .get("X-Last-Modified")
+-            .and_then(|v| v.to_str().ok())
+-            .and_then(|v| v.parse().ok())
+-            .unwrap_or(0i64);
+-        let created = headers
+-            .get("X-Created")
+-            .and_then(|v| v.to_str().ok())
+-            .and_then(|v| v.parse().ok())
+-            .unwrap_or(0i64);
+-        let size = headers
+-            .get("X-Content-Length")
+-            .or_else(|| headers.get("Content-Length"))
+-            .and_then(|v| v.to_str().ok())
+-            .and_then(|v| v.parse().ok())
+-            .unwrap_or(0i64);
+-        let content_type = headers
+-            .get("X-Content-Type")
+-            .or_else(|| headers.get("Content-Type"))
+-            .and_then(|v| v.to_str().ok())
+-            .unwrap_or("application/octet-stream")
+-            .to_string();
+-        let perm = headers
+-            .get("X-Permission")
+-            .and_then(|v| v.to_str().ok())
+-            .unwrap_or("ro")
+-            .to_string();
+-
+-        FileMeta {
+-            name: path.to_string(),
+-            created,
+-            last_modified,
+-            content_type,
+-            size,
+-            perm,
+-        }
+-    }
+-
+-    fn parse_range_file_meta(
+-        path: &str,
+-        headers: &reqwest::header::HeaderMap,
+-    ) -> Result<FileMeta, SpaceError> {
+-        let size = headers
+-            .get("X-Content-Length")
+-            .and_then(|value| value.to_str().ok())
+-            .and_then(|value| value.parse::<u64>().ok())
+-            .and_then(|value| i64::try_from(value).ok())
+-            .ok_or_else(|| {
+-                SpaceError::WriteError(format!(
+-                    "read_file_range failed: missing or invalid X-Content-Length for {path}"
+-                ))
+-            })?;
+-        let mut meta = Self::parse_file_meta(path, headers);
+-        meta.size = size;
+-        Ok(meta)
+-    }
+-
+-    fn hash_from_response(headers: &reqwest::header::HeaderMap) -> Option<String> {
+-        headers
+-            .get(CONTENT_REVISION_HEADER)
+-            .or_else(|| headers.get(reqwest::header::ETAG))
+-            .and_then(|v| v.to_str().ok())
+-            .and_then(hash_from_etag)
+-    }
+-
+-    fn check_response(
+-        response: &mut reqwest::blocking::Response,
+-        operation: &str,
+-        path: &str,
+-    ) -> Result<(), SpaceError> {
+-        let status = response.status();
+-        if status.is_success() {
+-            return Ok(());
+-        }
+-        let mut body = Vec::new();
+-        let read = response.take(4097).read_to_end(&mut body);
+-        let truncated = body.len() > 4096;
+-        body.truncate(4096);
+-        let text = String::from_utf8_lossy(&body);
+-        let detail = text.trim();
+-        let mut message = format!("{operation} {path:?} failed: {status}");
+-        if !detail.is_empty() {
+-            message.push_str(": ");
+-            message.extend(detail.chars().map(|c| if c.is_control() { ' ' } else { c }));
+-        }
+-        if truncated {
+-            message.push_str(" [response truncated]");
+-        }
+-        if read.is_err() {
+-            message.push_str(" [could not read complete server response]");
+-        }
+-        match status {
+-            // Keep these variants for reauthentication, missing-file and conflict handling.
+-            reqwest::StatusCode::UNAUTHORIZED => {
+-                tracing::warn!("{message}");
+-                Err(SpaceError::Unauthorized)
+-            }
+-            reqwest::StatusCode::NOT_FOUND => Err(SpaceError::NotFound),
+-            reqwest::StatusCode::PRECONDITION_FAILED => Err(SpaceError::PreconditionFailed),
+-            reqwest::StatusCode::FORBIDDEN => Err(SpaceError::ReadOnly(message)),
+-            _ => Err(SpaceError::WriteError(message)),
+-        }
+-    }
+-
+-    fn map_error(e: reqwest::Error) -> SpaceError {
+-        if e.status() == Some(reqwest::StatusCode::NOT_FOUND) {
+-            SpaceError::NotFound
+-        } else if e.status() == Some(reqwest::StatusCode::FORBIDDEN) {
+-            SpaceError::ReadOnly(e.to_string())
+-        } else if e.status() == Some(reqwest::StatusCode::UNAUTHORIZED) {
+-            SpaceError::Unauthorized
+-        } else {
+-            SpaceError::WriteError(e.to_string())
+-        }
+-    }
+-
+-    /// Attempt to re-authenticate using stored username/password, update the credential, and return true on success.
+-    fn try_reauth(&self) -> bool {
+-        let info = match &self.re_auth {
+-            Some(info) => info,
+-            None => return false,
+-        };
+-        tracing::info!("[http] Attempting JWT re-authentication");
+-        match authenticate_blocking(&info.remote_base_url, &info.username, &info.password) {
+-            Ok(jwt) => {
+-                let cookie = auth_cookie_header(&info.remote_base_url, &jwt);
+-                *self.credential.write().unwrap() = Some(AuthCredential::Cookie(cookie));
+-                tracing::info!("[http] Re-authentication successful");
+-                true
+-            }
+-            Err(e) => {
+-                tracing::warn!("[http] Re-authentication failed: {e}");
+-                false
+-            }
+-        }
+-    }
++impl SpacePrimitives for HttpSpacePrimitives {
++    fn fetch_file_list(&self) -> Result<Vec<FileMeta>, SpaceError> { Err(offline()) }
++    fn get_file_meta(&self, _path: &str) -> Result<FileMeta, SpaceError> { Err(offline()) }
++    fn read_file(&self, _path: &str) -> Result<(Vec<u8>, FileMeta), SpaceError> { Err(offline()) }
++    fn write_file(&self, _path: &str, _data: &[u8], _meta: Option<&FileMeta>) -> Result<FileMeta, SpaceError> { Err(offline()) }
++    fn delete_file(&self, _path: &str) -> Result<(), SpaceError> { Err(offline()) }
+@@ -329,518 +77 @@
+-
+-/// Authenticate against a SilverBullet server using username/password, returning a JWT.
+-/// Posts to `{base_url}/.auth` and extracts the `auth_*` cookie value from the response
+-/// (servers name the cookie `auth_{host}{url_prefix}`, see `auth_cookie_header`).
+-///
+-/// This is the single implementation of the credential exchange; async callers
+-/// should wrap it in `spawn_blocking`. Pair the returned JWT with
+-/// `auth_cookie_header` to build a `Cookie` credential.
+-pub fn authenticate_blocking(
+-    base_url: &str,
+-    username: &str,
+-    password: &str,
+-) -> Result<String, String> {
+-    let client = reqwest::blocking::Client::builder()
+-        .timeout(std::time::Duration::from_secs(10))
+-        .build()
+-        .map_err(|e| format!("HTTP client error: {e}"))?;
+-
+-    let auth_url = format!("{base_url}/.auth");
+-    let form_body = format!(
+-        "username={}&password={}",
+-        percent_encoding::utf8_percent_encode(username, percent_encoding::NON_ALPHANUMERIC),
+-        percent_encoding::utf8_percent_encode(password, percent_encoding::NON_ALPHANUMERIC),
+-    );
+-    let resp = client
+-        .post(&auth_url)
+-        .header("Content-Type", "application/x-www-form-urlencoded")
+-        .body(form_body)
+-        .send()
+-        .map_err(|e| format!("Auth request failed: {e}"))?;
+-
+-    let jwt = resp.headers().get_all("set-cookie").iter().find_map(|v| {
+-        let s = v.to_str().ok()?;
+-        if s.starts_with("auth_") {
+-            let cookie_value = s.split(';').next()?;
+-            let (_, jwt) = cookie_value.split_once('=')?;
+-            Some(jwt.to_string())
+-        } else {
+-            None
+-        }
+-    });
+-
+-    if !resp.status().is_success() {
+-        return Err(format!("Auth failed: {}", resp.status()));
+-    }
+-
+-    let body_text = resp.text().unwrap_or_default();
+-    let parsed: serde_json::Value = serde_json::from_str(&body_text).unwrap_or_default();
+-    if parsed.get("status").and_then(|s| s.as_str()) == Some("error") {
+-        let err = parsed
+-            .get("error")
+-            .and_then(|e| e.as_str())
+-            .unwrap_or("Authentication failed");
+-        return Err(err.to_string());
+-    }
+-
+-    jwt.ok_or_else(|| "No auth cookie in response".to_string())
+-}
+-
+-/// Percent-encode a file path for use in URLs, matching TS `encodePageURI`.
+-pub fn encode_page_uri(path: &str) -> String {
+-    path.split('/')
+-        .map(|segment| {
+-            percent_encoding::utf8_percent_encode(segment, percent_encoding::NON_ALPHANUMERIC)
+-                .to_string()
+-        })
+-        .collect::<Vec<_>>()
+-        .join("/")
+-}
+-
+-impl SpacePrimitives for HttpSpacePrimitives {
+-    fn fetch_file_list(&self) -> Result<Vec<FileMeta>, SpaceError> {
+-        let mut resp = self
+-            .request(reqwest::Method::GET, "")
+-            .send()
+-            .map_err(Self::map_error)?;
+-        if let Err(e) = Self::check_response(&mut resp, "fetch_file_list", "/") {
+-            if matches!(e, SpaceError::Unauthorized) && self.try_reauth() {
+-                let mut resp = self
+-                    .request(reqwest::Method::GET, "")
+-                    .send()
+-                    .map_err(Self::map_error)?;
+-                Self::check_response(&mut resp, "fetch_file_list", "/")?;
+-                let files: Vec<FileMeta> = resp
+-                    .json()
+-                    .map_err(|e| SpaceError::WriteError(e.to_string()))?;
+-                return Ok(files);
+-            }
+-            return Err(e);
+-        }
+-        let files: Vec<FileMeta> = resp
+-            .json()
+-            .map_err(|e| SpaceError::WriteError(e.to_string()))?;
+-        Ok(files)
+-    }
+-
+-    fn get_file_meta(&self, path: &str) -> Result<FileMeta, SpaceError> {
+-        let mut resp = self
+-            .request(reqwest::Method::GET, path)
+-            .header("X-Get-Meta", "true")
+-            .send()
+-            .map_err(Self::map_error)?;
+-        if let Err(e) = Self::check_response(&mut resp, "get_file_meta", path) {
+-            if matches!(e, SpaceError::Unauthorized) && self.try_reauth() {
+-                let mut resp = self
+-                    .request(reqwest::Method::GET, path)
+-                    .header("X-Get-Meta", "true")
+-                    .send()
+-                    .map_err(Self::map_error)?;
+-                Self::check_response(&mut resp, "get_file_meta", path)?;
+-                return Ok(Self::parse_file_meta(path, resp.headers()));
+-            }
+-            return Err(e);
+-        }
+-        Ok(Self::parse_file_meta(path, resp.headers()))
+-    }
+-
+-    fn read_file(&self, path: &str) -> Result<(Vec<u8>, FileMeta), SpaceError> {
+-        let (data, meta, _hash) = self.read_file_with_hash(path)?;
+-        Ok((data, meta))
+-    }
+-
+-    fn read_file_range(
+-        &self,
+-        path: &str,
+-        start: u64,
+-        length: usize,
+-    ) -> Result<(Vec<u8>, FileMeta), SpaceError> {
+-        let length_u64 = u64::try_from(length).map_err(|_| range_read_error(path))?;
+-        let end = start
+-            .checked_add(length_u64)
+-            .and_then(|end| end.checked_sub(1))
+-            .ok_or_else(|| range_read_error(path))?;
+-        let send = |this: &Self| {
+-            this.request(reqwest::Method::GET, path)
+-                .header("Range", format!("bytes={start}-{end}"))
+-                .header("Accept", "application/octet-stream")
+-                .send()
+-                .map_err(Self::map_error)
+-        };
+-        let mut resp = send(self)?;
+-        if resp.status() == reqwest::StatusCode::UNAUTHORIZED && self.try_reauth() {
+-            resp = send(self)?;
+-        }
+-        if resp.status() != reqwest::StatusCode::PARTIAL_CONTENT {
+-            Self::check_response(&mut resp, "read_file_range", path)?;
+-            return Err(SpaceError::WriteError(format!(
+-                "read_file_range failed: expected 206, got {}",
+-                resp.status()
+-            )));
+-        }
+-        let meta = Self::parse_range_file_meta(path, resp.headers())?;
+-        let data = resp
+-            .bytes()
+-            .map_err(|e| SpaceError::WriteError(e.to_string()))?
+-            .to_vec();
+-        if data.len() != length {
+-            return Err(range_read_error(path));
+-        }
+-        Ok((data, meta))
+-    }
+-
+-    fn write_file(
+-        &self,
+-        path: &str,
+-        data: &[u8],
+-        meta: Option<&FileMeta>,
+-    ) -> Result<FileMeta, SpaceError> {
+-        self.write_file_conditional(path, data, meta, None)
+-            .map(|(meta, _hash)| meta)
+-    }
+-
+-    fn delete_file(&self, path: &str) -> Result<(), SpaceError> {
+-        self.delete_file_conditional(path, None)
+-    }
+-}
+-
+-impl ConditionalSpacePrimitives for HttpSpacePrimitives {
+-    fn write_file_conditional(
+-        &self,
+-        path: &str,
+-        data: &[u8],
+-        meta: Option<&FileMeta>,
+-        precondition: Option<WritePrecondition>,
+-    ) -> Result<(FileMeta, Option<String>), SpaceError> {
+-        let build_req = |this: &Self| {
+-            let mut req = this
+-                .request(reqwest::Method::PUT, path)
+-                .header("Content-Type", "application/octet-stream");
+-            if let Some(m) = meta {
+-                req = req
+-                    .header("X-Created", m.created.to_string())
+-                    .header("X-Last-Modified", m.last_modified.to_string())
+-                    .header("X-Perm", &m.perm);
+-            }
+-            req = this.apply_client_headers(req);
+-            match &precondition {
+-                Some(WritePrecondition::MatchesHash(hash)) => {
+-                    req.header("If-Match", etag_for_hash(hash))
+-                }
+-                Some(WritePrecondition::NotExists) => req.header("If-None-Match", "*"),
+-                None => req,
+-            }
+-        };
+-        let mut resp = build_req(self)
+-            .body(data.to_vec())
+-            .send()
+-            .map_err(Self::map_error)?;
+-        if let Err(e) = Self::check_response(&mut resp, "write_file_conditional", path) {
+-            if matches!(e, SpaceError::Unauthorized) && self.try_reauth() {
+-                let mut resp = build_req(self)
+-                    .body(data.to_vec())
+-                    .send()
+-                    .map_err(Self::map_error)?;
+-                Self::check_response(&mut resp, "write_file_conditional", path)?;
+-                let hash = Self::hash_from_response(resp.headers());
+-                return Ok((Self::parse_file_meta(path, resp.headers()), hash));
+-            }
+-            return Err(e);
+-        }
+-        let hash = Self::hash_from_response(resp.headers());
+-        Ok((Self::parse_file_meta(path, resp.headers()), hash))
+-    }
+-
+-    fn delete_file_conditional(
+-        &self,
+-        path: &str,
+-        expected_hash: Option<&str>,
+-    ) -> Result<(), SpaceError> {
+-        let build_req = |this: &Self| {
+-            let req = this.apply_client_headers(this.request(reqwest::Method::DELETE, path));
+-            match expected_hash {
+-                Some(hash) => req.header("If-Match", etag_for_hash(hash)),
+-                None => req,
+-            }
+-        };
+-        let mut resp = build_req(self).send().map_err(Self::map_error)?;
+-        if let Err(e) = Self::check_response(&mut resp, "delete_file_conditional", path) {
+-            if matches!(e, SpaceError::Unauthorized) && self.try_reauth() {
+-                let mut resp = build_req(self).send().map_err(Self::map_error)?;
+-                Self::check_response(&mut resp, "delete_file_conditional", path)?;
+-                return Ok(());
+-            }
+-            return Err(e);
+-        }
+-        Ok(())
+-    }
+-
+-    fn read_file_with_hash(
+-        &self,
+-        path: &str,
+-    ) -> Result<(Vec<u8>, FileMeta, Option<String>), SpaceError> {
+-        let mut resp = self
+-            .request(reqwest::Method::GET, path)
+-            .header("Accept", "application/octet-stream")
+-            .send()
+-            .map_err(Self::map_error)?;
+-        if let Err(e) = Self::check_response(&mut resp, "read_file_with_hash", path) {
+-            if matches!(e, SpaceError::Unauthorized) && self.try_reauth() {
+-                let mut resp = self
+-                    .request(reqwest::Method::GET, path)
+-                    .header("Accept", "application/octet-stream")
+-                    .send()
+-                    .map_err(Self::map_error)?;
+-                Self::check_response(&mut resp, "read_file_with_hash", path)?;
+-                let meta = Self::parse_file_meta(path, resp.headers());
+-                let hash = Self::hash_from_response(resp.headers());
+-                let data = resp
+-                    .bytes()
+-                    .map_err(|e| SpaceError::WriteError(e.to_string()))?
+-                    .to_vec();
+-                return Ok((data, meta, hash));
+-            }
+-            return Err(e);
+-        }
+-        let meta = Self::parse_file_meta(path, resp.headers());
+-        let hash = Self::hash_from_response(resp.headers());
+-        let data = resp
+-            .bytes()
+-            .map_err(|e| SpaceError::WriteError(e.to_string()))?
+-            .to_vec();
+-        Ok((data, meta, hash))
+-    }
+-
+-    fn reconcile(
+-        &self,
+-        path: &str,
+-        request: &ReconcileRequest,
+-    ) -> Result<Option<ReconcileResponse>, SpaceError> {
+-        let body =
+-            serde_json::to_vec(request).map_err(|e| SpaceError::WriteError(e.to_string()))?;
+-        let build_req = |this: &Self| {
+-            let req = this
+-                .request(reqwest::Method::POST, path)
+-                .header("Content-Type", "application/json");
+-            this.apply_client_headers(req)
+-        };
+-        let resp = build_req(self)
+-            .body(body.clone())
+-            .send()
+-            .map_err(Self::map_error)?;
+-        let status = resp.status();
+-        if status == reqwest::StatusCode::UNAUTHORIZED && self.try_reauth() {
+-            let resp = build_req(self).body(body).send().map_err(Self::map_error)?;
+-            return Self::parse_reconcile_response(resp, path);
+-        }
+-        Self::parse_reconcile_response(resp, path)
+-    }
+-}
+-
+-impl HttpSpacePrimitives {
+-    fn parse_reconcile_response(
+-        mut resp: reqwest::blocking::Response,
+-        path: &str,
+-    ) -> Result<Option<ReconcileResponse>, SpaceError> {
+-        match resp.status() {
+-            reqwest::StatusCode::OK => {
+-                let parsed: ReconcileResponse = resp
+-                    .json()
+-                    .map_err(|e| SpaceError::WriteError(e.to_string()))?;
+-                Ok(Some(parsed))
+-            }
+-            reqwest::StatusCode::NOT_FOUND | reqwest::StatusCode::METHOD_NOT_ALLOWED => Ok(None),
+-            reqwest::StatusCode::CONFLICT | reqwest::StatusCode::PAYLOAD_TOO_LARGE => {
+-                Err(SpaceError::ReconcileIneligible)
+-            }
+-            reqwest::StatusCode::UNAUTHORIZED => Err(SpaceError::Unauthorized),
+-            // Only 404/405 mean "no reconciliation endpoint here"; an
+-            // unexpected 2xx is an error so the caller falls back this once
+-            // instead of latching reconciliation off for the session.
+-            status => match Self::check_response(&mut resp, "reconcile", path) {
+-                Err(e) => Err(e),
+-                Ok(()) => Err(SpaceError::WriteError(format!(
+-                    "reconcile returned unexpected status: {status}"
+-                ))),
+-            },
+-        }
+-    }
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    #[test]
+-    fn dedicated_revision_takes_precedence_over_proxy_etag() {
+-        let mut headers = reqwest::header::HeaderMap::new();
+-        headers.insert("ETag", "W/\"sha256:proxy\"".parse().unwrap());
+-        headers.insert(
+-            "X-SilverBullet-Revision",
+-            "\"sha256:original\"".parse().unwrap(),
+-        );
+-        assert_eq!(
+-            super::HttpSpacePrimitives::hash_from_response(&headers).as_deref(),
+-            Some("original")
+-        );
+-        headers.insert(
+-            "X-SilverBullet-Revision",
+-            "W/\"sha256:invalid\"".parse().unwrap(),
+-        );
+-        headers.insert("ETag", "\"sha256:valid\"".parse().unwrap());
+-        assert_eq!(
+-            super::HttpSpacePrimitives::hash_from_response(&headers),
+-            None
+-        );
+-    }
+-
+-    use super::*;
+-    use std::io::{Read, Write};
+-
+-    fn serve_once(response: &'static [u8]) -> (String, std::thread::JoinHandle<String>) {
+-        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+-        let address = listener.local_addr().unwrap();
+-        let handle = std::thread::spawn(move || {
+-            let (mut stream, _) = listener.accept().unwrap();
+-            let mut request = [0u8; 4096];
+-            let read = stream.read(&mut request).unwrap();
+-            stream.write_all(response).unwrap();
+-            String::from_utf8(request[..read].to_vec()).unwrap()
+-        });
+-        (format!("http://{address}"), handle)
+-    }
+-
+-    #[test]
+-    fn range_read_sends_headers_and_uses_full_file_metadata() {
+-        let (base_url, request) = serve_once(
+-            b"HTTP/1.1 206 Partial Content\r\nContent-Length: 5\r\nX-Content-Length: 10\r\nContent-Type: application/octet-stream\r\nX-Content-Type: image/png\r\nX-Created: 11\r\nX-Last-Modified: 12\r\nX-Permission: ro\r\nConnection: close\r\n\r\n23456",
+-        );
+-        let sp = HttpSpacePrimitives::new(&base_url, None);
+-
+-        let (data, meta) = sp.read_file_range("range.bin", 2, 5).unwrap();
+-        assert_eq!(data, b"23456");
+-        assert_eq!(meta.size, 10);
+-        assert_eq!(meta.content_type, "image/png");
+-        let request = request.join().unwrap().to_ascii_lowercase();
+-        assert!(request.contains("range: bytes=2-6\r\n"), "{request}");
+-        assert!(
+-            request.contains("accept: application/octet-stream\r\n"),
+-            "{request}"
+-        );
+-    }
+-
+-    #[test]
+-    fn range_read_rejects_short_response_body() {
+-        let (base_url, request) = serve_once(
+-            b"HTTP/1.1 206 Partial Content\r\nContent-Length: 4\r\nX-Content-Length: 10\r\nConnection: close\r\n\r\n2345",
+-        );
+-        let sp = HttpSpacePrimitives::new(&base_url, None);
+-
+-        assert!(sp.read_file_range("range.bin", 2, 5).is_err());
+-        request.join().unwrap();
+-    }
+-
+-    #[test]
+-    fn range_read_rejects_missing_full_file_length() {
+-        let (base_url, request) = serve_once(
+-            b"HTTP/1.1 206 Partial Content\r\nContent-Length: 5\r\nConnection: close\r\n\r\n23456",
+-        );
+-        let sp = HttpSpacePrimitives::new(&base_url, None);
+-
+-        assert!(sp.read_file_range("range.bin", 2, 5).is_err());
+-        request.join().unwrap();
+-    }
+-
+-    #[test]
+-    fn range_read_rejects_malformed_full_file_length() {
+-        let (base_url, request) = serve_once(
+-            b"HTTP/1.1 206 Partial Content\r\nContent-Length: 5\r\nX-Content-Length: invalid\r\nConnection: close\r\n\r\n23456",
+-        );
+-        let sp = HttpSpacePrimitives::new(&base_url, None);
+-
+-        assert!(sp.read_file_range("range.bin", 2, 5).is_err());
+-        request.join().unwrap();
+-    }
+-
+-    fn cookie_name(base_url: &str) -> String {
+-        let header = auth_cookie_header(base_url, "jwt");
+-        header.split_once('=').unwrap().0.to_string()
+-    }
+-
+-    /// Every `name=value` pair carried by a `Cookie` header value.
+-    fn cookie_pairs(header: &str) -> Vec<(String, String)> {
+-        header
+-            .split(';')
+-            .filter_map(|p| p.trim().split_once('=').map(|(n, v)| (n.into(), v.into())))
+-            .collect()
+-    }
+-
+-    #[test]
+-    fn prefixed_url_also_sends_the_host_wide_cookie() {
+-        // Account-managed servers use host-wide session cookies; classic prefixed
+-        // deployments use prefix-scoped names. The URL cannot distinguish them,
+-        // so send both names and let the server select the one it expects.
+-        let pairs = cookie_pairs(&auth_cookie_header("https://sb.zef.pub/test", "the.jwt"));
+-        assert!(
+-            pairs.contains(&("auth_sb_zef_pub_test".into(), "the.jwt".into())),
+-            "prefix-scoped name missing (classic single-space servers): {pairs:?}"
+-        );
+-        assert!(
+-            pairs.contains(&("auth_sb_zef_pub".into(), "the.jwt".into())),
+-            "host-wide name missing (multi-space servers): {pairs:?}"
+-        );
+-    }
+-
+-    #[test]
+-    fn root_url_sends_exactly_one_cookie() {
+-        // At a root path both candidate names collapse to the same string;
+-        // emitting it twice would be pure noise in the header.
+-        let header = auth_cookie_header("https://sb.zef.pub/", "j");
+-        assert_eq!(cookie_pairs(&header).len(), 1, "{header}");
+-        assert_eq!(header, "auth_sb_zef_pub=j");
+-    }
+-
+-    #[test]
+-    fn cookie_name_includes_url_prefix() {
+-        // A prefix-based space must scope the cookie to its prefix, matching the
+-        // server's `auth_{host}{prefix}`. Deriving from the host alone 401s.
+-        assert_eq!(
+-            cookie_name("https://sb.zef.pub/silverspace-manual"),
+-            "auth_sb_zef_pub_silverspace_manual"
+-        );
+-        assert_eq!(
+-            cookie_name("https://h.example.com/a/b"),
+-            "auth_h_example_com_a_b"
+-        );
+-    }
+-
+-    #[test]
+-    fn cookie_name_ignores_trailing_slash() {
+-        assert_eq!(
+-            cookie_name("https://sb.zef.pub/silverspace-manual/"),
+-            cookie_name("https://sb.zef.pub/silverspace-manual")
+-        );
+-    }
+-
+-    #[test]
+-    fn cookie_name_without_prefix_is_legacy_host_only() {
+-        assert_eq!(cookie_name("https://sb.zef.pub/"), "auth_sb_zef_pub");
+-        assert_eq!(cookie_name("https://sb.zef.pub"), "auth_sb_zef_pub");
+-    }
+-
+-    #[test]
+-    fn cookie_name_includes_non_default_port() {
+-        assert_eq!(cookie_name("http://localhost:3000/"), "auth_localhost_3000");
+-        assert_eq!(
+-            cookie_name("http://localhost:3000/work"),
+-            "auth_localhost_3000_work"
+-        );
+-    }
+-
+-    #[test]
+-    fn cookie_header_carries_jwt_value() {
+-        // Both candidate names carry the same JWT; see
+-        // `prefixed_url_also_sends_the_host_wide_cookie` for why both are sent.
+-        assert_eq!(
+-            auth_cookie_header("https://sb.zef.pub/space", "the.jwt.value"),
+-            "auth_sb_zef_pub_space=the.jwt.value; auth_sb_zef_pub=the.jwt.value"
+-        );
+-    }
+-}
++impl ConditionalSpacePrimitives for HttpSpacePrimitives {}
+--- a/server-common/src/upgrade.rs
++++ b/server-common/src/upgrade.rs
+@@ -1,36 +1,6 @@
+-//! Shared self-upgrade engine for the `sb` CLI and the `silverbullet` server
+-//! binary.
+-//!
+-//! Both binaries upgrade themselves the same way: download a platform-specific
+-//! release zip from GitHub and replace their own executable in place. The only
+-//! differences are the release-asset base name, the executable file name inside
+-//! the zip, and a couple of log strings — all captured by [`UpgradeSpec`]. This
+-//! mirrors the two near-identical Go implementations (`cli/upgrade.go` for `sb`
+-//! and `server/cmd/upgrade.go` for `silverbullet`) but keeps a single copy.
+-//!
+-//! Intentionally free of async: we use `reqwest::blocking`, so callers MUST NOT
+-//! invoke [`upgrade`] from within a Tokio runtime (the `silverbullet` binary
+-//! handles its `upgrade` subcommand before building its runtime).
+-
+-use std::io::ErrorKind;
+-use std::path::{Component, Path, PathBuf};
+-
+-#[cfg(unix)]
+-use std::os::unix::fs::PermissionsExt;
+-
+-/// Release URL prefix for the latest **stable** release.
+-pub const STABLE_URL_PREFIX: &str =
+-    "https://github.com/silverbulletmd/silverbullet/releases/latest/download";
+-/// Release URL prefix for the latest **edge** release (tracks `main`).
+-pub const EDGE_URL_PREFIX: &str =
+-    "https://github.com/silverbulletmd/silverbullet/releases/download/edge";
+-
+-/// Per-binary upgrade parameters.
+-pub struct UpgradeSpec {
+-    /// Release-asset base name. The downloaded zip is
+-    /// `<asset>-<os>-<arch>.zip` (e.g. `"sb"` → `sb-darwin-aarch64.zip`,
+-    /// `"silverbullet-server"` → `silverbullet-server-linux-x86_64.zip`).
+-    pub asset: &'static str,
+-    /// Executable file name inside the zip to mark executable afterwards
+-    /// (e.g. `"sb"` or `"silverbullet"`). `.exe` is appended on Windows.
+-    pub binary: &'static str,
++//! Offline build: self-upgrade transport removed.
++pub const STABLE_URL_PREFIX: &str = "";
++pub const EDGE_URL_PREFIX: &str = "";
++pub struct UpgradeSpec { pub asset: &'static str, pub binary: &'static str }
++pub fn upgrade(_spec: &UpgradeSpec, _url_prefix: &str) -> Result<(), String> {
++    Err("Offline build: self-upgrade removed".into())
+@@ -38,352 +7,0 @@
+-
+-/// Download and install `spec.binary` from a release zip at `url_prefix`,
+-/// replacing the currently running executable in place.
+-pub fn upgrade(spec: &UpgradeSpec, url_prefix: &str) -> Result<(), String> {
+-    let exec =
+-        std::env::current_exe().map_err(|e| format!("failed to get executable path: {e}"))?;
+-    let install_dir = exec
+-        .parent()
+-        .ok_or("could not determine install dir")?
+-        .to_path_buf();
+-
+-    println!("Install dir: {}", install_dir.display());
+-
+-    let tmp = tempfile::Builder::new()
+-        .prefix(&format!("{}-upgrade-", spec.asset))
+-        .tempdir()
+-        .map_err(|e| format!("failed to create temp dir: {e}"))?;
+-
+-    do_upgrade(spec, url_prefix, &install_dir, tmp.path())
+-}
+-
+-fn do_upgrade(
+-    spec: &UpgradeSpec,
+-    url_prefix: &str,
+-    install_dir: &Path,
+-    tmp: &Path,
+-) -> Result<(), String> {
+-    let url = asset_url(
+-        spec.asset,
+-        url_prefix,
+-        std::env::consts::OS,
+-        std::env::consts::ARCH,
+-    )?;
+-    let zip_path = tmp.join(format!("{}.zip", spec.asset));
+-
+-    println!("Downloading from {url}");
+-
+-    let resp = reqwest::blocking::get(&url).map_err(|e| format!("failed to download: {e}"))?;
+-    let status = resp.status();
+-    if !status.is_success() {
+-        return Err(format!("download failed with status: {}", status.as_u16()));
+-    }
+-    let bytes = resp
+-        .bytes()
+-        .map_err(|e| format!("failed to read response: {e}"))?;
+-    std::fs::write(&zip_path, &bytes).map_err(|e| format!("failed to save zip file: {e}"))?;
+-
+-    println!(
+-        "Replacing {} binary in {}",
+-        spec.binary,
+-        install_dir.display()
+-    );
+-
+-    extract_zip(&zip_path, install_dir)?;
+-
+-    let bin = if cfg!(windows) {
+-        format!("{}.exe", spec.binary)
+-    } else {
+-        spec.binary.to_string()
+-    };
+-    let bin_path = install_dir.join(&bin);
+-
+-    #[cfg(unix)]
+-    {
+-        std::fs::set_permissions(&bin_path, std::fs::Permissions::from_mode(0o755))
+-            .map_err(|e| format!("failed to set executable permissions: {e}"))?;
+-    }
+-    #[cfg(not(unix))]
+-    {
+-        let _ = &bin_path; // silence unused-variable warning on non-unix
+-    }
+-
+-    println!("Upgrade complete!");
+-    Ok(())
+-}
+-
+-/// Extract all entries from the zip at `src` into `dest`.
+-pub fn extract_zip(src: &Path, dest: &Path) -> Result<(), String> {
+-    let f = std::fs::File::open(src).map_err(|e| format!("failed to open zip: {e}"))?;
+-    let mut archive = zip::ZipArchive::new(f).map_err(|e| format!("failed to read zip: {e}"))?;
+-
+-    for i in 0..archive.len() {
+-        let mut entry = archive
+-            .by_index(i)
+-            .map_err(|e| format!("failed to read zip entry {i}: {e}"))?;
+-        let name = entry.name().to_string();
+-        let out_path = safe_extract_path(dest, &name)?;
+-
+-        if entry.is_dir() {
+-            std::fs::create_dir_all(&out_path)
+-                .map_err(|e| format!("failed to create directory {}: {e}", out_path.display()))?;
+-            continue;
+-        }
+-
+-        if let Some(parent) = out_path.parent() {
+-            std::fs::create_dir_all(parent)
+-                .map_err(|e| format!("failed to create parent dir {}: {e}", parent.display()))?;
+-        }
+-
+-        // Remove before write: avoids "text file busy" on Linux when replacing
+-        // a running executable.
+-        match std::fs::remove_file(&out_path) {
+-            Ok(()) => {}
+-            Err(e) if e.kind() == ErrorKind::NotFound => {}
+-            Err(e) => {
+-                return Err(format!(
+-                    "failed to remove existing file {}: {e}",
+-                    out_path.display()
+-                ));
+-            }
+-        }
+-
+-        #[cfg(unix)]
+-        let out_file = {
+-            use std::os::unix::fs::OpenOptionsExt;
+-            let mode = entry.unix_mode().unwrap_or(0o644);
+-            std::fs::OpenOptions::new()
+-                .write(true)
+-                .create(true)
+-                .truncate(true)
+-                .mode(mode)
+-                .open(&out_path)
+-                .map_err(|e| format!("failed to create file {}: {e}", out_path.display()))?
+-        };
+-        #[cfg(not(unix))]
+-        let out_file = {
+-            std::fs::File::create(&out_path)
+-                .map_err(|e| format!("failed to create file {}: {e}", out_path.display()))?
+-        };
+-
+-        let mut out_file = out_file;
+-        std::io::copy(&mut entry, &mut out_file)
+-            .map_err(|e| format!("failed to write file {}: {e}", out_path.display()))?;
+-    }
+-
+-    Ok(())
+-}
+-
+-/// Build the release-asset URL for this platform.
+-///
+-/// Maps Rust's `std::env::consts` names to the release-asset naming:
+-/// - `"macos"` → `"darwin"` (other OSes pass through).
+-/// - `"arm"` (32-bit ARM) → `"armv7"`.
+-/// - Otherwise only `"x86_64"` and `"aarch64"` are supported.
+-///
+-/// # Errors
+-/// Returns `Err` for unsupported architectures.
+-pub fn asset_url(asset: &str, url_prefix: &str, os: &str, arch: &str) -> Result<String, String> {
+-    let os = if os == "macos" { "darwin" } else { os };
+-    let arch = match arch {
+-        "x86_64" | "aarch64" => arch,
+-        // Rust reports 32-bit ARM as "arm"; our release archives use the
+-        // "armv7" label (e.g. sb-linux-armv7.zip).
+-        "arm" => "armv7",
+-        other => return Err(format!("unsupported architecture: {other}")),
+-    };
+-    Ok(format!("{url_prefix}/{asset}-{os}-{arch}.zip"))
+-}
+-
+-/// Resolve a zip-entry `name` against `dest`, rejecting zip-slip paths.
+-///
+-/// Returns the safe path, or `Err` if the entry would escape outside `dest`.
+-/// The check is lexical (no filesystem access) so it works for entries that do
+-/// not yet exist.
+-pub fn safe_extract_path(dest: &Path, name: &str) -> Result<PathBuf, String> {
+-    let joined = dest.join(name);
+-    let cleaned = normalize_path(&joined);
+-    let cleaned_dest = normalize_path(dest);
+-
+-    if cleaned == cleaned_dest || cleaned.starts_with(&cleaned_dest) {
+-        Ok(joined)
+-    } else {
+-        Err(format!("illegal file path in zip: {name}"))
+-    }
+-}
+-
+-/// Lexically normalize a path by resolving `.` and `..` components without
+-/// touching the filesystem (entries may not exist yet).
+-fn normalize_path(p: &Path) -> PathBuf {
+-    let mut stack: Vec<std::ffi::OsString> = Vec::new();
+-    let mut prefix_buf = PathBuf::new();
+-    let mut has_root = false;
+-
+-    for component in p.components() {
+-        match component {
+-            Component::Prefix(prefix) => {
+-                prefix_buf.push(prefix.as_os_str());
+-            }
+-            Component::RootDir => {
+-                has_root = true;
+-            }
+-            Component::CurDir => {}
+-            Component::ParentDir => {
+-                stack.pop();
+-            }
+-            Component::Normal(seg) => {
+-                stack.push(seg.to_os_string());
+-            }
+-        }
+-    }
+-
+-    let mut result = prefix_buf;
+-    if has_root {
+-        result.push(std::path::MAIN_SEPARATOR.to_string());
+-    }
+-    for seg in stack {
+-        result.push(seg);
+-    }
+-    result
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    use super::*;
+-
+-    #[test]
+-    fn asset_url_linux_x86_64() {
+-        let url = asset_url("sb", "PRE", "linux", "x86_64").unwrap();
+-        assert_eq!(url, "PRE/sb-linux-x86_64.zip");
+-    }
+-
+-    #[test]
+-    fn asset_url_macos_maps_to_darwin() {
+-        let url = asset_url("sb", "PRE", "macos", "aarch64").unwrap();
+-        assert_eq!(url, "PRE/sb-darwin-aarch64.zip");
+-    }
+-
+-    #[test]
+-    fn asset_url_windows_x86_64() {
+-        let url = asset_url("sb", "PRE", "windows", "x86_64").unwrap();
+-        assert_eq!(url, "PRE/sb-windows-x86_64.zip");
+-    }
+-
+-    #[test]
+-    fn asset_url_arm_maps_to_armv7() {
+-        let url = asset_url("sb", "PRE", "linux", "arm").unwrap();
+-        assert_eq!(url, "PRE/sb-linux-armv7.zip");
+-    }
+-
+-    #[test]
+-    fn asset_url_freebsd_x86_64() {
+-        let url = asset_url("sb", "PRE", "freebsd", "x86_64").unwrap();
+-        assert_eq!(url, "PRE/sb-freebsd-x86_64.zip");
+-    }
+-
+-    #[test]
+-    fn asset_url_server_asset_name() {
+-        let url = asset_url("silverbullet-server", "PRE", "darwin", "aarch64").unwrap();
+-        assert_eq!(url, "PRE/silverbullet-server-darwin-aarch64.zip");
+-    }
+-
+-    #[test]
+-    fn asset_url_unsupported_arch() {
+-        let err = asset_url("sb", "PRE", "linux", "powerpc64").unwrap_err();
+-        assert!(err.contains("unsupported architecture"), "error was: {err}");
+-    }
+-
+-    #[test]
+-    fn asset_url_darwin_passthrough() {
+-        let url = asset_url("sb", "https://example.com", "darwin", "x86_64").unwrap();
+-        assert_eq!(url, "https://example.com/sb-darwin-x86_64.zip");
+-    }
+-
+-    #[test]
+-    fn safe_extract_path_simple_file_is_ok() {
+-        let dest = std::path::Path::new("/tmp/x");
+-        let result = safe_extract_path(dest, "sb").unwrap();
+-        assert!(result.ends_with("sb"), "path should end with 'sb'");
+-    }
+-
+-    #[test]
+-    fn safe_extract_path_dot_dot_is_rejected() {
+-        let dest = std::path::Path::new("/tmp/x");
+-        let err = safe_extract_path(dest, "../evil").unwrap_err();
+-        assert!(err.contains("illegal file path"), "error was: {err}");
+-    }
+-
+-    #[test]
+-    fn safe_extract_path_nested_is_ok() {
+-        let dest = std::path::Path::new("/tmp/x");
+-        let result = safe_extract_path(dest, "a/b/sb").unwrap();
+-        assert!(result.ends_with("sb"), "path should end with 'sb'");
+-    }
+-
+-    #[test]
+-    fn safe_extract_path_double_dot_escape_is_rejected() {
+-        let dest = std::path::Path::new("/tmp/x");
+-        let err = safe_extract_path(dest, "a/../../evil").unwrap_err();
+-        assert!(err.contains("illegal file path"), "error was: {err}");
+-    }
+-
+-    #[test]
+-    fn normalize_removes_dot_dot() {
+-        let p = PathBuf::from("/tmp/x/../y");
+-        assert_eq!(normalize_path(&p), PathBuf::from("/tmp/y"));
+-    }
+-
+-    #[test]
+-    fn normalize_removes_dot() {
+-        let p = PathBuf::from("/tmp/./x");
+-        assert_eq!(normalize_path(&p), PathBuf::from("/tmp/x"));
+-    }
+-
+-    /// The `zip` dependency is built with only the `deflate` codec (see the
+-    /// workspace manifest), which is what our release archives use. Guards
+-    /// against that narrowing silently losing the ability to read them.
+-    #[test]
+-    fn extract_zip_reads_a_deflate_archive() {
+-        use std::io::Write;
+-        use zip::write::SimpleFileOptions;
+-
+-        let tmp = tempfile::tempdir().unwrap();
+-        let archive = tmp.path().join("release.zip");
+-
+-        let mut w = zip::ZipWriter::new(std::fs::File::create(&archive).unwrap());
+-        let opts =
+-            SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+-        w.start_file("silverbullet", opts).unwrap();
+-        w.write_all(b"binary contents").unwrap();
+-        w.finish().unwrap();
+-
+-        let dest = tmp.path().join("out");
+-        std::fs::create_dir(&dest).unwrap();
+-        extract_zip(&archive, &dest).unwrap();
+-
+-        let extracted = std::fs::read(dest.join("silverbullet")).unwrap();
+-        assert_eq!(extracted, b"binary contents");
+-    }
+-
+-    /// Stored (uncompressed) entries need no codec at all, but they travel the
+-    /// same path — cheap to cover, and some zip writers emit them for small files.
+-    #[test]
+-    fn extract_zip_reads_a_stored_archive() {
+-        use std::io::Write;
+-        use zip::write::SimpleFileOptions;
+-
+-        let tmp = tempfile::tempdir().unwrap();
+-        let archive = tmp.path().join("release.zip");
+-
+-        let mut w = zip::ZipWriter::new(std::fs::File::create(&archive).unwrap());
+-        let opts = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
+-        w.start_file("sb", opts).unwrap();
+-        w.write_all(b"hello").unwrap();
+-        w.finish().unwrap();
+-
+-        let dest = tmp.path().join("out");
+-        std::fs::create_dir(&dest).unwrap();
+-        extract_zip(&archive, &dest).unwrap();
+-
+-        assert_eq!(std::fs::read(dest.join("sb")).unwrap(), b"hello");
+-    }
+-}
+--- a/server-search/Cargo.toml
++++ b/server-search/Cargo.toml
+@@ -12 +12 @@
+-semantic = ["dep:candle-core", "dep:candle-nn", "dep:tokenizers", "dep:rayon", "dep:reqwest", "dep:sha2", "dep:sysinfo", "tokio/fs"]
++semantic = ["dep:candle-core", "dep:candle-nn", "dep:tokenizers", "dep:rayon", "dep:sha2", "dep:sysinfo", "tokio/fs"]
+@@ -34 +33,0 @@
+-reqwest = { workspace = true, optional = true }
+--- a/server-search/src/semantic/download.rs
++++ b/server-search/src/semantic/download.rs
+@@ -1,16 +1 @@
+-//! Resumable, checksum-verified model downloads.
+-//!
+-//! # Install guarantee (relied on by the embedder's mmap SAFETY comment)
+-//!
+-//! A model file only ever appears at its final path through `temp file (<name>.partial) -> exact
+-//! size and sha256 check -> fsync -> atomic rename`, and an installed file is never opened for
+-//! writing, truncated or renamed over again by this store; the only way it disappears is
+-//! `remove`, which deletes the whole model directory. A reader that memory-maps an installed
+-//! file therefore never observes it changing underneath the mapping (on Unix, unlinking keeps
+-//! the mapped inode alive).
+-//!
+-//! A failed download leaves its `.partial` for the next `ensure` to resume, except when the
+-//! bytes are known bad (checksum or size mismatch): that partial is deleted, because resuming
+-//! it would fail the same way forever.
+-
+-use std::collections::HashMap;
++//! Offline build: model HTTP transport, resumable downloads and remote URLs removed.
+@@ -18,5 +2,0 @@
+-use std::sync::{Arc, Mutex};
+-use std::time::Duration;
+-
+-use sha2::{Digest, Sha256};
+-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+@@ -24 +3,0 @@
+-
+@@ -26,5 +4,0 @@
+-use super::fs_private;
+-
+-const HF_BASE: &str = "https://huggingface.co";
+-const MANIFEST: &str = "manifest.json";
+-
+@@ -65,11 +38,0 @@
+-/// One model's download bookkeeping.
+-#[derive(Default)]
+-struct Slot {
+-    /// Serialises `ensure` and `remove` for the model.
+-    turn: tokio::sync::Mutex<()>,
+-    /// The running download's progress, or the last failure; `None` means
+-    /// "what is on disk".
+-    state: Mutex<Option<DownloadState>>,
+-    /// Cancels the running `ensure`, so `remove` can stop it first.
+-    cancel: Mutex<Option<CancellationToken>>,
+-}
+@@ -77,29 +40 @@
+-impl Slot {
+-    fn set(&self, state: DownloadState) {
+-        *self.state.lock().unwrap() = Some(state);
+-    }
+-}
+-
+-/// On any exit from `ensure` (also when its future is dropped): forgets the
+-/// cancel token and a leftover `Downloading` state. `Failed` stays for
+-/// `state` to report.
+-struct Running(Arc<Slot>);
+-
+-impl Drop for Running {
+-    fn drop(&mut self) {
+-        self.0.cancel.lock().unwrap().take();
+-        let mut state = self.0.state.lock().unwrap();
+-        if matches!(*state, Some(DownloadState::Downloading { .. })) {
+-            *state = None;
+-        }
+-    }
+-}
+-
+-/// Model files on disk under `<data>/search/models` plus the in-memory download progress.
+-pub struct ModelStore {
+-    root: PathBuf,
+-    client: reqwest::Client,
+-    base: String,
+-    slots: Mutex<HashMap<String, Arc<Slot>>>,
+-}
+-
++pub struct ModelStore { root: PathBuf }
+@@ -107,23 +42,3 @@
+-    pub fn new(root: PathBuf) -> Self {
+-        let client = reqwest::Client::builder()
+-            .connect_timeout(Duration::from_secs(10))
+-            .read_timeout(Duration::from_secs(60))
+-            .build()
+-            .expect("reqwest client");
+-        Self {
+-            root,
+-            client,
+-            base: HF_BASE.to_string(),
+-            slots: Mutex::default(),
+-        }
+-    }
+-
+-    /// Test-only: replaces `https://huggingface.co` in model URLs.
+-    #[cfg(any(test, debug_assertions, feature = "test-model"))]
+-    pub fn with_base_url(mut self, base: String) -> Self {
+-        self.base = base.trim_end_matches('/').to_string();
+-        self
+-    }
+-
+-    /// `root/<id>@<revision>`.
+-    pub fn dir(&self, spec: &ModelSpec) -> PathBuf {
++    pub fn new(root: PathBuf) -> Self { Self { root } }
++    pub fn with_base_url(mut self, base: String) -> Self { self }
++    pub fn dir(&self, spec: &ModelSpec) -> PathBuf { 
+@@ -131,85 +46,5 @@
+-    }
+-
+-    /// The manifest matches the spec (id, revision, files) and every file exists with its
+-    /// pinned size.
+-    pub fn is_ready(&self, spec: &ModelSpec) -> bool {
+-        let dir = self.dir(spec);
+-        let Ok(raw) = std::fs::read(dir.join(MANIFEST)) else {
+-            return false;
+-        };
+-        let Ok(manifest) = serde_json::from_slice::<serde_json::Value>(&raw) else {
+-            return false;
+-        };
+-        if manifest != manifest_json(spec) {
+-            return false;
+-        }
+-        spec.files.iter().all(|f| {
+-            std::fs::metadata(dir.join(f.name)).is_ok_and(|m| m.is_file() && m.len() == f.size)
+-        })
+-    }
+-
+-    /// The offered models (see [`super::catalog::offered`]) that have a
+-    /// directory in the store, in offered order. Other directories (another
+-    /// revision, an unknown model) aren't listed.
+-    pub fn stored(&self) -> Vec<StoredModel> {
+-        super::catalog::offered()
+-            .into_iter()
+-            .filter_map(|spec| {
+-                let entries = std::fs::read_dir(self.dir(spec)).ok()?;
+-                let bytes = entries
+-                    .flatten()
+-                    .filter_map(|e| e.metadata().ok())
+-                    .filter(|m| m.is_file())
+-                    .map(|m| m.len())
+-                    .sum();
+-                Some(StoredModel {
+-                    spec,
+-                    bytes,
+-                    complete: self.is_ready(spec),
+-                })
+-            })
+-            .collect()
+-    }
+-
+-    fn slot(&self, spec: &ModelSpec) -> Arc<Slot> {
+-        self.slots
+-            .lock()
+-            .unwrap()
+-            .entry(spec.dir_name())
+-            .or_default()
+-            .clone()
+-    }
+-
+-    pub fn state(&self, spec: &ModelSpec) -> DownloadState {
+-        let tracked = self.slot(spec).state.lock().unwrap().clone();
+-        match tracked {
+-            Some(s @ (DownloadState::Downloading { .. } | DownloadState::Failed { .. })) => s,
+-            _ if self.is_ready(spec) => DownloadState::Ready,
+-            _ => DownloadState::Missing,
+-        }
+-    }
+-
+-    /// Cancels an in-flight `ensure` for this model, waits for it to stop, then deletes the model
+-    /// directory (installed files and partials). The state ends `Missing`.
+-    pub async fn remove(&self, spec: &ModelSpec) -> std::io::Result<()> {
+-        let slot = self.slot(spec);
+-        if let Some(token) = slot.cancel.lock().unwrap().as_ref() {
+-            token.cancel();
+-        }
+-        let _turn = slot.turn.lock().await;
+-        let result = match tokio::fs::remove_dir_all(self.dir(spec)).await {
+-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+-            other => other,
+-        };
+-        *slot.state.lock().unwrap() = None;
+-        result
+-    }
+-
+-    fn url(&self, spec: &ModelSpec, file: &ModelFile) -> String {
+-        spec.url(file).replacen(HF_BASE, &self.base, 1)
+-    }
+-
+-    /// Idempotent. Returns the model directory once every file is verified, or on error or
+-    /// cancel. Progress is readable through `state` meanwhile. Concurrent calls for the same
+-    /// model are serialised; later ones find it ready. If the future is dropped mid-download the
+-    /// state falls back to what is on disk.
++     }
++    pub fn is_ready(&self, spec: &ModelSpec) -> bool { false }
++    pub fn stored(&self) -> Vec<StoredModel> { Vec::new() }
++    pub fn state(&self, spec: &ModelSpec) -> DownloadState { DownloadState::Missing }
++    pub async fn remove(&self, spec: &ModelSpec) -> std::io::Result<()> { Err(std::io::Error::other("Offline build: model management removed")) }
+@@ -220,215 +55 @@
+-    ) -> Result<PathBuf, DownloadError> {
+-        let slot = self.slot(spec);
+-        let _turn = tokio::select! {
+-            _ = cancel.cancelled() => return Err(DownloadError::Cancelled),
+-            turn = slot.turn.lock() => turn,
+-        };
+-        if self.is_ready(spec) {
+-            *slot.state.lock().unwrap() = None;
+-            return Ok(self.dir(spec));
+-        }
+-        // `remove` cancels this child token; the caller's token is honoured through it too.
+-        let cancel = cancel.child_token();
+-        *slot.cancel.lock().unwrap() = Some(cancel.clone());
+-        slot.set(DownloadState::Downloading {
+-            done: 0,
+-            total: spec.download_bytes(),
+-        });
+-        let _running = Running(slot.clone());
+-        match self.fetch_all(spec, &slot, &cancel).await {
+-            Ok(dir) => Ok(dir),
+-            Err(DownloadError::Cancelled) => Err(DownloadError::Cancelled),
+-            Err(e) => {
+-                slot.set(DownloadState::Failed {
+-                    message: e.to_string(),
+-                });
+-                Err(e)
+-            }
+-        }
+-    }
+-
+-    async fn fetch_all(
+-        &self,
+-        spec: &ModelSpec,
+-        slot: &Slot,
+-        cancel: &CancellationToken,
+-    ) -> Result<PathBuf, DownloadError> {
+-        let dir = self.dir(spec);
+-        fs_private::create_dir_async(&self.root).await?;
+-        fs_private::create_dir_async(&dir).await?;
+-        let total = spec.download_bytes();
+-        let mut base_done = 0u64;
+-        for file in &spec.files {
+-            let final_path = dir.join(file.name);
+-            let installed = tokio::fs::metadata(&final_path)
+-                .await
+-                .is_ok_and(|m| m.is_file() && m.len() == file.size);
+-            if !installed {
+-                self.fetch_file(spec, slot, file, &dir, base_done, total, cancel)
+-                    .await?;
+-            }
+-            base_done += file.size;
+-            slot.set(DownloadState::Downloading {
+-                done: base_done,
+-                total,
+-            });
+-        }
+-        write_manifest(spec, &dir).await?;
+-        Ok(dir)
+-    }
+-
+-    /// Downloads one file into `<name>.partial` (resuming it when the server
+-    /// allows), verifies it and installs it.
+-    #[allow(clippy::too_many_arguments)]
+-    async fn fetch_file(
+-        &self,
+-        spec: &ModelSpec,
+-        slot: &Slot,
+-        file: &ModelFile,
+-        dir: &Path,
+-        base_done: u64,
+-        total: u64,
+-        cancel: &CancellationToken,
+-    ) -> Result<(), DownloadError> {
+-        let partial = dir.join(format!("{}.partial", file.name));
+-        let progress = |done: u64| {
+-            slot.set(DownloadState::Downloading {
+-                done: base_done + done,
+-                total,
+-            })
+-        };
+-        let (mut out, mut hasher, have, response) =
+-            self.open_partial(spec, file, &partial, cancel).await?;
+-        progress(have);
+-        let written = match response {
+-            None => have,
+-            Some(resp) => {
+-                match stream_into(resp, &mut out, &mut hasher, have, file, &progress, cancel).await
+-                {
+-                    Ok(written) => written,
+-                    Err(e @ DownloadError::Size(_)) => {
+-                        drop(out);
+-                        let _ = tokio::fs::remove_file(&partial).await;
+-                        return Err(e);
+-                    }
+-                    Err(e) => return Err(e),
+-                }
+-            }
+-        };
+-        install(out, hasher, written, file, &partial, dir).await
+-    }
+-
+-    /// The partial file, opened for appending (its kept prefix re-hashed) or
+-    /// truncated, its length, and the response to stream into it; no response
+-    /// when the partial is already complete.
+-    async fn open_partial(
+-        &self,
+-        spec: &ModelSpec,
+-        file: &ModelFile,
+-        partial: &Path,
+-        cancel: &CancellationToken,
+-    ) -> Result<(tokio::fs::File, Sha256, u64, Option<reqwest::Response>), DownloadError> {
+-        let mut have = match tokio::fs::metadata(partial).await {
+-            Ok(m) if m.len() <= file.size => m.len(),
+-            _ => 0,
+-        };
+-        let response = if have == file.size {
+-            // Complete prefix from an earlier run; only verification is left.
+-            None
+-        } else if have > 0 {
+-            match self.resume_request(spec, file, have, cancel).await? {
+-                Resumed::Append(resp) => Some(resp),
+-                Resumed::Fresh(resp) => {
+-                    have = 0;
+-                    Some(resp)
+-                }
+-                Resumed::Refetch => {
+-                    have = 0;
+-                    Some(self.fetch_full(spec, file, cancel).await?)
+-                }
+-            }
+-        } else {
+-            Some(self.fetch_full(spec, file, cancel).await?)
+-        };
+-        let mut hasher = Sha256::new();
+-        let out = if have > 0 {
+-            hash_prefix(partial, have, &mut hasher).await?;
+-            fs_private::open_async(partial, false).await?
+-        } else {
+-            fs_private::open_async(partial, true).await?
+-        };
+-        Ok((out, hasher, have, response))
+-    }
+-
+-    async fn get(
+-        &self,
+-        spec: &ModelSpec,
+-        file: &ModelFile,
+-        from: Option<u64>,
+-        cancel: &CancellationToken,
+-    ) -> Result<reqwest::Response, DownloadError> {
+-        let mut req = self.client.get(self.url(spec, file));
+-        if let Some(from) = from {
+-            req = req.header(reqwest::header::RANGE, format!("bytes={from}-"));
+-        }
+-        tokio::select! {
+-            _ = cancel.cancelled() => Err(DownloadError::Cancelled),
+-            sent = req.send() => sent.map_err(|e| {
+-                DownloadError::Http(format!("request for {} failed: {e}", file.name))
+-            }),
+-        }
+-    }
+-
+-    async fn fetch_full(
+-        &self,
+-        spec: &ModelSpec,
+-        file: &ModelFile,
+-        cancel: &CancellationToken,
+-    ) -> Result<reqwest::Response, DownloadError> {
+-        let resp = self.get(spec, file, None, cancel).await?;
+-        if resp.status() != reqwest::StatusCode::OK {
+-            return Err(DownloadError::Http(format!(
+-                "unexpected status {} for {}",
+-                resp.status(),
+-                file.name
+-            )));
+-        }
+-        Ok(resp)
+-    }
+-
+-    /// Ranged request. Only a 206 whose `Content-Range` starts at `have` may be appended; a plain
+-    /// 200 (Range ignored) is a full body to restart from; anything else is re-requested whole.
+-    async fn resume_request(
+-        &self,
+-        spec: &ModelSpec,
+-        file: &ModelFile,
+-        have: u64,
+-        cancel: &CancellationToken,
+-    ) -> Result<Resumed, DownloadError> {
+-        let resp = self.get(spec, file, Some(have), cancel).await?;
+-        let status = resp.status();
+-        if status == reqwest::StatusCode::PARTIAL_CONTENT {
+-            let start = resp
+-                .headers()
+-                .get(reqwest::header::CONTENT_RANGE)
+-                .and_then(|v| v.to_str().ok())
+-                .and_then(|v| v.strip_prefix("bytes "))
+-                .and_then(|v| v.split('-').next())
+-                .and_then(|v| v.trim().parse::<u64>().ok());
+-            return Ok(if start == Some(have) {
+-                Resumed::Append(resp)
+-            } else {
+-                Resumed::Refetch
+-            });
+-        }
+-        if status == reqwest::StatusCode::OK {
+-            return Ok(Resumed::Fresh(resp));
+-        }
+-        if status == reqwest::StatusCode::RANGE_NOT_SATISFIABLE {
+-            return Ok(Resumed::Refetch);
+-        }
+-        Err(DownloadError::Http(format!(
+-            "unexpected status {status} for {}",
+-            file.name
+-        )))
+-    }
++    ) -> Result<PathBuf, DownloadError> { Err(DownloadError::Http("Offline build: model download removed".into())) }
+@@ -436,132 +56,0 @@
+-
+-enum Resumed {
+-    Append(reqwest::Response),
+-    Fresh(reqwest::Response),
+-    Refetch,
+-}
+-
+-/// Streams `resp` into `out`, which already holds `written` bytes, and
+-/// returns how many it holds after. A body longer than the file's size is a
+-/// `Size` error (the caller deletes the partial); a dropped connection or a
+-/// cancel keeps the partial for the next resume.
+-async fn stream_into(
+-    mut resp: reqwest::Response,
+-    out: &mut tokio::fs::File,
+-    hasher: &mut Sha256,
+-    mut written: u64,
+-    file: &ModelFile,
+-    progress: &(dyn Fn(u64) + Sync),
+-    cancel: &CancellationToken,
+-) -> Result<u64, DownloadError> {
+-    loop {
+-        let chunk = tokio::select! {
+-            _ = cancel.cancelled() => {
+-                out.flush().await?;
+-                return Err(DownloadError::Cancelled);
+-            }
+-            chunk = resp.chunk() => chunk,
+-        };
+-        let chunk = match chunk {
+-            Ok(Some(c)) => c,
+-            Ok(None) => break,
+-            Err(e) => {
+-                out.flush().await?;
+-                return Err(DownloadError::Http(format!(
+-                    "download of {} failed: {e}",
+-                    file.name
+-                )));
+-            }
+-        };
+-        written += chunk.len() as u64;
+-        if written > file.size {
+-            return Err(DownloadError::Size(file.name.to_string()));
+-        }
+-        hasher.update(&chunk);
+-        out.write_all(&chunk).await?;
+-        progress(written);
+-    }
+-    out.flush().await?;
+-    Ok(written)
+-}
+-
+-/// Checks the complete partial's size and sha256, then fsyncs and renames it
+-/// into place. Bad bytes delete the partial (resuming would fail the same
+-/// way); a short file keeps it for the next resume.
+-async fn install(
+-    out: tokio::fs::File,
+-    hasher: Sha256,
+-    written: u64,
+-    file: &ModelFile,
+-    partial: &Path,
+-    dir: &Path,
+-) -> Result<(), DownloadError> {
+-    if written != file.size {
+-        return Err(DownloadError::Http(format!(
+-            "download of {} ended after {written} of {} bytes",
+-            file.name, file.size
+-        )));
+-    }
+-    let digest: String = hasher
+-        .finalize()
+-        .iter()
+-        .map(|b| format!("{b:02x}"))
+-        .collect();
+-    if !digest.eq_ignore_ascii_case(&file.sha256) {
+-        drop(out);
+-        let _ = tokio::fs::remove_file(partial).await;
+-        return Err(DownloadError::Checksum(file.name.to_string()));
+-    }
+-    out.sync_all().await?;
+-    drop(out);
+-    tokio::fs::rename(partial, dir.join(file.name)).await?;
+-    sync_dir(dir).await;
+-    Ok(())
+-}
+-
+-async fn hash_prefix(path: &Path, len: u64, hasher: &mut Sha256) -> std::io::Result<()> {
+-    let mut file = tokio::fs::File::open(path).await?.take(len);
+-    let mut buf = vec![0u8; 64 * 1024];
+-    loop {
+-        let n = file.read(&mut buf).await?;
+-        if n == 0 {
+-            return Ok(());
+-        }
+-        hasher.update(&buf[..n]);
+-    }
+-}
+-
+-/// Best effort: make the rename durable.
+-async fn sync_dir(dir: &Path) {
+-    #[cfg(unix)]
+-    if let Ok(d) = tokio::fs::File::open(dir).await {
+-        let _ = d.sync_all().await;
+-    }
+-    #[cfg(not(unix))]
+-    let _ = dir;
+-}
+-
+-fn manifest_json(spec: &ModelSpec) -> serde_json::Value {
+-    serde_json::json!({
+-        "id": spec.id,
+-        "revision": spec.revision,
+-        "files": spec.files.iter().map(|f| serde_json::json!({
+-            "name": f.name, "size": f.size, "sha256": f.sha256,
+-        })).collect::<Vec<_>>(),
+-    })
+-}
+-
+-async fn write_manifest(spec: &ModelSpec, dir: &Path) -> std::io::Result<()> {
+-    let manifest = manifest_json(spec);
+-    let tmp = dir.join(format!("{MANIFEST}.partial"));
+-    let mut out = fs_private::open_async(&tmp, true).await?;
+-    out.write_all(serde_json::to_string_pretty(&manifest)?.as_bytes())
+-        .await?;
+-    out.sync_all().await?;
+-    drop(out);
+-    tokio::fs::rename(&tmp, dir.join(MANIFEST)).await?;
+-    sync_dir(dir).await;
+-    Ok(())
+-}
+-
+-#[cfg(test)]
+-mod tests;
+--- a/server/Cargo.toml
++++ b/server/Cargo.toml
+@@ -26 +26 @@
+-reqwest = { workspace = true }
++url = "2"
+@@ -40 +39,0 @@
+-openidconnect = { version = "4", default-features = false, features = ["reqwest", "rustls-tls"] }
+--- a/server/src/auth/browser_sessions.rs
++++ b/server/src/auth/browser_sessions.rs
+@@ -184 +184 @@
+-            .and_then(|value| reqwest::Url::parse(value).ok())
++            .and_then(|value| url::Url::parse(value).ok())
+--- a/server/src/auth/handoff.rs
++++ b/server/src/auth/handoff.rs
+@@ -31 +31 @@
+-        let destination = reqwest::Url::parse(&grant.destination).ok()?;
++        let destination = url::Url::parse(&grant.destination).ok()?;
+--- a/server/src/auth/mcp/cimd.rs
++++ b/server/src/auth/mcp/cimd.rs
+@@ -13,2 +13,2 @@
+-use reqwest::header::{self, HeaderMap, HeaderValue};
+-use reqwest::{redirect, StatusCode, Url};
++use axum::http::header::{self, HeaderMap, HeaderValue};
++use url::Url;
+@@ -196 +195,0 @@
+-    client: reqwest::Client,
+@@ -225,20 +224,3 @@
+-        let mut headers = HeaderMap::new();
+-        headers.insert(header::ACCEPT, HeaderValue::from_static("application/json"));
+-        let client = reqwest::Client::builder()
+-            .redirect(redirect::Policy::none())
+-            .timeout(TIMEOUT)
+-            .dns_resolver(Arc::new(resolver))
+-            // A proxy would resolve the host itself, past the resolver.
+-            .no_proxy()
+-            .https_only(!allow_http_loopback)
+-            .default_headers(headers)
+-            .build()
+-            .expect("CIMD HTTP client");
+-        Self {
+-            client,
+-            allow_http_loopback,
+-            documents: Cache::default(),
+-            key_sets: Cache::default(),
+-            assertions: ReplayCache::default(),
+-        }
+-    }
++    // Offline build: outbound implementation removed.
++    Self { allow_http_loopback, documents: Cache::default(), key_sets: Cache::default(), assertions: ReplayCache::default() }
++}
+@@ -305,28 +287,3 @@
+-        let unreachable =
+-            || OAuthError::InvalidClientMetadata("client metadata document could not be fetched");
+-        let mut response = self
+-            .client
+-            .get(url)
+-            .send()
+-            .await
+-            .map_err(|_| unreachable())?;
+-        if response.status() != StatusCode::OK {
+-            return Err(unreachable());
+-        }
+-        let too_large = OAuthError::InvalidClientMetadata("client metadata document is too large");
+-        if response
+-            .content_length()
+-            .is_some_and(|len| len > MAX_BODY as u64)
+-        {
+-            return Err(too_large);
+-        }
+-        let ttl = cache_ttl(response.headers());
+-        let mut body = Vec::new();
+-        while let Some(chunk) = response.chunk().await.map_err(|_| unreachable())? {
+-            if body.len() + chunk.len() > MAX_BODY {
+-                return Err(too_large);
+-            }
+-            body.extend_from_slice(&chunk);
+-        }
+-        Ok((body, ttl))
+-    }
++    // Offline build: outbound implementation removed.
++    Err(OAuthError::InvalidClientMetadata("Offline build: remote CIMD/JWKS removed"))
++}
+--- a/server/src/auth/mcp/net.rs
++++ b/server/src/auth/mcp/net.rs
+@@ -5 +5 @@
+-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
++use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+@@ -7 +7 @@
+-use reqwest::dns::{Addrs, Name, Resolve, Resolving};
++
+@@ -55,4 +55 @@
+-/// Resolves with the system resolver and fails unless every address is
+-/// public. An
+-/// IP-literal URL host never reaches a resolver, so callers must check those
+-/// themselves (`validate_cimd_url` does).
++
+@@ -60,2 +57,4 @@
+-pub struct PublicOnlyResolver {
+-    allow_loopback: bool,
++pub struct PublicOnlyResolver;
++impl PublicOnlyResolver {
++    pub fn new() -> Self { Self }
++    pub fn allowing_loopback() -> Self { Self }
+@@ -63,117 +61,0 @@
+-
+-impl PublicOnlyResolver {
+-    pub fn new() -> Self {
+-        Self::default()
+-    }
+-
+-    #[cfg(test)]
+-    pub fn allowing_loopback() -> Self {
+-        Self {
+-            allow_loopback: true,
+-        }
+-    }
+-}
+-
+-impl Resolve for PublicOnlyResolver {
+-    fn resolve(&self, name: Name) -> Resolving {
+-        let allow_loopback = self.allow_loopback;
+-        Box::pin(async move {
+-            let host = name.as_str().to_string();
+-            let addrs = tokio::net::lookup_host((host.as_str(), 0)).await?.collect();
+-            let addrs = only_public(&host, addrs, allow_loopback)?;
+-            Ok(Box::new(addrs.into_iter()) as Addrs)
+-        })
+-    }
+-}
+-
+-/// Refuses the whole name when any address is non-public, rather than
+-/// dialling the public ones: a name that also points inward is not one the
+-/// server should be fetching from.
+-fn only_public(
+-    host: &str,
+-    addrs: Vec<SocketAddr>,
+-    allow_loopback: bool,
+-) -> Result<Vec<SocketAddr>, Box<dyn std::error::Error + Send + Sync>> {
+-    if addrs.is_empty() {
+-        return Err(format!("{host} did not resolve").into());
+-    }
+-    let allowed = |ip: IpAddr| is_public_ip(ip) || (allow_loopback && ip.is_loopback());
+-    if !addrs.iter().all(|addr| allowed(addr.ip())) {
+-        return Err(format!("{host} resolves to a non-public address").into());
+-    }
+-    Ok(addrs)
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    use super::*;
+-
+-    #[test]
+-    fn is_public_ip_table() {
+-        for ip in [
+-            "127.0.0.1",
+-            "10.1.2.3",
+-            "172.16.0.1",
+-            "192.168.1.1",
+-            "169.254.169.254",
+-            "100.64.0.1",
+-            "0.0.0.0",
+-            "::1",
+-            "fc00::1",
+-            "fe80::1",
+-            "::ffff:127.0.0.1",
+-            "224.0.0.1",
+-            "192.0.2.1",
+-            "::",
+-            "ff02::1",
+-            "2001:db8::1",
+-            "::ffff:10.0.0.1",
+-            "64:ff9b::a00:1",
+-            "2002:7f00:1::1",
+-            "255.255.255.255",
+-            "198.18.0.1",
+-        ] {
+-            assert!(!is_public_ip(ip.parse().unwrap()), "{ip}");
+-        }
+-        for ip in [
+-            "1.1.1.1",
+-            "2606:4700:4700::1111",
+-            "::ffff:1.1.1.1",
+-            "100.128.0.1",
+-            "2002:101:101::1",
+-        ] {
+-            assert!(is_public_ip(ip.parse().unwrap()), "{ip}");
+-        }
+-    }
+-
+-    #[test]
+-    fn mixed_resolution_is_refused() {
+-        let addr = |s: &str| SocketAddr::new(s.parse().unwrap(), 0);
+-        let public = vec![addr("1.1.1.1"), addr("2606:4700:4700::1111")];
+-        assert_eq!(
+-            only_public("client.example", public.clone(), false).unwrap(),
+-            public
+-        );
+-        let mixed = vec![addr("1.1.1.1"), addr("10.0.0.5")];
+-        assert!(only_public("client.example", mixed, false).is_err());
+-        let mixed = vec![addr("127.0.0.1"), addr("1.1.1.1")];
+-        assert!(only_public("client.example", mixed.clone(), false).is_err());
+-        assert!(only_public("client.example", mixed, true).is_ok());
+-        let private_with_loopback = vec![addr("127.0.0.1"), addr("192.168.1.1")];
+-        assert!(only_public("client.example", private_with_loopback, true).is_err());
+-        assert!(only_public("client.example", vec![], true).is_err());
+-    }
+-
+-    #[tokio::test]
+-    async fn resolver_refuses_loopback() {
+-        let name: Name = "localhost".parse().unwrap();
+-        assert!(PublicOnlyResolver::new().resolve(name).await.is_err());
+-        let name: Name = "localhost".parse().unwrap();
+-        let addrs: Vec<_> = PublicOnlyResolver::allowing_loopback()
+-            .resolve(name)
+-            .await
+-            .unwrap()
+-            .collect();
+-        assert!(!addrs.is_empty());
+-    }
+-}
+--- a/server/src/auth/mcp/redirect.rs
++++ b/server/src/auth/mcp/redirect.rs
+@@ -8 +8 @@
+-use reqwest::Url;
++use url::Url;
+--- a/server/src/auth/mcp/resource.rs
++++ b/server/src/auth/mcp/resource.rs
+@@ -58 +58 @@
+-    let url = reqwest::Url::parse(primary_url).ok()?;
++    let url = url::Url::parse(primary_url).ok()?;
+--- a/server/src/auth/oidc/client.rs
++++ b/server/src/auth/oidc/client.rs
+@@ -1,26 +1,5 @@
+-use std::future::Future;
+-use std::io;
+-use std::pin::Pin;
+-
+-use openidconnect::core::{
+-    CoreAuthenticationFlow, CoreClient, CoreClientAuthMethod, CoreGenderClaim,
+-    CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm, CoreProviderMetadata,
+-    CoreUserInfoClaims,
+-};
+-use openidconnect::{
+-    AccessTokenHash, AdditionalClaims, AuthType, AuthorizationCode, ClientId, ClientSecret,
+-    CsrfToken, EndpointMaybeSet, EndpointNotSet, EndpointSet, HttpRequest, HttpResponse, IdToken,
+-    IssuerUrl, Nonce, OAuth2TokenResponse, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope,
+-};
+-use serde::{Deserialize, Serialize};
+-
+-use super::{
+-    config::{validated_url, ProviderConfig},
+-    identity::VerifiedIdentity,
+-};
+-
+-pub struct Authorization {
+-    pub url: String,
+-    pub state: String,
+-    pub nonce: String,
+-    pub verifier: String,
++//! Offline build: external identity-provider transport removed.
++use super::{config::ProviderConfig, identity::VerifiedIdentity};
++pub struct Authorization { pub url: String, pub state: String, pub nonce: String, pub verifier: String }
++pub async fn begin(_config: &ProviderConfig, _http: &()) -> Result<Authorization, String> {
++    Err("Offline build: external OIDC removed".into())
+@@ -28,4 +7,3 @@
+-
+-#[derive(Clone, Debug, Deserialize, Serialize)]
+-struct OrganizationClaims {
+-    hd: Option<String>,
++pub async fn finish(_config: &ProviderConfig, _http: &(), _code: &str, _nonce: &str,
++    _verifier: &str) -> Result<VerifiedIdentity, String> {
++    Err("Offline build: external OIDC removed".into())
+@@ -33,220 +10,0 @@
+-impl AdditionalClaims for OrganizationClaims {}
+-
+-type DiscoveredClient = CoreClient<
+-    EndpointSet,
+-    EndpointNotSet,
+-    EndpointNotSet,
+-    EndpointNotSet,
+-    EndpointMaybeSet,
+-    EndpointMaybeSet,
+->;
+-type OrganizationIdToken = IdToken<
+-    OrganizationClaims,
+-    CoreGenderClaim,
+-    CoreJweContentEncryptionAlgorithm,
+-    CoreJwsSigningAlgorithm,
+->;
+-
+-struct BoundedHttp<'a>(&'a reqwest::Client);
+-
+-impl<'c> openidconnect::AsyncHttpClient<'c> for BoundedHttp<'_> {
+-    type Error = io::Error;
+-    type Future = Pin<Box<dyn Future<Output = io::Result<HttpResponse>> + Send + 'c>>;
+-
+-    fn call(&'c self, request: HttpRequest) -> Self::Future {
+-        Box::pin(request_provider(self.0, request))
+-    }
+-}
+-
+-async fn request_provider(
+-    http: &reqwest::Client,
+-    request: HttpRequest,
+-) -> io::Result<HttpResponse> {
+-    const MAX_RESPONSE_BYTES: usize = 1024 * 1024;
+-    validated_url(&request.uri().to_string()).map_err(io::Error::other)?;
+-    let request = reqwest::Request::try_from(request).map_err(io::Error::other)?;
+-    let url = request.url().clone();
+-    let mut response = http.execute(request).await.map_err(io::Error::other)?;
+-    if response.url() != &url || response.status().is_redirection() {
+-        return Err(io::Error::other("provider redirects are not allowed"));
+-    }
+-    if response
+-        .content_length()
+-        .is_some_and(|size| size > MAX_RESPONSE_BYTES as u64)
+-    {
+-        return Err(io::Error::other("provider response exceeds limit"));
+-    }
+-    let mut builder = axum::http::Response::builder().status(response.status());
+-    for (name, value) in response.headers() {
+-        builder = builder.header(name, value);
+-    }
+-    let mut bytes = Vec::new();
+-    while let Some(chunk) = response.chunk().await.map_err(io::Error::other)? {
+-        if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE_BYTES {
+-            return Err(io::Error::other("provider response exceeds limit"));
+-        }
+-        bytes.extend_from_slice(&chunk);
+-    }
+-    builder.body(bytes).map_err(io::Error::other)
+-}
+-
+-async fn discover(
+-    config: &ProviderConfig,
+-    http: &reqwest::Client,
+-) -> Result<DiscoveredClient, String> {
+-    validated_url(&config.issuer)?;
+-    let transport = BoundedHttp(http);
+-    let metadata = CoreProviderMetadata::discover_async(
+-        IssuerUrl::new(config.issuer.clone()).map_err(|_| "Invalid provider issuer")?,
+-        &transport,
+-    )
+-    .await
+-    .map_err(|e| {
+-        tracing::warn!(error = %e, "OIDC discovery failed");
+-        "Could not discover the identity provider"
+-    })?;
+-    validated_url(metadata.authorization_endpoint().as_str())?;
+-    let methods = metadata.token_endpoint_auth_methods_supported();
+-    let auth_type = if methods
+-        .is_none_or(|methods| methods.contains(&CoreClientAuthMethod::ClientSecretBasic))
+-    {
+-        AuthType::BasicAuth
+-    } else if methods
+-        .is_some_and(|methods| methods.contains(&CoreClientAuthMethod::ClientSecretPost))
+-    {
+-        AuthType::RequestBody
+-    } else {
+-        return Err("Provider must support client_secret_basic or client_secret_post".into());
+-    };
+-    Ok(CoreClient::from_provider_metadata(
+-        metadata,
+-        ClientId::new(config.client_id.clone()),
+-        Some(ClientSecret::new(config.client_secret.clone())),
+-    )
+-    .set_auth_type(auth_type)
+-    .set_redirect_uri(
+-        RedirectUrl::new(config.callback_url()).map_err(|_| "Invalid provider callback URL")?,
+-    ))
+-}
+-
+-pub async fn begin(
+-    config: &ProviderConfig,
+-    http: &reqwest::Client,
+-) -> Result<Authorization, String> {
+-    let client = discover(config, http).await?;
+-    let (challenge, verifier) = PkceCodeChallenge::new_random_sha256();
+-    let mut request = client
+-        .authorize_url(
+-            CoreAuthenticationFlow::AuthorizationCode,
+-            CsrfToken::new_random,
+-            Nonce::new_random,
+-        )
+-        .add_scope(Scope::new("email".into()))
+-        .add_scope(Scope::new("profile".into()))
+-        .set_pkce_challenge(challenge);
+-    if !config.workspace_domain.is_empty() {
+-        request = request.add_extra_param("hd", &config.workspace_domain);
+-    }
+-    let (url, state, nonce) = request.url();
+-    Ok(Authorization {
+-        url: url.to_string(),
+-        state: state.secret().clone(),
+-        nonce: nonce.secret().clone(),
+-        verifier: verifier.secret().clone(),
+-    })
+-}
+-
+-pub async fn finish(
+-    config: &ProviderConfig,
+-    http: &reqwest::Client,
+-    code: &str,
+-    nonce: &str,
+-    verifier: &str,
+-) -> Result<VerifiedIdentity, String> {
+-    let client = discover(config, http).await?;
+-    let transport = BoundedHttp(http);
+-    let tokens = client
+-        .exchange_code(AuthorizationCode::new(code.into()))
+-        .map_err(|_| "Provider has no token endpoint")?
+-        .set_pkce_verifier(PkceCodeVerifier::new(verifier.into()))
+-        .request_async(&transport)
+-        .await
+-        .map_err(|e| {
+-            tracing::warn!(error = %e, "OIDC code exchange failed");
+-            "Identity provider rejected the code exchange"
+-        })?;
+-    let raw_id_token = tokens
+-        .extra_fields()
+-        .id_token()
+-        .ok_or("Provider did not return an ID token")?;
+-    let id_token: OrganizationIdToken = raw_id_token
+-        .to_string()
+-        .parse()
+-        .map_err(|_| "Provider returned an invalid ID token")?;
+-    // Extra audiences (e.g. ZITADEL project ID) are safe: azp must still be our client.
+-    let verifier = client
+-        .id_token_verifier()
+-        .set_other_audience_verifier_fn(|_| true);
+-    let claims = id_token
+-        .claims(&verifier, &Nonce::new(nonce.into()))
+-        .map_err(|e| {
+-            tracing::warn!(error = %e, "OIDC ID token verification failed");
+-            "ID token signature or claims did not validate"
+-        })?;
+-    // openidconnect skips azp checks (OIDC Core 3.1.3.7 steps 4-5).
+-    let azp = claims.authorized_party().map(|azp| azp.as_str());
+-    if (claims.audiences().len() > 1 || azp.is_some()) && azp != Some(&config.client_id) {
+-        return Err("ID token was not issued to this client".into());
+-    }
+-    if let Some(expected) = claims.access_token_hash() {
+-        let actual = AccessTokenHash::from_token(
+-            tokens.access_token(),
+-            id_token
+-                .signing_alg()
+-                .map_err(|_| "Invalid ID token signing algorithm")?,
+-            id_token
+-                .signing_key(&verifier)
+-                .map_err(|_| "Invalid ID token signing key")?,
+-        )
+-        .map_err(|_| "Could not validate access token hash")?;
+-        if &actual != expected {
+-            return Err("Access token hash did not validate".into());
+-        }
+-    }
+-    let mut identity = VerifiedIdentity {
+-        issuer: claims.issuer().as_str().to_string(),
+-        subject: claims.subject().as_str().to_string(),
+-        email: claims.email().map(|value| value.as_str().to_string()),
+-        email_verified: claims.email_verified() == Some(true),
+-        full_name: claims
+-            .name()
+-            .and_then(|name| name.get(None))
+-            .map(|value| value.as_str().to_string()),
+-        hosted_domain: claims.additional_claims().hd.clone(),
+-    };
+-    if identity.email.is_none() {
+-        let info: CoreUserInfoClaims = client
+-            .user_info(
+-                tokens.access_token().clone(),
+-                Some(claims.subject().clone()),
+-            )
+-            .map_err(|_| "Provider did not supply an email or UserInfo endpoint")?
+-            .request_async(&transport)
+-            .await
+-            .map_err(|e| {
+-                tracing::warn!(error = %e, "OIDC UserInfo failed");
+-                "Provider UserInfo did not validate"
+-            })?;
+-        identity.email = info.email().map(|value| value.as_str().to_string());
+-        identity.email_verified = info.email_verified() == Some(true);
+-        if identity.full_name.is_none() {
+-            identity.full_name = info
+-                .name()
+-                .and_then(|name| name.get(None))
+-                .map(|value| value.as_str().to_string());
+-        }
+-    }
+-    validate_identity_policy(config, &identity)?;
+-    Ok(identity)
+-}
+-
+--- a/server/src/auth/oidc/config.rs
++++ b/server/src/auth/oidc/config.rs
+@@ -53,2 +53,2 @@
+-pub fn validated_url(value: &str) -> Result<reqwest::Url, String> {
+-    let url = reqwest::Url::parse(value).map_err(|_| "Enter a valid HTTPS URL")?;
++pub fn validated_url(value: &str) -> Result<url::Url, String> {
++    let url = url::Url::parse(value).map_err(|_| "Enter a valid HTTPS URL")?;
+--- a/server/src/handlers/central_auth.rs
++++ b/server/src/handlers/central_auth.rs
+@@ -20 +20 @@
+-type DestinationPolicy = Arc<dyn Fn(&reqwest::Url) -> Option<String> + Send + Sync>;
++type DestinationPolicy = Arc<dyn Fn(&url::Url) -> Option<String> + Send + Sync>;
+@@ -29 +29 @@
+-    http: reqwest::Client,
++    http: (),
+@@ -46,10 +45,0 @@
+-        let mut builder = reqwest::Client::builder()
+-            .redirect(reqwest::redirect::Policy::none())
+-            .timeout(std::time::Duration::from_secs(10));
+-        if let Ok(path) = std::env::var("SB_OIDC_CA_FILE") {
+-            let pem =
+-                std::fs::read(path).map_err(|_| "Cannot read configured OIDC CA certificate")?;
+-            builder = builder.add_root_certificate(
+-                reqwest::Certificate::from_pem(&pem).map_err(|_| "Invalid OIDC CA certificate")?,
+-            );
+-        }
+@@ -68 +58 @@
+-            http: builder.build().map_err(|e| e.to_string())?,
++            http: (),
+@@ -136 +126 @@
+-        let central = reqwest::Url::parse(&self.central_origin()?).ok()?;
++        let central = url::Url::parse(&self.central_origin()?).ok()?;
+@@ -187 +177 @@
+-        let origin = reqwest::Url::parse(&attempt.destination)
++        let origin = url::Url::parse(&attempt.destination)
+@@ -550 +540 @@
+-    let Ok(destination) = reqwest::Url::parse(&query.destination) else {
++    let Ok(destination) = url::Url::parse(&query.destination) else {
+@@ -1071 +1061 @@
+-    if reqwest::Url::parse(&resume.destination)
++    if url::Url::parse(&resume.destination)
+--- a/server/src/handlers/control.rs
++++ b/server/src/handlers/control.rs
+@@ -14 +14 @@
+-            ("X-Space-Path", state.space_folder_path.clone()),
++            ("X-Space-Path", percent_encoding::utf8_percent_encode(&state.space_folder_path, percent_encoding::NON_ALPHANUMERIC).to_string()),
+--- a/server/src/handlers/fs.rs
++++ b/server/src/handlers/fs.rs
+@@ -87 +87 @@
+-                .header("X-Space-Path", &state.space_folder_path)
++                .header("X-Space-Path", percent_encoding::utf8_percent_encode(&state.space_folder_path, percent_encoding::NON_ALPHANUMERIC).to_string())
+--- a/server/src/handlers/mcp_oauth.rs
++++ b/server/src/handlers/mcp_oauth.rs
+@@ -144 +144 @@
+-        let redirect_host = reqwest::Url::parse(&req.redirect_uri)
++        let redirect_host = url::Url::parse(&req.redirect_uri)
+@@ -619 +619 @@
+-        redirect_host: reqwest::Url::parse(&code.redirect_uri)
++        redirect_host: url::Url::parse(&code.redirect_uri)
+--- a/server/src/handlers/proxy.rs
++++ b/server/src/handlers/proxy.rs
+@@ -34,91 +34,2 @@
+-    if state.boot_config.read_only {
+-        return (
+-            StatusCode::METHOD_NOT_ALLOWED,
+-            "Read only mode, no proxy allowed",
+-        )
+-            .into_response();
+-    }
+-    if path.is_empty() {
+-        return (StatusCode::BAD_REQUEST, "No URI provided").into_response();
+-    }
+-
+-    let target = proxy_target_url(&path, raw_query.as_deref());
+-
+-    let mut fwd_headers: Vec<(String, String)> = Vec::new();
+-    let mut has_ua = false;
+-    for (k, v) in &headers {
+-        if let Some(name) = k.as_str().to_lowercase().strip_prefix("x-proxy-header-") {
+-            if name == "user-agent" {
+-                has_ua = true;
+-            }
+-            if let Ok(val) = v.to_str() {
+-                fwd_headers.push((name.to_string(), val.to_string()));
+-            }
+-        }
+-    }
+-    if !has_ua {
+-        fwd_headers.push(("user-agent".into(), "SilverBullet".into()));
+-    }
+-
+-    tracing::info!("Proxying to {target}");
+-
+-    // The proxy is pure network I/O at the edge (no business logic), so it uses
+-    // async `reqwest` directly rather than the sync-core `spawn_blocking` seam.
+-    // One process-wide client so repeated fetches to the same host reuse
+-    // pooled connections and TLS sessions (`Client` is an `Arc` internally).
+-    static CLIENT: std::sync::LazyLock<reqwest::Client> =
+-        std::sync::LazyLock::new(reqwest::Client::new);
+-    let client = &*CLIENT;
+-    let rmethod =
+-        reqwest::Method::from_bytes(method.as_str().as_bytes()).unwrap_or(reqwest::Method::GET);
+-    let mut rb = client.request(rmethod, &target);
+-    for (k, v) in fwd_headers {
+-        rb = rb.header(k, v);
+-    }
+-    // Forward the request body as a stream (so large uploads aren't buffered in
+-    // memory). GET/HEAD carry no body, so none is attached there — avoiding a
+-    // spurious chunked body on a bodyless request.
+-    if !matches!(method, Method::GET | Method::HEAD) {
+-        rb = rb.body(reqwest::Body::wrap_stream(body.into_data_stream()));
+-    }
+-
+-    match rb.send().await {
+-        Ok(resp) => {
+-            // Count only requests that reached upstream and returned a response
+-            // (increment after a successful proxy).
+-            if let Some(metrics) = state.metrics.as_ref() {
+-                metrics.proxy_requests.inc();
+-            }
+-            let status = resp.status().as_u16();
+-            let content_type = resp
+-                .headers()
+-                .get("content-type")
+-                .and_then(|v| v.to_str().ok())
+-                .unwrap_or("application/octet-stream")
+-                .to_string();
+-            let resp_headers: Vec<(String, String)> = resp
+-                .headers()
+-                .iter()
+-                .filter_map(|(k, v)| {
+-                    v.to_str()
+-                        .ok()
+-                        .map(|v| (k.as_str().to_string(), v.to_string()))
+-                })
+-                .collect();
+-
+-            let mut builder = Response::builder()
+-                .status(StatusCode::OK)
+-                .header("x-proxy-status-code", status.to_string())
+-                .header("content-type", &content_type);
+-            for (k, v) in resp_headers {
+-                builder = builder.header(format!("x-proxy-header-{k}"), v);
+-            }
+-            builder
+-                .body(Body::from_stream(resp.bytes_stream()))
+-                .unwrap()
+-        }
+-        Err(e) => {
+-            tracing::error!("Proxy error: {e}");
+-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response()
+-        }
+-    }
++    // Offline build: outbound implementation removed.
++    (StatusCode::FORBIDDEN, "Offline build: outbound HTTP proxy removed").into_response()
+--- a/server/src/handlers/shell.rs
++++ b/server/src/handlers/shell.rs
+@@ -40,38 +40,2 @@
+-    if state.boot_config.read_only {
+-        return err_response(StatusCode::METHOD_NOT_ALLOWED, "Read-only mode");
+-    }
+-    if !state.shell.enabled {
+-        return err_response(
+-            StatusCode::METHOD_NOT_ALLOWED,
+-            "Shell commands are disabled",
+-        );
+-    }
+-    let request: ShellRequest = match serde_json::from_slice(&body) {
+-        Ok(r) => r,
+-        Err(e) => return err_response(StatusCode::BAD_REQUEST, &format!("Invalid JSON: {e}")),
+-    };
+-    if !state.shell.is_allowed(&request.cmd) {
+-        return (
+-            StatusCode::OK,
+-            axum::Json(ShellResponse {
+-                stdout: String::new(),
+-                stderr: "Not allowed, command not in whitelist".into(),
+-                code: -1,
+-            }),
+-        );
+-    }
+-
+-    let cwd = state.space_folder_path.clone();
+-    let result = run_blocking(move || Ok(run_command(request, &cwd))).await;
+-    match result {
+-        Ok(resp) => {
+-            // Count only commands that passed validation and actually ran
+-            // (increment after execution, not on every POST).
+-            if let Some(metrics) = state.metrics.as_ref() {
+-                metrics.shell_executions.inc();
+-            }
+-            (StatusCode::OK, axum::Json(resp))
+-        }
+-        // run_blocking only errors on a join failure; surface as a shell error.
+-        Err(e) => err_response(StatusCode::OK, &e.to_string()),
+-    }
++    // Offline build: outbound implementation removed.
++    (StatusCode::FORBIDDEN, "Offline build: shell execution removed").into_response()
+--- a/server/src/multi/dispatch.rs
++++ b/server/src/multi/dispatch.rs
+@@ -116 +116 @@
+-    let Ok(url) = reqwest::Url::parse(primary) else {
++    let Ok(url) = url::Url::parse(primary) else {
+@@ -123 +123 @@
+-    reqwest::Url::parse(&format!("{}://{host}", url.scheme()))
++    url::Url::parse(&format!("{}://{host}", url.scheme()))
+@@ -146 +146 @@
+-                .and_then(|value| reqwest::Url::parse(value).ok())
++                .and_then(|value| url::Url::parse(value).ok())
+--- a/server/src/multi/server_config.rs
++++ b/server/src/multi/server_config.rs
+@@ -127 +127 @@
+-            let url = reqwest::Url::parse(value).ok()?;
++            let url = url::Url::parse(value).ok()?;
+@@ -208 +208 @@
+-        reqwest::Url::parse(value).map_err(|_| "enter a valid HTTP or HTTPS origin".to_string())?;
++        url::Url::parse(value).map_err(|_| "enter a valid HTTP or HTTPS origin".to_string())?;
+--- a/server/src/multi/validate.rs
++++ b/server/src/multi/validate.rs
+@@ -365 +365 @@
+-    let parsed_host = reqwest::Url::parse(&format!("http://{host}/"))
++    let parsed_host = url::Url::parse(&format!("http://{host}/"))
+--- a/server/src/revisions/git.rs
++++ b/server/src/revisions/git.rs
+@@ -1 +1 @@
+-use std::io::Read;
++//! Offline build: external Git transport/execution code removed.
+@@ -3,280 +3,5 @@
+-use std::process::{Command, Output, Stdio};
+-use std::sync::OnceLock;
+-use std::time::{Duration, Instant};
+-
+-pub fn available() -> bool {
+-    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+-    *AVAILABLE.get_or_init(probe)
+-}
+-
+-fn probe() -> bool {
+-    #[cfg(target_os = "macos")]
+-    {
+-        let clt = Command::new("/usr/bin/xcode-select")
+-            .arg("-p")
+-            .output()
+-            .map(|o| o.status.success())
+-            .unwrap_or(false);
+-        if !clt {
+-            let non_stub = which_git().map(|p| p != Path::new("/usr/bin/git").to_path_buf());
+-            if non_stub != Some(true) {
+-                return false;
+-            }
+-        }
+-    }
+-    git_command()
+-        .arg("--version")
+-        .output()
+-        .map(|o| o.status.success())
+-        .unwrap_or(false)
+-}
+-
+-#[cfg(target_os = "macos")]
+-fn which_git() -> Option<std::path::PathBuf> {
+-    let path = std::env::var_os("PATH")?;
+-    std::env::split_paths(&path)
+-        .map(|d| d.join("git"))
+-        .find(|c| c.is_file())
+-}
+-
+-pub(super) fn git_command() -> Command {
+-    let cmd = Command::new("git");
+-    #[cfg(windows)]
+-    {
+-        use std::os::windows::process::CommandExt;
+-        let mut cmd = cmd;
+-        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+-        cmd
+-    }
+-    #[cfg(not(windows))]
+-    cmd
+-}
+-
+-fn command(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Command {
+-    let mut cmd = git_command();
+-    cmd.arg("-C").arg(repo);
+-    if envs
+-        .iter()
+-        .any(|(key, value)| *key == "SB_GIT_NO_HOOKS" && *value == "1")
+-    {
+-        cmd.arg("-c").arg(format!(
+-            "core.hooksPath={}",
+-            if cfg!(windows) { "NUL" } else { "/dev/null" }
+-        ));
+-    }
+-    cmd.args(args);
+-    cmd.env("GIT_TERMINAL_PROMPT", "0");
+-    cmd.env("GIT_OPTIONAL_LOCKS", "0");
+-    // Callers match on git's stderr text; keep it English on localized hosts.
+-    cmd.env("LC_ALL", "C");
+-    cmd.env("LANG", "C");
+-    if envs
+-        .iter()
+-        .any(|(key, value)| *key == "GIT_ALLOW_PROTOCOL" && *value == "ssh")
+-    {
+-        for name in [
+-            "GIT_CONFIG_PARAMETERS",
+-            "GIT_SSH",
+-            "GIT_PROXY_COMMAND",
+-            "SSH_ASKPASS",
+-            "GIT_ASKPASS",
+-            "GIT_COMMON_DIR",
+-            "GIT_WORK_TREE",
+-            "GIT_INDEX_FILE",
+-            "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+-        ] {
+-            cmd.env_remove(name);
+-        }
+-    }
+-    for (k, v) in envs {
+-        if !k.starts_with("SB_MANAGED_") && *k != "SB_GIT_NO_HOOKS" {
+-            cmd.env(k, v);
+-        }
+-    }
+-    cmd
+-}
+-
+-fn output(mut command: Command, timeout: Duration) -> Result<Output, String> {
+-    command
+-        .stdout(Stdio::piped())
+-        .stderr(Stdio::piped())
+-        .stdin(Stdio::null());
+-    #[cfg(unix)]
+-    {
+-        use std::os::unix::process::CommandExt;
+-        command.process_group(0);
+-    }
+-    let mut child = command
+-        .spawn()
+-        .map_err(|e| format!("failed to run git: {e}"))?;
+-    let mut stdout = child.stdout.take().unwrap();
+-    let mut stderr = child.stderr.take().unwrap();
+-    let out_thread = std::thread::spawn(move || {
+-        let mut bytes = Vec::new();
+-        stdout.read_to_end(&mut bytes).map(|_| bytes)
+-    });
+-    let err_thread = std::thread::spawn(move || {
+-        let mut bytes = Vec::new();
+-        stderr.read_to_end(&mut bytes).map(|_| bytes)
+-    });
+-    let started = Instant::now();
+-    let status = loop {
+-        if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
+-            break status;
+-        }
+-        if started.elapsed() > timeout {
+-            #[cfg(unix)]
+-            {
+-                let _ = Command::new("kill")
+-                    .args(["-KILL", "--", &format!("-{}", child.id())])
+-                    .status();
+-            }
+-            let _ = child.kill();
+-            let _ = child.wait();
+-            return Err("git operation timed out".into());
+-        }
+-        std::thread::sleep(Duration::from_millis(5));
+-    };
+-    Ok(Output {
+-        status,
+-        stdout: out_thread
+-            .join()
+-            .map_err(|_| "git output reader failed")?
+-            .map_err(|e| e.to_string())?,
+-        stderr: err_thread
+-            .join()
+-            .map_err(|_| "git error reader failed")?
+-            .map_err(|e| e.to_string())?,
+-    })
+-}
+-
+-struct ManagedTransport {
+-    directory: std::path::PathBuf,
+-    fetch_head: Option<std::path::PathBuf>,
+-    envs: Vec<(String, String)>,
+-}
+-impl Drop for ManagedTransport {
+-    fn drop(&mut self) {
+-        let _ = std::fs::remove_dir_all(&self.directory);
+-    }
+-}
+-impl ManagedTransport {
+-    fn prepare(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Option<Self>, String> {
+-        use sha2::{Digest, Sha256};
+-        let value = |name: &str| {
+-            envs.iter()
+-                .find(|(key, _)| *key == name)
+-                .map(|(_, value)| *value)
+-        };
+-        let Some(destination) = value("SB_MANAGED_DESTINATION") else {
+-            return Ok(None);
+-        };
+-        let Some(operation) = args
+-            .first()
+-            .copied()
+-            .filter(|arg| matches!(*arg, "fetch" | "push" | "ls-remote"))
+-        else {
+-            return Ok(None);
+-        };
+-        if !args.contains(&destination) {
+-            return Err("managed network operation must name its checked destination".into());
+-        }
+-        let key_bytes = std::fs::read(value("SB_MANAGED_KEY").ok_or("missing managed key")?)
+-            .map_err(|_| "managed key is missing")?;
+-        if value("SB_MANAGED_KEY_HASH")
+-            != Some(format!("{:x}", Sha256::digest(&key_bytes)).as_str())
+-        {
+-            return Err("managed key changed after its credential check".into());
+-        }
+-        let directory =
+-            std::env::temp_dir().join(format!("silverbullet-git-{}", uuid::Uuid::new_v4()));
+-        let mut builder = std::fs::DirBuilder::new();
+-        #[cfg(unix)]
+-        {
+-            use std::os::unix::fs::DirBuilderExt;
+-            builder.mode(0o700);
+-        }
+-        builder.create(&directory).map_err(|e| e.to_string())?;
+-        let mut transport = Self {
+-            directory,
+-            fetch_head: None,
+-            envs: envs
+-                .iter()
+-                .filter(|(k, _)| !k.starts_with("SB_MANAGED_"))
+-                .map(|(k, v)| (k.to_string(), v.to_string()))
+-                .collect(),
+-        };
+-        let objects = repo
+-            .join(run(repo, &["rev-parse", "--git-path", "objects"], &[])?.trim())
+-            .canonicalize()
+-            .map_err(|e| e.to_string())?;
+-        let format = run(repo, &["rev-parse", "--show-object-format"], &[])?;
+-        let config = if format.trim() == "sha256" {
+-            "[core]\nrepositoryformatversion = 1\nbare = true\n[extensions]\nobjectformat = sha256\n"
+-        } else {
+-            "[core]\nrepositoryformatversion = 0\nbare = true\n"
+-        };
+-        std::fs::write(transport.directory.join("config"), config).map_err(|e| e.to_string())?;
+-        std::fs::create_dir_all(transport.directory.join("refs/heads"))
+-            .map_err(|e| e.to_string())?;
+-        std::fs::create_dir_all(transport.directory.join("objects")).map_err(|e| e.to_string())?;
+-        let branch = run(repo, &["symbolic-ref", "HEAD"], &[])?;
+-        let branch = branch.trim();
+-        if !branch.starts_with("refs/heads/") || branch.contains("..") {
+-            return Err("invalid local branch".into());
+-        }
+-        std::fs::write(transport.directory.join("HEAD"), format!("ref: {branch}\n"))
+-            .map_err(|e| e.to_string())?;
+-        if let Ok(head) = run(repo, &["rev-parse", "--verify", "HEAD"], &[]) {
+-            let reference = transport.directory.join(branch);
+-            std::fs::create_dir_all(reference.parent().unwrap()).map_err(|e| e.to_string())?;
+-            std::fs::write(reference, head).map_err(|e| e.to_string())?;
+-        }
+-        let private = transport.directory.join("identity");
+-        std::fs::write(&private, key_bytes).map_err(|e| e.to_string())?;
+-        #[cfg(unix)]
+-        {
+-            use std::os::unix::fs::PermissionsExt;
+-            std::fs::set_permissions(&private, std::fs::Permissions::from_mode(0o600))
+-                .map_err(|e| e.to_string())?;
+-        }
+-        transport.envs.retain(|(key, _)| key != "GIT_SSH_COMMAND");
+-        transport.envs.extend([
+-            (
+-                "GIT_DIR".into(),
+-                transport.directory.to_string_lossy().into_owned(),
+-            ),
+-            (
+-                "GIT_OBJECT_DIRECTORY".into(),
+-                objects.to_string_lossy().into_owned(),
+-            ),
+-            (
+-                "GIT_SSH_COMMAND".into(),
+-                crate::revisions::keys::ssh_command(
+-                    &private,
+-                    Path::new(value("SB_MANAGED_KNOWN_HOSTS").ok_or("missing host key store")?),
+-                ),
+-            ),
+-        ]);
+-        if operation == "fetch" {
+-            transport.fetch_head =
+-                Some(repo.join(run(repo, &["rev-parse", "--git-path", "FETCH_HEAD"], &[])?.trim()));
+-        }
+-        Ok(Some(transport))
+-    }
+-    fn finish(&self) -> Result<(), String> {
+-        if let Some(path) = &self.fetch_head {
+-            let bytes =
+-                std::fs::read(self.directory.join("FETCH_HEAD")).map_err(|e| e.to_string())?;
+-            let temporary = path.with_extension(format!("{}.tmp", uuid::Uuid::new_v4()));
+-            std::fs::write(&temporary, bytes).map_err(|e| e.to_string())?;
+-            std::fs::rename(temporary, path).map_err(|e| e.to_string())?;
+-        }
+-        Ok(())
+-    }
+-}
+-
+-pub fn run(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<String, String> {
+-    run_with_timeout(repo, args, envs, Duration::from_secs(60))
+-}
+-
++use std::process::Command;
++use std::time::Duration;
++pub fn available() -> bool { false }
++pub(super) fn git_command() -> Command { Command::new("/dev/null") }
++pub fn run(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<String, String> { Err("Offline build: Git integration removed".into()) }
+@@ -288,202 +13,4 @@
+-) -> Result<String, String> {
+-    run_bytes_with_timeout(repo, args, envs, timeout)
+-        .map(|b| String::from_utf8_lossy(&b).into_owned())
+-}
+-
+-pub fn run_bytes(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Vec<u8>, String> {
+-    run_bytes_with_timeout(repo, args, envs, Duration::from_secs(60))
+-}
+-
+-fn run_bytes_with_timeout(
+-    repo: &Path,
+-    args: &[&str],
+-    envs: &[(&str, &str)],
+-    timeout: Duration,
+-) -> Result<Vec<u8>, String> {
+-    if !available() {
+-        return Err("git is not installed".to_string());
+-    }
+-    let transport = ManagedTransport::prepare(repo, args, envs)?;
+-    let selected: Vec<_> = transport
+-        .as_ref()
+-        .map(|t| {
+-            t.envs
+-                .iter()
+-                .map(|(k, v)| (k.as_str(), v.as_str()))
+-                .collect()
+-        })
+-        .unwrap_or_else(|| envs.to_vec());
+-    let out = output(command(repo, args, &selected), timeout)?;
+-    if out.status.success() {
+-        if let Some(transport) = &transport {
+-            transport.finish()?;
+-        }
+-        Ok(out.stdout)
+-    } else {
+-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+-    }
+-}
+-
+-/// Exit-code query: Ok(true) on status 0, Ok(false) on the given "false" code.
+-/// `git diff` signals "differences found" with exit code 1, the way `diff(1)`
+-/// does, so [`run`] would read a perfectly good diff as a failure.
+-pub fn run_diff(repo: &Path, args: &[&str]) -> Result<String, String> {
+-    if !available() {
+-        return Err("git is not installed".to_string());
+-    }
+-    let out = output(command(repo, args, &[]), Duration::from_secs(60))?;
+-    match out.status.code() {
+-        Some(0) | Some(1) => Ok(String::from_utf8_lossy(&out.stdout).into_owned()),
+-        _ => Err(String::from_utf8_lossy(&out.stderr).trim().to_string()),
+-    }
+-}
+-
+-pub fn check(repo: &Path, args: &[&str], false_code: i32) -> Result<bool, String> {
+-    if !available() {
+-        return Err("git is not installed".to_string());
+-    }
+-    let out = output(command(repo, args, &[]), Duration::from_secs(60))?;
+-    match out.status.code() {
+-        Some(0) => Ok(true),
+-        Some(c) if c == false_code => Ok(false),
+-        _ => Err(String::from_utf8_lossy(&out.stderr).trim().to_string()),
+-    }
+-}
+-
+-#[cfg(all(test, unix))]
+-mod transport_tests {
+-    use super::*;
+-    use crate::{multi::config::GitSyncMode, revisions::keys};
+-    #[test]
+-    fn git_command_respects_operation_timeout() {
+-        let repo = tempfile::TempDir::new().unwrap();
+-        run(repo.path(), &["init", "-q"], &[]).unwrap();
+-        let args = &["-c", "alias.wait=!sleep 0.1", "wait"];
+-        assert_eq!(
+-            run_with_timeout(repo.path(), args, &[], Duration::from_millis(20)),
+-            Err("git operation timed out".into())
+-        );
+-        assert!(run_with_timeout(repo.path(), args, &[], Duration::from_secs(1)).is_ok());
+-    }
+-    #[test]
+-    fn a_late_repository_rewrite_cannot_redirect_the_managed_key() {
+-        use std::os::unix::fs::PermissionsExt;
+-        let root = tempfile::TempDir::new().unwrap();
+-        let repo = tempfile::TempDir::new().unwrap();
+-        run(repo.path(), &["init", "-q"], &[]).unwrap();
+-        run(
+-            repo.path(),
+-            &[
+-                "remote",
+-                "add",
+-                "origin",
+-                "git@approved.example.test:notes.git",
+-            ],
+-            &[],
+-        )
+-        .unwrap();
+-        keys::generate(root.path(), "sample").unwrap();
+-        let mut envs =
+-            keys::checked_envs_for_mode(GitSyncMode::Key, root.path(), "sample", repo.path())
+-                .unwrap();
+-        run(
+-            repo.path(),
+-            &[
+-                "config",
+-                "url.git@other.example.test:.insteadOf",
+-                "git@approved.example.test:",
+-            ],
+-            &[],
+-        )
+-        .unwrap();
+-        let bin = root.path().join("bin");
+-        std::fs::create_dir(&bin).unwrap();
+-        let ssh = bin.join("ssh");
+-        std::fs::write(
+-            &ssh,
+-            "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$SB_TEST_SSH_LOG\"\nexit 1\n",
+-        )
+-        .unwrap();
+-        std::fs::set_permissions(&ssh, std::fs::Permissions::from_mode(0o700)).unwrap();
+-        let log = root.path().join("ssh-args");
+-        envs.push((
+-            "PATH".into(),
+-            format!("{}:{}", bin.display(), std::env::var("PATH").unwrap()),
+-        ));
+-        envs.push(("SB_TEST_SSH_LOG".into(), log.to_string_lossy().into_owned()));
+-        let refs: Vec<_> = envs.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+-        assert!(run(
+-            repo.path(),
+-            &["ls-remote", "--", "git@approved.example.test:notes.git"],
+-            &refs
+-        )
+-        .is_err());
+-        let args = std::fs::read_to_string(log).unwrap();
+-        assert!(args.contains("git@approved.example.test"), "{args}");
+-        assert!(!args.contains("other.example.test"), "{args}");
+-        assert!(
+-            !args.contains(
+-                &keys::key_path(root.path(), "sample")
+-                    .to_string_lossy()
+-                    .to_string()
+-            ),
+-            "the executor must pin a copied key"
+-        );
+-    }
+-    #[test]
+-    fn managed_fetch_and_push_use_shared_objects_without_live_config() {
+-        use std::os::unix::fs::PermissionsExt;
+-        let root = tempfile::TempDir::new().unwrap();
+-        let repo = tempfile::TempDir::new().unwrap();
+-        let remote = tempfile::TempDir::new().unwrap();
+-        run(repo.path(), &["init", "-q", "-b", "main"], &[]).unwrap();
+-        std::fs::write(repo.path().join("Note.md"), "A note\n").unwrap();
+-        run(repo.path(), &["add", "Note.md"], &[]).unwrap();
+-        run(
+-            repo.path(),
+-            &[
+-                "-c",
+-                "user.name=Sample",
+-                "-c",
+-                "user.email=sample@example.test",
+-                "commit",
+-                "-qm",
+-                "Create note",
+-            ],
+-            &[],
+-        )
+-        .unwrap();
+-        run(remote.path(), &["init", "-q", "--bare"], &[]).unwrap();
+-        let url = format!("git@approved.example.test:{}", remote.path().display());
+-        run(repo.path(), &["remote", "add", "origin", &url], &[]).unwrap();
+-        keys::generate(root.path(), "sample").unwrap();
+-        let mut envs =
+-            keys::checked_envs_for_mode(GitSyncMode::Key, root.path(), "sample", repo.path())
+-                .unwrap();
+-        let bin = root.path().join("bin");
+-        std::fs::create_dir(&bin).unwrap();
+-        let ssh = bin.join("ssh");
+-        std::fs::write(&ssh,"#!/bin/sh\nfor last do :; done\nunset GIT_DIR GIT_OBJECT_DIRECTORY\nexec sh -c \"$last\"\n").unwrap();
+-        std::fs::set_permissions(&ssh, std::fs::Permissions::from_mode(0o700)).unwrap();
+-        envs.push((
+-            "PATH".into(),
+-            format!("{}:{}", bin.display(), std::env::var("PATH").unwrap()),
+-        ));
+-        let refs: Vec<_> = envs.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+-        run(
+-            repo.path(),
+-            &["push", "--", &url, "HEAD:refs/heads/main"],
+-            &refs,
+-        )
+-        .unwrap();
+-        run(repo.path(), &["fetch", "--", &url, "main"], &refs).unwrap();
+-        assert_eq!(
+-            run(repo.path(), &["rev-parse", "FETCH_HEAD"], &[]).unwrap(),
+-            run(remote.path(), &["rev-parse", "refs/heads/main"], &[]).unwrap()
+-        );
+-        assert_eq!(
+-            run(repo.path(), &["show", "FETCH_HEAD:Note.md"], &[]).unwrap(),
+-            "A note\n"
+-        );
+-    }
+-}
++) -> Result<String, String> { Err("Offline build: Git integration removed".into()) }
++pub fn run_bytes(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Vec<u8>, String> { Err("Offline build: Git integration removed".into()) }
++pub fn run_diff(repo: &Path, args: &[&str]) -> Result<String, String> { Err("Offline build: Git integration removed".into()) }
++pub fn check(repo: &Path, args: &[&str], false_code: i32) -> Result<bool, String> { Err("Offline build: Git integration removed".into()) }
+--- a/server/src/revisions/sync.rs
++++ b/server/src/revisions/sync.rs
+@@ -203,7 +203,2 @@
+-    match tick_once(repo, envs, allow_unrelated, guard, settings) {
+-        // Someone else pushed between our fetch and our push. A second whole
+-        // tick fetches and merges their commits first, so the retry can
+-        // succeed; anything past that is left to the caller's backoff.
+-        Err(SyncError::PushRejected) => tick_once(repo, envs, allow_unrelated, guard, settings),
+-        other => other,
+-    }
++    // Offline build: outbound implementation removed.
++    Err(classify("Offline build: Git network synchronization removed"))

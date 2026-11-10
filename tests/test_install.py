@@ -65,7 +65,7 @@ class InstallTests(unittest.TestCase):
             output=self.base / 'install.plan.json')
 
     def plan(self, args=None):
-        with patch.object(installer, 'preflight', return_value={'strace': shutil.which('strace')}), \
+        with patch.object(installer, 'preflight', return_value={}), \
              patch.object(installer, 'fresh_units'), patch.object(installer, 'check_port'):
             return installer.make_plan(args or self.arguments())
 

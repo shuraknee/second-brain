@@ -34,7 +34,7 @@ class PackageTests(unittest.TestCase):
                 self.assertEqual(first.read_bytes(), second.read_bytes())
                 with tarfile.open(first) as archive:
                     legal_files = sum(1 for p in (ROOT / 'licenses').rglob('*') if p.is_file())
-                    self.assertEqual(len(archive.getmembers()), 22 + legal_files)
+                    self.assertEqual(len(archive.getmembers()), 26 + legal_files)
                     for entry in archive.getmembers():
                         parts = Path(entry.name).parts
                         self.assertEqual(entry.uid, 0)

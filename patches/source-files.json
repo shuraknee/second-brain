@@ -1,0 +1,180 @@
+{
+  "upstream_revision": "0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
+  "files": [
+    {
+      "path": "Cargo.lock",
+      "before_sha256": "541c5dbefed19b44e0a6b00d4c278f7b4e2095c7ee9c68838572db85a187076f",
+      "after_sha256": "dff5318144f9ff683361c440ea8c5d138bddf12c0faf07455bd1a52d7eec59f5"
+    },
+    {
+      "path": "bin/silverbullet/Cargo.toml",
+      "before_sha256": "fc666464a09551f33f1c0ff44327018f0af32d05d3a150b401ef7598d932b163",
+      "after_sha256": "95623298e5464ea6baeca535e6fcb8c6003eaa44de82b53db919556f7e25d411"
+    },
+    {
+      "path": "bin/silverbullet/src/multi.rs",
+      "before_sha256": "2ed6e5b884bfbe4e4f6b5b3cab623e8ed689a45fa91d974d36d2385f649790a4",
+      "after_sha256": "c1cd2478791dfe8ad524f2c3cd94943355c236f3007cc35565fdad0616a03950"
+    },
+    {
+      "path": "build/build_client.ts",
+      "before_sha256": "5dfa359e2e2d5bcbad3319876d74872170a8827ef29fbd3a89a64bab7d3a406a",
+      "after_sha256": "203b2b857e6bc59fd3416d170ff215b2b109b8732e31e96f5d31de1e56a59d6a"
+    },
+    {
+      "path": "build/version.ts",
+      "before_sha256": "847a3bf8dd30ab72b804003af3165f763b00cf4e739f4e9d5c92a159a2a6890b",
+      "after_sha256": "92ab967d81fadafcdf5782afba71fca744e8539f1cd74a6dfaabfbc2a37e3276"
+    },
+    {
+      "path": "client/offline_network.ts",
+      "before_sha256": null,
+      "after_sha256": "fb11c81501ca6734c7bb2facdc8b09682dc0a9b72e215324c4d70d4b2611bc28"
+    },
+    {
+      "path": "client/plugos/worker_runtime.ts",
+      "before_sha256": "32205132f39d7522e649c56920b2c425a1160a33432824e0f83581676cf827d7",
+      "after_sha256": "806ef529b5a7d908c2f883bfab366943583f04cb235e77bdad6e174a58105454"
+    },
+    {
+      "path": "client/space_lua/stdlib/net.ts",
+      "before_sha256": "0f05d4223347ed5bca13170c329ceed2965ca97170d7641061d5f751f02c16c2",
+      "after_sha256": "e7385c016c915ee57c07f6bed118ddd21ef3ded0fac138513f2e755ebd255c6c"
+    },
+    {
+      "path": "client/spaces/http_space_primitives.ts",
+      "before_sha256": "cda3de4761d5be56ce4bc5cc0af8adf8f927391b633543b83a2977c46abb7dbf",
+      "after_sha256": "6d72fd111341883ba3d8c3cae5ee941ed345d8242b8de3e3c3de92d3f257240e"
+    },
+    {
+      "path": "server-common/Cargo.toml",
+      "before_sha256": "c2eb39ecad7b8c09e7561d16501c94c7ad1e97109d78b865a187d80504f6b593",
+      "after_sha256": "1e20908931041bb95ab9652eca43a103ad68326e66228fd2aac16938e7404e46"
+    },
+    {
+      "path": "server-common/build.rs",
+      "before_sha256": "4999bead127707df76b770a88b46cb3a5591cf29dd70a510121e7bc2c15ddbfe",
+      "after_sha256": "da85526a14fdd5ee8d722bbeef1496ce7744c74e084588bc9d37556b3be738ca"
+    },
+    {
+      "path": "server-common/src/space/http.rs",
+      "before_sha256": "22cf19a769d79280203d193e6e53d3da220332a2778cba28c7e99a8c5048b7ac",
+      "after_sha256": "22b70d1843691bc2ad0998d14a3aa52ec52ecb2d021723a2abba1bef4a086135"
+    },
+    {
+      "path": "server-common/src/upgrade.rs",
+      "before_sha256": "a46250a984886ab8c345f489034f5db96ce9242d6e54016a55cd5ae678e3c560",
+      "after_sha256": "0d85b857cc9000e107ac1cef137385740a03f830b5ff8abfcf61f9a58cb0893b"
+    },
+    {
+      "path": "server-search/Cargo.toml",
+      "before_sha256": "077581efcfc04fcdbe99eeddddfcc273582e44dfe5ba1155da7d4c2a9f29dae3",
+      "after_sha256": "f1148a21050a2e1436a80b71e7cbe6e8c0a154cd0a0f7a38ffbacd74606ce3c6"
+    },
+    {
+      "path": "server-search/src/semantic/download.rs",
+      "before_sha256": "2a07ed9ee7e018bd1422e20c5ecde04e7ffc1158a9a94030eeba9dee751b4908",
+      "after_sha256": "02e9a452a68d8cab20da4c3a0fa2174a4642733a962bcb23fa4555edb5014f43"
+    },
+    {
+      "path": "server/Cargo.toml",
+      "before_sha256": "d40ff8e5080e0891f1c4133b049252d8605ec29c70869927619de7ac15e5278d",
+      "after_sha256": "fad059dd90214dab37dfb8d46f43786e21eb32601a935ca5a2567ff52346ace3"
+    },
+    {
+      "path": "server/src/auth/browser_sessions.rs",
+      "before_sha256": "d27ee7e5ef3cb139cf41fbe23e543d321f66b313dc7179cab5e452ae1675f94d",
+      "after_sha256": "09ea97ac9452b1343c96df5def4733845b4bdbae7d135f9b859796acec4cb952"
+    },
+    {
+      "path": "server/src/auth/handoff.rs",
+      "before_sha256": "1e4549626d9036ce231ac500a2ed560716903c7788d5c6c1cc5e2aee4cbe5240",
+      "after_sha256": "eca34967a93bfbe2a36116f912ef98b5bc197c096b2e624912c5c66af6bec123"
+    },
+    {
+      "path": "server/src/auth/mcp/cimd.rs",
+      "before_sha256": "a8e393dafce9ebaa1ae5692dbb758c5369d0b0bcd356d404d599a1ed0cf18879",
+      "after_sha256": "649d0d5e27e65175c0d3089d98f18202c5b6fb5ccece6d3e82772226b291cfa2"
+    },
+    {
+      "path": "server/src/auth/mcp/net.rs",
+      "before_sha256": "d027279afec3011efc757e2437d358d7c99336a8c71d56a3a7f493fe68119a41",
+      "after_sha256": "7e9b826b04f1e0fbb517f2c101a589e2d1b7650967f85dd091c3e7931c7d4a62"
+    },
+    {
+      "path": "server/src/auth/mcp/redirect.rs",
+      "before_sha256": "6fe6066da6d518a60108a8427c540966e923858dd2840cd3b435df1a0055c490",
+      "after_sha256": "eea315f0a72a0d57ccd4785ff51a3b23b718e3918b0c69a1f41427c23c8399e6"
+    },
+    {
+      "path": "server/src/auth/mcp/resource.rs",
+      "before_sha256": "73f2e89a43104dcdb19332616168e9801b4585b05c5a7144c01516cac1ab4fbf",
+      "after_sha256": "ed2c80bf3942fe29eeb5f2b5a5f868363e0e4555b46db26f0385be26240265c9"
+    },
+    {
+      "path": "server/src/auth/oidc/client.rs",
+      "before_sha256": "26f36dc3d08ed97d0687ed3511153f54e028a853d586053c85b4470ba5164e98",
+      "after_sha256": "d062a665a546a8cd8d39bd32eb0e4bad778e6cccd0eacbb954ed6ff9f85de6ae"
+    },
+    {
+      "path": "server/src/auth/oidc/config.rs",
+      "before_sha256": "a089123afb4f7c12ba10a8b9e67771f1cf76307d3941f02b96f31d8137b48180",
+      "after_sha256": "814b498e06655053b66cb77f67ea57839e5b406f747433b2ce86fa37758e7214"
+    },
+    {
+      "path": "server/src/handlers/central_auth.rs",
+      "before_sha256": "bdf62773fab2e721b3d556833925438169c7a43384193490e975890c6410972d",
+      "after_sha256": "14d4a2e8b27cedaf0f878aaea8a795dd264a10c9216dd4ad9e01efebc5e2469b"
+    },
+    {
+      "path": "server/src/handlers/control.rs",
+      "before_sha256": "044cfd3769123994ebbd3e5b5819632e350d3cde725bd1e49629c5be94bc9610",
+      "after_sha256": "f2e2faa47d5719aa44665b6a8576379fc0dbabddf0db7da4717cb4dec2e62976"
+    },
+    {
+      "path": "server/src/handlers/fs.rs",
+      "before_sha256": "bbaeee4aa53417f260d85bcd17177f25a187e72711d2db5e4e58b66629d0b644",
+      "after_sha256": "0edf703601faf8f7db5d67d2658e6b392a81fef67d35800a079c1edbf94b364b"
+    },
+    {
+      "path": "server/src/handlers/mcp_oauth.rs",
+      "before_sha256": "42fcadfb0338a5175dfc08c5a80f6baa27b5015a6b3e68c49d7da22018794416",
+      "after_sha256": "a11468f71c0938f1591e23f2075f3cd542ea81c9e744f461918220416824a2e4"
+    },
+    {
+      "path": "server/src/handlers/proxy.rs",
+      "before_sha256": "6b5892f15dade130e283e62c6141d0da81861b01550e4828ee61d95b9a9e3c5a",
+      "after_sha256": "dfbb31352c5c022ba0fbd167f42eb156fb682025229c433f21710da0bcbdbb66"
+    },
+    {
+      "path": "server/src/handlers/shell.rs",
+      "before_sha256": "1f09dd77429868c1eb83ddb2181df4e7583f85f9db75c495858b68cda1d338e8",
+      "after_sha256": "c5efc36ee4185d125699fe7b55d53119b0a6e7db465ff48c38d7d0514cde7dde"
+    },
+    {
+      "path": "server/src/multi/dispatch.rs",
+      "before_sha256": "035102620c784b795f6f4c03d743ac4781772b4575fc9feb9918cd18888ff047",
+      "after_sha256": "07f820953b21221583e5ff9cc0ce925011c7c78a57fab6bfa83dff86516e73c7"
+    },
+    {
+      "path": "server/src/multi/server_config.rs",
+      "before_sha256": "2b3daff128d1d3ac5746d43e8c6cae7787457163f61714304ce11fe6f27e2b40",
+      "after_sha256": "ba248b26cd260e001f592476eab4cb705fa46bd9161e56931fbb370d83c7e501"
+    },
+    {
+      "path": "server/src/multi/validate.rs",
+      "before_sha256": "98c35cc7989e8c168085e1fa5047efb1d6e22b7c196bd7896866997d94262a73",
+      "after_sha256": "c432e4759f4c06914be5537927b5045a7dc84394faa8f94753e12169e929bb84"
+    },
+    {
+      "path": "server/src/revisions/git.rs",
+      "before_sha256": "c9c36c121af7ec2533ca37e2ee457591250890aa7c3e350346de8b27ef83ca31",
+      "after_sha256": "0f97c939dc4615f277f003e42ac51c12460d5443915b13cef78151dd637e2177"
+    },
+    {
+      "path": "server/src/revisions/sync.rs",
+      "before_sha256": "7fb3ea20dcf777ffc22527f55ec4dfb04d710bf9fda2a548b500b541b8bb0a4b",
+      "after_sha256": "5716c5d660bdf9a0db517ad0b3e8b896bbfaab3b04874405753f99ede2a0d4f8"
+    }
+  ]
+}

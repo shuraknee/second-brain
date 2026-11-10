@@ -81,7 +81,7 @@ def payload():
 def preflight():
     if platform.system() != 'Linux' or platform.machine() != 'x86_64' or sys.version_info < (3, 9):
         raise RuntimeError('Linux x86_64 and Python >=3.9 required')
-    for name in ['systemctl', 'systemd-run', 'systemd-analyze', 'strace']:
+    for name in ['systemctl', 'systemd-run', 'systemd-analyze']:
         if not shutil.which(name):
             raise RuntimeError('Missing preinstalled tool: ' + name)
     manager = call(['systemctl', '--user', 'is-system-running'], check=False)
@@ -104,7 +104,7 @@ def preflight():
     except (ValueError, KeyError):
         raise RuntimeError('Invalid network isolation proof: ' + probe.stdout)
     return {'python': sys.version.split()[0], 'namespace': proof,
-            'guard': json.loads(guard.stdout), 'strace': str(Path(shutil.which('strace')).resolve())}
+            'guard': json.loads(guard.stdout)}
 
 
 def check_port(host, port):
@@ -194,7 +194,7 @@ def make_plan(args):
         'listen_host': args.listen_host, 'listen_port': args.port,
         'gateway_socket': str(runtime / 'http.sock'), 'runtime_directory': str(runtime),
         'admin_username': args.admin_user, 'space_name': args.space_name,
-        'data_directory': str(target / 'data'), 'strace_binary': proof['strace']}
+        'data_directory': str(target / 'data')}
     if not args.admin_user or any(c in args.admin_user for c in ':/\n\r'):
         raise ValueError('Invalid admin username')
     return {'schema_version': 1, 'source': str(SOURCE), 'target': str(target),

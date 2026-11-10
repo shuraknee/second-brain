@@ -30,13 +30,22 @@ def main():
     manifest = json.loads((ROOT / 'manifest.json').read_text())
     if digest(binary) != manifest['binary_sha256']:
         raise RuntimeError('Binary hash differs from the pinned build')
+    offline = manifest['offline_build']
+    if offline.get('audit_status') != 'source-and-runtime-verified':
+        raise RuntimeError('Offline source/runtime acceptance incomplete; packaging blocked')
+    for name, key in [('patches/offline.patch', 'patch_sha256'),
+                      ('patches/source-files.json', 'source_files_sha256')]:
+        if digest(ROOT / name) != offline[key]:
+            raise RuntimeError('Reviewed offline source patch checksum mismatch: ' + name)
     if any(Path(str(output) + suffix).exists() for suffix in ['', '.sha256', '.part']):
         raise RuntimeError('Output exists; choose a new archive path')
     if not output.parent.is_dir():
         raise RuntimeError('Select an existing output directory')
     files = [ROOT / name for name in ['README.md', 'agent.md', 'AGENTS.md', 'INSTALL.md', 'RELEASING.md',
                                       'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
-                                      'LICENSE.silverbullet.md', 'manifest.json']]
+                                      'LICENSE.silverbullet.md', 'manifest.json',
+                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md',
+                                      'patches/offline.patch', 'patches/source-files.json']]
     for name in ['agent.md', 'INSTALL.md']:
         path = ROOT / name
         if path.is_symlink() or not path.is_file() or not path.read_text(encoding='utf-8').strip():

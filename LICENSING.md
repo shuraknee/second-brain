@@ -5,7 +5,8 @@
 The independent Python installer, wrapper, tests and operator documentation are
 released under MIT (`LICENSE`), as selected by the project owner. The SilverBullet
 binary and resources remain owned/licensed by their respective upstream authors.
-This project does not claim to have written or forked the SilverBullet core.
+This project does not claim original authorship of the SilverBullet core.
+The offline patch is also MIT; original upstream copyright notices remain intact.
 
 ## Review performed for this fixed binary
 
@@ -36,9 +37,16 @@ This review concerns the declared licenses and redistribution requirements of
 the recorded upstream releases. It does not assert ownership of upstream work,
 grant trademark rights, or provide an endorsement by an upstream author.
 
+The offline rebuild removes external transports and fixes UTF-8 path headers.
+Its Cargo lockfile introduces no new package/version/source compared with the
+reviewed upstream lockfile; the notice collection remains a conservative superset.
+The compiler remains the reviewed Rust 1.99.1; musl notices remain included.
+Original upstream licensing applies to the modified core, with our modifications
+under MIT. Patch/source provenance is recorded in manifest.json and patches/.
+
 ## Release rules
 
-- Keep the original binary checksum and source reference. A different upstream
+- Keep the original and offline binary checksums, source reference and patch. A different upstream
   binary requires a new dependency/resource license review.
 - Ship `LICENSE`, `LICENSE.silverbullet.md`, `THIRD_PARTY_NOTICES.md`, this file,
   and the complete verified `licenses/` directory with every binary package.

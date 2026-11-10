@@ -11,7 +11,8 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = ('agent.md', 'INSTALL.md', 'README.md', 'RELEASING.md', 'LICENSE',
-             'LICENSE.silverbullet.md', 'LICENSING.md', 'THIRD_PARTY_NOTICES.md')
+             'LICENSE.silverbullet.md', 'LICENSING.md', 'THIRD_PARTY_NOTICES.md',
+             'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md')
 
 
 def digest(path):
@@ -56,6 +57,8 @@ def read_package(path):
         if manifest_data != (ROOT / 'manifest.json').read_bytes():
             raise RuntimeError('Manifest differs from this checkout')
         manifest = json.loads(manifest_data)
+        if manifest.get('offline_build', {}).get('audit_status') != 'source-and-runtime-verified':
+            raise RuntimeError('Offline source/runtime acceptance incomplete')
         checksums = {}
         for line in read('SHA256SUMS').decode('utf-8').splitlines():
             checksum, name = line.split('  ', 1)

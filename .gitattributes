@@ -1,0 +1,3 @@
+# Preserve original legal texts and the exact reviewed source diff.
+licenses/** -whitespace
+patches/*.patch -whitespace

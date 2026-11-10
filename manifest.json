@@ -6,7 +6,7 @@
   "asset_url": "https://github.com/silverbulletmd/silverbullet/releases/download/edge/silverbullet-server-linux-x86_64.zip",
   "zip_size": 19562079,
   "zip_sha256": "ff9bd132cf74817ef03653033bd4770ab69b43aab0ab9cd67a8b63fd3abf1d05",
-  "binary_sha256": "2e0bb5325e6612e78572f47206e91b9bf5307852d92e52ab689b94d6734dfa34",
+  "binary_sha256": "e2bf8291f4668a837f5e21800c049532434bdb9af2c05c71197d89434eb86e1b",
   "source_url": "https://codeload.github.com/silverbulletmd/silverbullet/tar.gz/0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
   "source_sha256": "04c00a77b09188b0b84ca425e81e8b62b77333db881f89569d90d5216ca47f6a",
   "supply_status": "generic-candidate-awaiting-target-acceptance",
@@ -17,9 +17,15 @@
     "runtime_api": false,
     "shell": false,
     "semantic_search": false,
-    "mcp": true
+    "mcp": true,
+    "self_upgrade": false,
+    "outbound_proxy": false,
+    "remote_http_spaces": false,
+    "external_oidc": false,
+    "remote_client_metadata": false,
+    "git": false
   },
-  "supply_revision": "offline-licensed-20261110",
+  "supply_revision": "offline-no-egress-20261110",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -31,7 +37,7 @@
     "deployment_metadata": "excluded",
     "test_sources_and_reports": "excluded",
     "archive_owner_and_timestamps": "normalized",
-    "upstream_binary": "unmodified; pinned SHA256"
+    "upstream_binary": "offline rebuild from pinned source and reviewed patch; both checksums retained"
   },
   "license_review": {
     "status": "verified-notices-and-source-offer",
@@ -41,5 +47,26 @@
     "legal_inventory": "licenses/audit.json",
     "mpl_source_packages": "included locally",
     "third_party_fonts": "OFL-1.1; notices retained"
+  },
+  "upstream_binary_sha256": "2e0bb5325e6612e78572f47206e91b9bf5307852d92e52ab689b94d6734dfa34",
+  "binary_origin": "locally rebuilt from pinned upstream with offline patch",
+  "binary_version": "2.12.1-offline.1+0fbe7b51",
+  "offline_build": {
+    "audit_status": "source-and-runtime-verified",
+    "core_source_revision": "0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
+    "new_dependency_versions": 0,
+    "runtime_strace_required": false,
+    "patch_sha256": "18ea3e1180bde0846bcddf36d95c6487fb6775c189e87b74b0ed216ac368048c",
+    "source_files_sha256": "772c13834022efe337e746944a4fa11c31ad7776717884aabd61270b19ec4020",
+    "trace_coverage": "all traced setup/server tasks and descendants; not only main PID",
+    "outbound_connect_attempts_in_tested_workflow": 0,
+    "browser_external_requests_in_tested_workflow": 0,
+    "toolchain": {
+      "rust": "1.99.1",
+      "node": "24.22.2",
+      "npm": "11.19.1",
+      "musl": "1.2.4"
+    },
+    "source_epoch_seconds": 1794268800
   }
 }
