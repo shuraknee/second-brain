@@ -12,7 +12,7 @@
   "supply_status": "generic-candidate-awaiting-target-acceptance",
   "target_profile": "Linux x86_64, Python >=3.9, systemd --user; system Git >=2.34 for history",
   "runtime_pip_dependencies": [],
-  "namespace_policy": "required; fail closed",
+  "namespace_policy": "not used; inherited seccomp no-connect required for SilverBullet and Git",
   "server_features": {
     "runtime_api": false,
     "shell": false,
@@ -33,13 +33,14 @@
       "restore"
     ]
   },
-  "supply_revision": "offline-ipv4-only-20261110",
+  "supply_revision": "offline-plain-service-20261110",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
     "unit_directory": "XDG_CONFIG_HOME/systemd/user",
     "runtime_directory": "XDG_RUNTIME_DIR/target-derived-identity",
-    "namespace_preflight": "real transient user unit; fail closed"
+    "service_preflight": "real transient user unit with NoNewPrivileges and inherited seccomp; no namespaces or capability changes",
+    "repair": "explicit plan/apply for recorded local-Git/IPv4-only wrappers; same core, preserved data, metadata backup"
   },
   "packaging_policy": {
     "deployment_metadata": "excluded",
@@ -82,8 +83,8 @@
   "network_compatibility": {
     "ipv6_required": false,
     "ipv6_unavailable_result": "EAFNOSUPPORT at socket creation; reported separately from EPERM",
-    "missing_ipv6_route_table": "accepted only when AF_INET6 socket creation returns EAFNOSUPPORT",
-    "service_isolation": "systemd PrivateUsers/PrivateNetwork and seccomp remain required",
-    "validation": "10 regression tests; full UI/MCP/Git with inherited AF_INET6 EAFNOSUPPORT simulation; full normal-kernel workflow without strace"
+    "missing_ipv6_route_table": "not read; route-based namespace checks removed",
+    "service_isolation": "ordinary user-systemd units; no namespace/capability directives; core/Git no-connect seccomp",
+    "validation": "real user-systemd install/repair and UI/MCP/Git; actual host namespaces, CapEff=0 and inherited seccomp; traced and without strace; simulated AF_INET6 EAFNOSUPPORT"
   }
 }

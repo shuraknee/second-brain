@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Read-only target inventory. No downloads, package installs or service changes.
 
-One optional child probes user/network namespace creation, exits immediately,
-and does not alter the caller or global namespace. No sockets are connected.
+No namespace creation or network connection probes are performed.
 """
 import ctypes
 import json
@@ -36,10 +35,8 @@ def collect():
         'systemd': command(['systemctl', '--version']),
         'user_manager': command(['systemctl', '--user', 'is-system-running']),
         'selinux': command(['getenforce']),
-        'tools': {name: shutil.which(name) for name in ['bwrap', 'unshare', 'git', 'findmnt']},
-        'unprivileged_userns': read('/proc/sys/kernel/unprivileged_userns_clone'),
-        'max_user_namespaces': read('/proc/sys/user/max_user_namespaces'),
-        'apparmor_userns_restriction': read('/proc/sys/kernel/apparmor_restrict_unprivileged_userns')}
+        'tools': {name: shutil.which(name) for name in ['git', 'findmnt']}}
+
     try:
         ctypes.CDLL('libseccomp.so.2')
         result['libseccomp'] = 'load OK'
@@ -50,7 +47,6 @@ def collect():
         libc.syscall.restype = ctypes.c_long
         value = libc.syscall(444, 0, 0, 1)
         result['landlock'] = {'abi': value, 'errno': ctypes.get_errno() if value < 0 else 0}
-    result['user_net_namespace_probe'] = command(['unshare', '--user', '--map-root-user', '--net', '/usr/bin/true'])
     return result
 
 

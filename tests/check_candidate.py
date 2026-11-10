@@ -35,16 +35,16 @@ def main():
     result['checks']['pending_profile_refuses_start'] = True
     with tempfile.TemporaryDirectory(prefix='candidate-tests-', dir=ROOT / 'evidence') as tmp:
         config = json.loads((ROOT / 'config/service.example.json').read_text())
-        config.update(status='target-approved', public_url='http://127.0.0.1:3098',
+        config.update(status='target-approved', network_policy='invalid-policy', public_url='http://127.0.0.1:3098',
                       backend_port=3098, admin_username='test-only', data_directory=str(Path(tmp) / 'data'),
                       gateway_socket=str(Path(tmp) / 'data/gateway.sock'))
         target = Path(tmp) / 'config.json'
         target.write_text(json.dumps(config))
         unisolated = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'tools/service.py'), '--config', str(target)],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        assert unisolated.returncode != 0 and 'Refusing host network' in unisolated.stderr, unisolated.stderr
+        assert unisolated.returncode != 0 and 'has not been approved' in unisolated.stderr, unisolated.stderr
         assert not (Path(tmp) / 'data').exists()
-        result['checks']['host_network_refused_before_data_write'] = True
+        result['checks']['invalid_seccomp_policy_refused_before_data_write'] = True
     inventory = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'tools/collect_environment.py')],
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     assert inventory.returncode == 0, inventory.stderr

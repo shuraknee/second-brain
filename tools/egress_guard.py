@@ -3,7 +3,7 @@
 
 This guards the SERVER. The local fixed-upstream proxy has a separate role.
 No downloading, no user namespace creation, no AppArmor assumptions here.
-Filesystem/mount isolation belongs to the selected service profile.
+The ordinary user-service profile requires no namespaces or capability changes.
 """
 import ctypes as C
 import errno

@@ -47,7 +47,7 @@ def inside():
     data = deployed / 'data'
     runtime = work / 'r'
     config = work / 'runtime-test.json'
-    settings = {'status': 'target-approved', 'namespace_required': True,
+    settings = {'status': 'target-approved', 'namespace_required': False, 'network_policy': 'seccomp-no-connect',
         'public_url': 'http://127.0.0.1:3098', 'backend_port': 3097,
         'listen_host': '127.0.0.1', 'listen_port': 3098,
         'gateway_socket': str(runtime / 'g.sock'), 'runtime_directory': str(runtime), 'admin_username': 'test-only',
@@ -218,7 +218,7 @@ def inside():
                 stop(child) if child is server else child.terminate()
                 child.wait(timeout=15)
         log.close()
-        for name in ['network-namespace.json']:
+        for name in ['network-policy.json']:
             if (data / 'audit' / name).exists():
                 shutil.copy2(data / 'audit' / name, work / name)
         (work / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
@@ -274,7 +274,7 @@ def host():
     assert report['passed']
     (ROOT / 'evidence/python39-isolated-runtime.json').write_text(json.dumps(report, indent=2) + '\n')
     # Preserve payload-free audit proofs, never retain test credentials/accounts.
-    for name in ['network-namespace.json'] + (['server-only.trace'] if args.trace else []):
+    for name in ['network-policy.json'] + (['server-only.trace'] if args.trace else []):
         shutil.copy2(work / name, ROOT / 'evidence' / ('candidate-' + name))
     shutil.rmtree(work)
     print(json.dumps(report, indent=2))

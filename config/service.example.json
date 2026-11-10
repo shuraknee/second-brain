@@ -1,6 +1,6 @@
 {
   "status": "awaiting-target-probe",
-  "namespace_required": true,
+  "namespace_required": false,
   "public_url": null,
   "backend_port": null,
   "listen_host": null,
@@ -9,5 +9,6 @@
   "admin_username": null,
   "space_name": "Second Brain",
   "history_mode": "managed",
-  "data_directory": null
+  "data_directory": null,
+  "network_policy": "seccomp-no-connect"
 }

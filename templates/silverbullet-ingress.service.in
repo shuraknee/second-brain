@@ -10,7 +10,6 @@ Type=simple
 ExecStart=@EXEC_START@
 UMask=0077
 NoNewPrivileges=yes
-CapabilityBoundingSet=
 KillMode=control-group
 Restart=no
 

@@ -142,13 +142,31 @@ class InstallTests(unittest.TestCase):
             installer.apply_plan(argparse.Namespace(plan=path, sha256=installer.digest(path)))
         self.assertFalse(Path(plan['target']).exists())
 
-    def test_failed_namespace_probe_prevents_plan(self):
+    def test_failed_seccomp_probe_prevents_plan(self):
         args = self.arguments()
         with patch.object(installer, 'preflight', side_effect=RuntimeError('isolation unavailable')), \
              patch.object(installer, 'fresh_units'), patch.object(installer, 'check_port'):
             with self.assertRaisesRegex(RuntimeError, 'isolation unavailable'):
                 installer.make_plan(args)
         self.assertFalse(Path(args.target).exists())
+
+    def test_failed_ingress_start_reports_status_and_stops_own_main(self):
+        target = self.base / 'failed-start'
+        (target / 'config').mkdir(parents=True)
+        (target / 'config/service.json').write_text(json.dumps({'listen_host': '127.0.0.1',
+            'listen_port': 32831, 'history_mode': 'disabled'}))
+        commands = []
+        def invoke(args, **kwargs):
+            commands.append(args)
+            if 'start' in args:
+                raise RuntimeError('systemd start failed')
+            return subprocess.CompletedProcess(args, 0, 'ExecMainStatus=218\nResult=exit-code\n')
+        with patch.object(installer, 'owned', return_value={'units': {'own-main.service': '', 'own-ingress.service': ''}}), \
+             patch.object(installer, 'preflight', return_value={}), \
+             patch.object(installer, 'check_port'), patch.object(installer, 'call', side_effect=invoke):
+            with self.assertRaisesRegex(RuntimeError, 'ExecMainStatus=218'):
+                installer.control(target, 'start')
+        self.assertIn(['systemctl', '--user', 'stop', 'own-ingress.service', 'own-main.service'], commands)
 
     def test_managed_history_requires_preinstalled_git(self):
         with patch.object(installer, 'load_module') as module:

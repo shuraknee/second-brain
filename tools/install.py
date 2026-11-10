@@ -55,14 +55,15 @@ def load_module(path):
     return module
 
 
-def payload():
+def payload(source=None):
+    source = source or SOURCE
     result = {}
-    for line in (SOURCE / 'SHA256SUMS').read_text().splitlines():
+    for line in (source / 'SHA256SUMS').read_text().splitlines():
         expected, name = line.split('  ', 1)
         relative = Path(name)
         if relative.is_absolute() or '..' in relative.parts or name in result:
             raise RuntimeError('Invalid payload manifest')
-        path = SOURCE / relative
+        path = source / relative
         if path.is_symlink() or not path.is_file() or digest(path) != expected:
             raise RuntimeError('Payload checksum/path mismatch: ' + name)
         result[name] = expected
@@ -72,7 +73,7 @@ def payload():
                 'templates/silverbullet-ingress.service.in']
     if any(name not in result for name in required):
         raise RuntimeError('Incomplete prepared payload; use the offline release archive')
-    manifest = json.loads((SOURCE / 'manifest.json').read_text())
+    manifest = json.loads((source / 'manifest.json').read_text())
     if result['bin/silverbullet'] != manifest['binary_sha256']:
         raise RuntimeError('Pinned server hash mismatch')
     return result
@@ -87,24 +88,20 @@ def preflight():
     manager = call(['systemctl', '--user', 'is-system-running'], check=False)
     if manager.stdout.strip() not in ['running', 'degraded']:
         raise RuntimeError('User manager is unavailable: ' + manager.stdout.strip())
-    guard = call([sys.executable, '-I', '-B', SOURCE / 'tools/egress_guard.py', '--self-test'])
     unit = 'second-brain-probe-' + uuid.uuid4().hex + '.service'
     probe = call(['systemd-run', '--user', '--quiet', '--wait', '--pipe', '--collect',
-                  '--unit', unit, '--property=PrivateUsers=yes', '--property=PrivateNetwork=yes',
-                  '--property=NoNewPrivileges=yes', sys.executable, '-I', '-B',
-                  SOURCE / 'tools/install.py', '_namespace-probe'], check=False)
+                  '--unit', unit, '--property=NoNewPrivileges=yes', '--property=UMask=0077',
+                  sys.executable, '-I', '-B', SOURCE / 'tools/egress_guard.py', '--self-test'], check=False)
     if probe.returncode:
         # Stop only the newly created unique diagnostic unit, if it survived.
         call(['systemctl', '--user', 'stop', unit], check=False)
-        raise RuntimeError('User-service network isolation probe failed; no fallback:\n' + probe.stdout)
+        raise RuntimeError('User-service seccomp probe failed; no fallback:\n' + probe.stdout)
     try:
         proof = json.loads(probe.stdout)
-        if proof['interfaces'] != ['lo']:
-            raise ValueError('Unexpected interfaces')
+        load_module(SOURCE / 'tools/service.py').validate_guard_checks(proof)
     except (ValueError, KeyError):
-        raise RuntimeError('Invalid network isolation proof: ' + probe.stdout)
-    return {'python': sys.version.split()[0], 'namespace': proof,
-            'guard': json.loads(guard.stdout)}
+        raise RuntimeError('Invalid seccomp proof: ' + probe.stdout)
+    return {'python': sys.version.split()[0], 'service_profile': 'plain-seccomp', 'guard': proof}
 
 
 def check_port(host, port):
@@ -123,13 +120,14 @@ def exec_argument(value):
     return '"' + value.replace('\\', '\\\\').replace('"', '\\"').replace('%', '%%').replace('$', '$$') + '"'
 
 
-def render_units(target, python, name):
+def render_units(target, python, name, source=None):
+    source = source or SOURCE
     units = {}
     for script, template, unit in [
         ('service.py', 'silverbullet.service.in', name + '.service'),
         ('ingress.py', 'silverbullet-ingress.service.in', name + '-ingress.service')]:
         command = [python, '-I', '-B', target / 'tools' / script, '--config', target / 'config/service.json']
-        text = (SOURCE / 'templates' / template).read_text()
+        text = (source / 'templates' / template).read_text()
         text = text.replace('@EXEC_START@', ' '.join(exec_argument(a) for a in command))
         text = text.replace('@SERVER_UNIT@', name + '.service')
         units[unit] = text
@@ -194,7 +192,8 @@ def make_plan(args):
         raise ValueError('Invalid local history mode')
     if history_mode != 'disabled':
         proof['git'] = load_module(SOURCE / 'tools/git_support.py').require_git()
-    config = {'status': 'target-approved', 'namespace_required': True,
+    config = {'status': 'target-approved', 'namespace_required': False,
+        'network_policy': 'seccomp-no-connect',
         'public_url': public_url, 'backend_port': args.backend_port,
         'listen_host': args.listen_host, 'listen_port': args.port,
         'gateway_socket': str(runtime / 'http.sock'), 'runtime_directory': str(runtime),
@@ -249,8 +248,8 @@ def control(target, action):
         preflight()
         if config.get('history_mode', 'managed') != 'disabled':
             load_module(target / 'tools/git_support.py').require_git()
-        call(['systemctl', '--user', 'start', names[-1]])
         try:
+            call(['systemctl', '--user', 'start', names[-1]])
             for attempt in range(100):
                 try:
                     health(config)
@@ -259,8 +258,15 @@ def control(target, action):
                 except (OSError, ValueError, RuntimeError, http.client.HTTPException):
                     time.sleep(.2)
             raise RuntimeError('HTTP readiness failed; inspect status/journal')
-        except BaseException:
+        except BaseException as error:
+            details = []
+            for name in names:
+                details.append(name + '\n' + call(['systemctl', '--user', 'show', name,
+                    '--property=ActiveState', '--property=SubState', '--property=Result',
+                    '--property=ExecMainStatus'], check=False).stdout.strip())
             call(['systemctl', '--user', 'stop'] + list(reversed(names)), check=False)
+            if isinstance(error, Exception):
+                raise RuntimeError(str(error) + '\n' + '\n'.join(details)) from error
             raise
     elif action == 'status':
         for name in names:
@@ -287,7 +293,9 @@ def apply_plan(args):
     expected_directory = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'systemd/user'
     if plan['units'] != expected or plan['python'] != str(Path(sys.executable).resolve()) or plan['unit_directory'] != str(expected_directory):
         raise RuntimeError('Interpreter, unit content or user directory changed; create a new plan')
-    if plan['config']['data_directory'] != str(target / 'data') or plan['config'].get('namespace_required') is not True:
+    if (plan['config']['data_directory'] != str(target / 'data')
+            or plan['config'].get('namespace_required') is not False
+            or plan['config'].get('network_policy') != 'seccomp-no-connect'):
         raise RuntimeError('Unexpected data path or isolation policy in plan')
     if plan['config'].get('history_mode') not in ['managed', 'unmanaged', 'disabled']:
         raise RuntimeError('Unexpected local history mode in plan')
@@ -347,7 +355,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='operation', required=True)
     sub.add_parser('preflight')
-    sub.add_parser('_namespace-probe')
     plan = sub.add_parser('plan')
     plan.add_argument('--target', required=True)
     plan.add_argument('--port', type=int, required=True)
@@ -364,16 +371,23 @@ def main():
     apply = sub.add_parser('apply')
     apply.add_argument('--plan', type=Path, required=True)
     apply.add_argument('--sha256', required=True)
+    repair_plan = sub.add_parser('repair-plan')
+    repair_plan.add_argument('--target', required=True)
+    repair_plan.add_argument('--backup', required=True)
+    repair_plan.add_argument('--output', type=Path, required=True)
+    repair_plan.add_argument('--no-start', action='store_true')
+    repair_apply = sub.add_parser('repair-apply')
+    repair_apply.add_argument('--plan', type=Path, required=True)
+    repair_apply.add_argument('--sha256', required=True)
     for operation in ['start', 'stop', 'status']:
         control_parser = sub.add_parser(operation)
         control_parser.add_argument('--target', required=True)
     args = parser.parse_args()
-    if args.operation == '_namespace-probe':
-        print(json.dumps(load_module(SOURCE / 'tools/service.py').network_proof()))
-    elif args.operation == 'preflight':
+    if args.operation == 'preflight':
         print(json.dumps(preflight(), indent=2))
-    elif args.operation == 'plan':
-        result = make_plan(args)
+    elif args.operation in ['plan', 'repair-plan']:
+        result = (make_plan(args) if args.operation == 'plan'
+                  else load_module(SOURCE / 'tools/repair.py').make_plan(args))
         with args.output.open('x') as stream:
             json.dump(result, stream, ensure_ascii=False, indent=2)
             stream.write('\n')
@@ -382,6 +396,8 @@ def main():
         print('PLAN_SHA256=' + digest(args.output))
     elif args.operation == 'apply':
         apply_plan(args)
+    elif args.operation == 'repair-apply':
+        load_module(SOURCE / 'tools/repair.py').apply(args)
     else:
         control(absolute(args.target), args.operation)
 

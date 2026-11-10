@@ -64,6 +64,7 @@ Runtime-архив собирается только по allowlist tools/build_
 ```sh
 "$PYTHON" -I -B tests/test_ipv6.py -v
 "$PYTHON" -I -B tests/test_install.py -v
+"$PYTHON" -I -B tests/test_repair.py -v
 "$PYTHON" -I -B tests/test_package.py -v
 ```
 
@@ -80,6 +81,10 @@ Runtime-архив собирается только по allowlist tools/build_
 сценарий по MCP-GIT.md, включая устаревшую ревизию, ссылки и перезапуск.
 В сетевой трассе учитывать также дочерние процессы Git; hooks/filters/partial
 clone не должны возвращаться в разрешённые конфигурации.
+Для изменения профиля user-служб дополнительно выполнить tests/plain_service.py
+с явно выбранным прежним архивом и тестовым браузером: настоящие units, HTTP,
+браузер/MCP/Git и repair с сохранением данных. Ни namespaces, ни изменение
+capabilities не должны возвращаться в профиль обычных служб.
 Проверка стенда не означает приёмку корпоративного сервера.
 
 ## 5. Подготовка Release Assets

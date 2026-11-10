@@ -190,6 +190,16 @@ def main():
         assert unknown.get('isError')
         assert not list(Path(args.credentials).parent.rglob('git-message-must-not-run'))
 
+        # Stop the previous UI's worker/sync queues before out-of-band link
+        # fixtures. Keep authentication, then load a fresh UI after the checks.
+        storage = context.storage_state()
+        context.close()
+        context = browser.new_context(storage_state=storage, viewport={'width': 1440, 'height': 1000})
+        context.on('request', request_seen)
+        api = context.request
+        page = context.new_page()
+        page.on('pageerror', lambda error: report['browser_errors'].append(str(error)))
+
         # Only this synthetic fixture manipulates the filesystem directly.
         # The MCP caller cannot access repository metadata or create links.
         repositories = list(Path(args.credentials).parent.glob('spaces/*/.git'))
@@ -202,7 +212,10 @@ def main():
         link_commit = call('git_commit', {'space': space, 'message': 'Regular file fixture'})['structuredContent']['commit']
         linked_path.unlink()
         linked_path.symlink_to(outside)
-        link_revision = call('git_read', {'space': space, 'path': linked_path.name, 'revision': 'WORKING'})['structuredContent']['revision']
+        link_read = call('git_read', {'space': space, 'path': linked_path.name, 'revision': 'WORKING'})['structuredContent']
+        assert link_read['content'] == outside.read_text()
+        assert linked_path.is_symlink()
+        link_revision = link_read['revision']
         refused_link = rpc('tools/call', {'name': 'git_restore', 'arguments': {
             'space': space, 'path': linked_path.name, 'revision': link_commit, 'ifRevision': link_revision}})
         assert refused_link.get('isError'), refused_link
