@@ -68,7 +68,7 @@ def payload():
         result[name] = expected
     required = ['bin/silverbullet', 'manifest.json', 'agent.md', 'tools/install.py',
                 'tools/service.py', 'tools/proxy.py', 'tools/ingress.py',
-                'tools/egress_guard.py', 'templates/silverbullet.service.in',
+                'tools/egress_guard.py', 'tools/git_support.py', 'templates/silverbullet.service.in',
                 'templates/silverbullet-ingress.service.in']
     if any(name not in result for name in required):
         raise RuntimeError('Incomplete prepared payload; use the offline release archive')
@@ -189,12 +189,17 @@ def make_plan(args):
     units = render_units(target, python, name)
     fresh_units(unit_dir, units)
     proof = preflight()
+    history_mode = getattr(args, 'history_mode', 'managed')
+    if history_mode not in ['managed', 'unmanaged', 'disabled']:
+        raise ValueError('Invalid local history mode')
+    if history_mode != 'disabled':
+        proof['git'] = load_module(SOURCE / 'tools/git_support.py').require_git()
     config = {'status': 'target-approved', 'namespace_required': True,
         'public_url': public_url, 'backend_port': args.backend_port,
         'listen_host': args.listen_host, 'listen_port': args.port,
         'gateway_socket': str(runtime / 'http.sock'), 'runtime_directory': str(runtime),
         'admin_username': args.admin_user, 'space_name': args.space_name,
-        'data_directory': str(target / 'data')}
+        'data_directory': str(target / 'data'), 'history_mode': history_mode}
     if not args.admin_user or any(c in args.admin_user for c in ':/\n\r'):
         raise ValueError('Invalid admin username')
     return {'schema_version': 1, 'source': str(SOURCE), 'target': str(target),
@@ -242,6 +247,8 @@ def control(target, action):
         config = json.loads((target / 'config/service.json').read_text())
         check_port(config['listen_host'], config['listen_port'])
         preflight()
+        if config.get('history_mode', 'managed') != 'disabled':
+            load_module(target / 'tools/git_support.py').require_git()
         call(['systemctl', '--user', 'start', names[-1]])
         try:
             for attempt in range(100):
@@ -282,6 +289,10 @@ def apply_plan(args):
         raise RuntimeError('Interpreter, unit content or user directory changed; create a new plan')
     if plan['config']['data_directory'] != str(target / 'data') or plan['config'].get('namespace_required') is not True:
         raise RuntimeError('Unexpected data path or isolation policy in plan')
+    if plan['config'].get('history_mode') not in ['managed', 'unmanaged', 'disabled']:
+        raise RuntimeError('Unexpected local history mode in plan')
+    if plan['config']['history_mode'] != 'disabled':
+        load_module(SOURCE / 'tools/git_support.py').require_git()
     empty_target(target)
     directory = Path(plan['unit_directory'])
     fresh_units(directory, plan['units'])
@@ -346,6 +357,7 @@ def main():
     plan.add_argument('--runtime-dir')
     plan.add_argument('--admin-user', required=True)
     plan.add_argument('--space-name', default='Second Brain')
+    plan.add_argument('--history-mode', choices=['managed', 'unmanaged', 'disabled'], default='managed')
     plan.add_argument('--no-start', action='store_true')
     plan.add_argument('--enable', action='store_true')
     plan.add_argument('--output', type=Path, required=True)

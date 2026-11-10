@@ -31,7 +31,7 @@ class InstallTests(unittest.TestCase):
         self.source = self.base / 'source with пробелы % $'
         self.source.mkdir()
         names = ['agent.md', 'manifest.json', 'tools/install.py', 'tools/service.py',
-                 'tools/proxy.py', 'tools/ingress.py', 'tools/egress_guard.py',
+                 'tools/proxy.py', 'tools/ingress.py', 'tools/egress_guard.py', 'tools/git_support.py',
                  'templates/silverbullet.service.in', 'templates/silverbullet-ingress.service.in']
         for name in names:
             destination = self.source / name
@@ -149,6 +149,21 @@ class InstallTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'isolation unavailable'):
                 installer.make_plan(args)
         self.assertFalse(Path(args.target).exists())
+
+    def test_managed_history_requires_preinstalled_git(self):
+        with patch.object(installer, 'load_module') as module:
+            module.return_value.require_git.side_effect = RuntimeError('preinstalled Git is missing')
+            with self.assertRaisesRegex(RuntimeError, 'preinstalled Git is missing'):
+                self.plan()
+        self.assertFalse(Path(self.arguments().target).exists())
+
+    def test_disabled_history_does_not_require_git(self):
+        args = self.arguments()
+        args.history_mode = 'disabled'
+        with patch.object(installer, 'load_module') as module:
+            plan = self.plan(args)
+        module.assert_not_called()
+        self.assertEqual(plan['config']['history_mode'], 'disabled')
 
     def test_busy_port_is_never_freed(self):
         with socket.socket() as listener:

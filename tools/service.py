@@ -62,6 +62,14 @@ def main():
     binary = ROOT / 'bin/silverbullet'
     if hashlib.sha256(binary.read_bytes()).hexdigest() != manifest['binary_sha256']:
         raise RuntimeError('Pinned SilverBullet hash mismatch')
+    history_mode = config.get('history_mode', 'managed')
+    if history_mode not in ['managed', 'unmanaged', 'disabled']:
+        raise ValueError('Invalid history_mode')
+    if history_mode != 'disabled':
+        checked_git = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'tools/git_support.py')],
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if checked_git.returncode:
+            raise RuntimeError(checked_git.stderr.strip())
     os.umask(0o077)
     data = Path(raw_data)
     data.mkdir(parents=True, exist_ok=True)
@@ -100,6 +108,11 @@ def main():
         if provisioning.returncode:
             # Do not put the --admin argument/password into an exception log.
             raise RuntimeError('Provisioning failed; inspect retained data and audit before retry')
+        spaces_path = data / 'spaces.json'
+        spaces = json.loads(spaces_path.read_text())
+        for space in spaces.values():
+            space['revisions'] = history_mode
+        spaces_path.write_text(json.dumps(spaces, ensure_ascii=False, indent=2) + '\n')
         (data / 'server.json').write_text(json.dumps({'primaryUrl': config['public_url'],
             'serverName': config.get('space_name', 'Second Brain'), 'runtimeApi': False,
             'mcp': True, 'search': {}}))

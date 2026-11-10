@@ -4621,7 +4621,7 @@
   ],
   "offline_rebuild_review": {
     "upstream_and_patch_license": "MIT",
-    "patch_sha256": "18ea3e1180bde0846bcddf36d95c6487fb6775c189e87b74b0ed216ac368048c",
+    "patch_sha256": "5bd2e531b2bfc93e0cef60ce5fa9b039441cf0b518459920f00a6ffc790bf837",
     "new_dependency_versions": 0,
     "third_party_dependency_sources_changed": false
   }

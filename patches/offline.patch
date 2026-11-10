@@ -340,48 +340,52 @@
 + "indexmap",
 @@ -4005 +3724,0 @@
 - "silverbullet-server-runtime-chrome",
-@@ -4029 +3747,0 @@
+@@ -4026,0 +3746 @@
++ "libc",
+@@ -4029 +3748,0 @@
 - "openidconnect",
-@@ -4035 +3752,0 @@
+@@ -4035 +3753,0 @@
 - "reqwest 0.12.28",
-@@ -4049,0 +3767 @@
+@@ -4049,0 +3768 @@
 + "url",
-@@ -4067 +3784,0 @@
+@@ -4067 +3785,0 @@
 - "reqwest 0.12.28",
-@@ -4074,0 +3792 @@
+@@ -4074,0 +3793 @@
 + "url",
-@@ -4088 +3806 @@
+@@ -4088 +3807 @@
 - "schemars 1.2.2",
 + "schemars",
-@@ -4134 +3851,0 @@
+@@ -4092,0 +3812 @@
++ "sha2 0.10.9",
+@@ -4134 +3853,0 @@
 - "reqwest 0.12.28",
-@@ -4322 +4039 @@
+@@ -4322 +4041 @@
 - "bitflags 2.13.2",
 + "bitflags",
-@@ -4365 +4082 @@
+@@ -4365 +4084 @@
 - "itertools 0.14.0",
 + "itertools",
-@@ -4414 +4131 @@
+@@ -4414 +4133 @@
 - "itertools 0.14.0",
 + "itertools",
-@@ -4454 +4171 @@
+@@ -4454 +4173 @@
 - "ordered-float 5.5.0",
 + "ordered-float",
-@@ -4466 +4183 @@
+@@ -4466 +4185 @@
 - "itertools 0.14.0",
 + "itertools",
-@@ -4613 +4330 @@
+@@ -4613 +4332 @@
 - "itertools 0.14.0",
 + "itertools",
-@@ -4716 +4433 @@
+@@ -4716 +4435 @@
 - "bitflags 2.13.2",
 + "bitflags",
-@@ -4735 +4452 @@
+@@ -4735 +4454 @@
 - "bitflags 2.13.2",
 + "bitflags",
-@@ -4953 +4669,0 @@
+@@ -4953 +4671,0 @@
 - "serde_derive",
-@@ -5598 +5314 @@
+@@ -5598 +5316 @@
 - "indexmap 2.14.2",
 + "indexmap",
 --- a/bin/silverbullet/Cargo.toml
@@ -496,7 +500,7 @@
 -
 -    gitProcess.on("error", reject);
 -  });
-+  return writeFile("./version.json", JSON.stringify({version: "2.12.1-offline.1+0fbe7b51"}) + "\n");
++  return writeFile("./version.json", JSON.stringify({version: "2.12.1-offline.2+0fbe7b51"}) + "\n");
 --- /dev/null
 +++ b/client/offline_network.ts
 @@ -0,0 +1,34 @@
@@ -612,7 +616,7 @@
 -        .duration_since(std::time::UNIX_EPOCH)
 -        .map(|d| d.as_millis() as i64)
 -        .unwrap_or(1);
-+    let build_ts_ms: i64 = 1794268800000; // Fixed source epoch for offline build.
++    let build_ts_ms: i64 = 1794272400000; // Fixed source epoch for offline build.
 --- a/server-common/src/space/http.rs
 +++ b/server-common/src/space/http.rs
 @@ -1,9 +1,3 @@
@@ -1831,6 +1835,248 @@
 -        assert_eq!(std::fs::read(dest.join("sb")).unwrap(), b"hello");
 -    }
 -}
+--- a/server-mcp/Cargo.toml
++++ b/server-mcp/Cargo.toml
+@@ -10,0 +11 @@
++sha2 = { workspace = true }
+--- a/server-mcp/src/host.rs
++++ b/server-mcp/src/host.rs
+@@ -27,0 +28 @@
++    "x-local-git-restore",
+@@ -167,0 +169 @@
++    "x-local-git-restore",
+@@ -190 +192,2 @@
+-                header("x-await-index", "1"),
++                header("x-await-index",
++    "x-local-git-restore", "1"),
+--- a/server-mcp/src/instructions.md
++++ b/server-mcp/src/instructions.md
+@@ -14,0 +15,10 @@
++
++This offline build also provides local Git history: `git_status`, `git_history`,
++`git_diff`, `git_read`, `git_commit`, and `git_restore`. No remote Git operations
++are available. Inspect status before committing: a named commit snapshots ALL
++pending files in the space, including other users' edits. Use normal revision
++checked read/edit/write for changes, then commit a checkpoint. Restore requires
++the exact current content revision from read/git_read WORKING (or `missing` for
++a deleted file); it saves a checkpoint and restores one regular file as a new
++edit, preserving history. Commit ids and content revisions are different.
++Never rewrite a file using a truncated preview. See the supplied MCP-GIT.md.
+--- /dev/null
++++ b/server-mcp/src/tools/git.rs
+@@ -0,0 +1,199 @@
++//! Bounded local-history tools. All requests run in-process as the MCP caller.
++use axum::http::{header, HeaderName, Method, StatusCode};
++use base64::{engine::general_purpose::STANDARD, Engine};
++use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
++use schemars::JsonSchema;
++use serde::Deserialize;
++use serde_json::{json, Value};
++use sha2::{Digest, Sha256};
++use crate::host::{SpaceRequest, SpaceResponse};
++use crate::tool::{Caller, ToolDef};
++use super::args::{input_schema, SPACE};
++use super::reply::{Outcome, Reply, ToolError};
++use super::{annotations, Tools};
++
++const MAX_FILE: usize = 16 * 1024 * 1024;
++const MAX_PREVIEW: usize = 128 * 1024;
++
++#[derive(Deserialize, JsonSchema)]
++#[serde(deny_unknown_fields)]
++pub(super) struct SpaceArgs { #[schemars(description = SPACE)] space: String }
++#[derive(Deserialize, JsonSchema)]
++#[serde(deny_unknown_fields)]
++pub(super) struct HistoryArgs {
++    #[schemars(description = SPACE)] space: String,
++    /// Space-relative file path including extension; omit for the whole space.
++    path: Option<String>,
++    /// Full commit id from the previous result, for pagination.
++    before: Option<String>,
++    limit: Option<usize>,
++}
++#[derive(Deserialize, JsonSchema)]
++#[serde(rename_all = "camelCase", deny_unknown_fields)]
++pub(super) struct DiffArgs {
++    #[schemars(description = SPACE)] space: String,
++    path: String,
++    /// Full commit id. Omit to compare HEAD with uncommitted changes.
++    from_revision: Option<String>,
++    /// Full commit id, HEAD or WORKING; defaults to WORKING.
++    to_revision: Option<String>,
++}
++#[derive(Deserialize, JsonSchema)]
++#[serde(deny_unknown_fields)]
++pub(super) struct ReadArgs {
++    #[schemars(description = SPACE)] space: String,
++    path: String,
++    /// Full commit id, or WORKING to read the current file and its revision.
++    revision: String,
++}
++#[derive(Deserialize, JsonSchema)]
++#[serde(deny_unknown_fields)]
++pub(super) struct CommitArgs {
++    #[schemars(description = SPACE)] space: String,
++    /// Message for a snapshot of ALL uncommitted files in this space.
++    message: String,
++}
++#[derive(Deserialize, JsonSchema)]
++#[serde(rename_all = "camelCase", deny_unknown_fields)]
++pub(super) struct RestoreArgs {
++    #[schemars(description = SPACE)] space: String,
++    path: String,
++    /// Full commit id containing the regular file to restore.
++    revision: String,
++    /// Exact current revision from read/git_read; use "missing" only for a deleted file.
++    if_revision: String,
++}
++
++pub(super) fn definitions() -> Vec<ToolDef> {
++    vec![
++        ToolDef { name: "git_status", title: "Local Git status", description: "Show local history mode, latest commit and uncommitted files. Requires write access to this space.".into(), input_schema: input_schema::<SpaceArgs>(), annotations: annotations(true, false, true) },
++        ToolDef { name: "git_history", title: "Local Git history", description: "List commits for a space or file. No remotes or network. History requires write access.".into(), input_schema: input_schema::<HistoryArgs>(), annotations: annotations(true, false, true) },
++        ToolDef { name: "git_diff", title: "Compare file versions", description: "Read a file diff between local commits or the working file. Paths are relative to this space.".into(), input_schema: input_schema::<DiffArgs>(), annotations: annotations(true, false, true) },
++        ToolDef { name: "git_read", title: "Read a local file version", description: "Read a file at a commit, or WORKING. Returns a bounded UTF-8/base64 preview and content revision. Does not execute content.".into(), input_schema: input_schema::<ReadArgs>(), annotations: annotations(true, false, true) },
++        ToolDef { name: "git_commit", title: "Commit the local space", description: "Create a named snapshot of ALL outstanding files in this managed space. Inspect git_status first: this can include other users' pending changes. No arbitrary Git commands.".into(), input_schema: input_schema::<CommitArgs>(), annotations: annotations(false, false, false) },
++        ToolDef { name: "git_restore", title: "Restore a regular file", description: "Save a local snapshot before restoring one regular file as a new edit. Requires the exact current ifRevision (or missing). Refuses stale changes and links; never resets history or other files.".into(), input_schema: input_schema::<RestoreArgs>(), annotations: annotations(false, true, false) },
++    ]
++}
++fn encoded(value: &str) -> String { utf8_percent_encode(value, NON_ALPHANUMERIC).to_string() }
++fn file_path(path: &str) -> Result<(), ToolError> {
++    if path.is_empty() || path.starts_with('/') || path.contains('\\') || path.chars().any(char::is_control)
++        || path.split('/').any(|p| p.is_empty() || p.starts_with('.')) {
++        return Err("use a visible, relative file path without dot components".into());
++    }
++    Ok(())
++}
++fn preview(text: &str) -> &str {
++    let mut end = text.len().min(MAX_PREVIEW);
++    while !text.is_char_boundary(end) { end -= 1; }
++    &text[..end]
++}
++fn commit_id(value: &str) -> Result<(), ToolError> {
++    if value.len() != 40 || !value.bytes().all(|b| b.is_ascii_hexdigit()) { return Err("use a full commit id from git_history".into()); }
++    Ok(())
++}
++fn checked(response: SpaceResponse) -> Result<SpaceResponse, ToolError> {
++    if !response.status.is_success() {
++        return Err(format!("local history request failed ({}): {}", response.status,
++            String::from_utf8_lossy(&response.body).chars().take(800).collect::<String>()).into());
++    }
++    Ok(response)
++}
++fn json_reply(response: SpaceResponse) -> Outcome {
++    let response = checked(response)?;
++    let value: Value = serde_json::from_slice(&response.body).map_err(|_| ToolError::new("invalid local history response"))?;
++    Ok(Reply::text(serde_json::to_string(&value).unwrap()).with_structured(value))
++}
++
++impl Tools {
++    async fn git_request(&self, caller: &Caller, space: &str, method: Method, uri: String,
++                         body: Vec<u8>, headers: Vec<(HeaderName, String)>) -> Result<SpaceResponse, ToolError> {
++        self.host.request(caller, space, SpaceRequest { method, path_and_query: uri, body, headers })
++            .await.map_err(|e| ToolError::new(e.to_string()))
++    }
++    async fn local_commit(&self, caller: &Caller, space: &str, message: &str) -> Result<SpaceResponse, ToolError> {
++        if message.trim().is_empty() || message.len() > 4096 || message.contains('\0') { return Err("commit message must contain 1..4096 bytes without NUL".into()); }
++        checked(self.git_request(caller, space, Method::POST, "/.revisions/_commit".into(),
++            serde_json::to_vec(&json!({"message": message})).unwrap(),
++            vec![(header::CONTENT_TYPE, "application/json".into())]).await?)
++    }
++    pub(super) async fn git_status(&self, caller: &Caller, args: SpaceArgs) -> Outcome {
++        json_reply(self.git_request(caller, &args.space, Method::GET, "/.revisions/?limit=1".into(), vec![], vec![]).await?)
++    }
++    pub(super) async fn git_history(&self, caller: &Caller, args: HistoryArgs) -> Outcome {
++        let path = if let Some(path) = args.path { file_path(&path)?; encoded(&path) } else { String::new() };
++        let limit = args.limit.unwrap_or(20);
++        if !(1..=200).contains(&limit) { return Err("limit must be in 1..200".into()); }
++        let mut uri = format!("/.revisions/{path}?limit={limit}");
++        if let Some(before) = args.before { commit_id(&before)?; uri += &format!("&before={before}"); }
++        json_reply(self.git_request(caller, &args.space, Method::GET, uri, vec![], vec![]).await?)
++    }
++    pub(super) async fn git_diff(&self, caller: &Caller, args: DiffArgs) -> Outcome {
++        file_path(&args.path)?;
++        // Establish availability/authorization before treating a missing diff as empty.
++        checked(self.git_request(caller, &args.space, Method::GET, "/.revisions/?limit=1".into(), vec![], vec![]).await?)?;
++        let query = if let Some(from) = args.from_revision {
++            commit_id(&from)?;
++            let to = args.to_revision.unwrap_or_else(|| "WORKING".into());
++            if !matches!(to.as_str(), "WORKING" | "HEAD") { commit_id(&to)?; }
++            format!("rev={from}&to={to}")
++        } else {
++            if args.to_revision.is_some() { return Err("toRevision requires fromRevision".into()); }
++            "format=diff".into()
++        };
++        let response = self.git_request(caller, &args.space, Method::GET,
++            format!("/.revisions/{}?{query}", encoded(&args.path)), vec![], vec![]).await?;
++        let diff = if response.status == StatusCode::NOT_FOUND { String::new() }
++            else { String::from_utf8(checked(response)?.body).map_err(|_| ToolError::new("diff is not UTF-8"))? };
++        let truncated = diff.len() > MAX_PREVIEW;
++        let text = preview(&diff).to_owned();
++        Ok(Reply::text(&text).with_structured(json!({"path": args.path, "diff": text, "truncated": truncated})))
++    }
++    pub(super) async fn git_read(&self, caller: &Caller, args: ReadArgs) -> Outcome {
++        file_path(&args.path)?;
++        let working = args.revision == "WORKING";
++        let uri = if working { format!("/.fs/{}", encoded(&args.path)) } else {
++            commit_id(&args.revision)?; format!("/.revisions/{}?rev={}", encoded(&args.path), args.revision)
++        };
++        let response = checked(self.git_request(caller, &args.space, Method::GET, uri, vec![], vec![]).await?)?;
++        let revision = response.headers.get("x-silverbullet-revision").and_then(|v| v.to_str().ok())
++            .map(str::to_owned).unwrap_or_else(|| format!("\"sha256:{:x}\"", Sha256::digest(&response.body)));
++        let bytes = response.body.len();
++        let (encoding, content) = match std::str::from_utf8(&response.body) {
++            Ok(text) => ("utf-8", preview(text).to_owned()),
++            Err(_) => ("base64", STANDARD.encode(&response.body[..bytes.min(MAX_PREVIEW)])),
++        };
++        let value = json!({"path": args.path, "commit": if working {None} else {Some(args.revision)},
++            "revision": revision, "bytes": bytes, "encoding": encoding, "content": content, "truncated": bytes > MAX_PREVIEW});
++        Ok(Reply::text(serde_json::to_string(&value).unwrap()).with_structured(value))
++    }
++    pub(super) async fn git_commit(&self, caller: &Caller, args: CommitArgs) -> Outcome {
++        json_reply(self.local_commit(caller, &args.space, &args.message).await?)
++    }
++    pub(super) async fn git_restore(&self, caller: &Caller, args: RestoreArgs) -> Outcome {
++        file_path(&args.path)?; commit_id(&args.revision)?;
++        let uri = format!("/.fs/{}", encoded(&args.path));
++        let current = self.git_request(caller, &args.space, Method::HEAD, uri.clone(), vec![], vec![]).await?;
++        if args.if_revision == "missing" {
++            if current.status != StatusCode::NOT_FOUND { return Err("file exists or is not accessible; read it again before restore".into()); }
++        } else {
++            let current = checked(current)?;
++            let revision = current.headers.get("x-silverbullet-revision").and_then(|v| v.to_str().ok()).unwrap_or("");
++            if revision.is_empty() || revision != args.if_revision { return Err("file changed; read its current revision again before restore".into()); }
++        }
++        let old = checked(self.git_request(caller, &args.space, Method::GET,
++            format!("/.revisions/{}?rev={}&regular=1", encoded(&args.path), args.revision), vec![], vec![]).await?)?;
++        if old.body.len() > MAX_FILE { return Err("restore exceeds the 16 MiB file limit".into()); }
++        let backup = self.local_commit(caller, &args.space, &format!("Before restoring {} from {}", args.path, args.revision)).await?;
++        let content_type = old.headers.get(header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).unwrap_or("application/octet-stream").to_owned();
++        let mut headers = vec![(header::CONTENT_TYPE, content_type),
++            (HeaderName::from_static("x-local-git-restore"), "1".into()),
++            (HeaderName::from_static("x-source"), "mcp".into())];
++        if args.if_revision == "missing" { headers.push((header::IF_NONE_MATCH, "*".into())); }
++        else { headers.push((header::IF_MATCH, args.if_revision)); }
++        let restored = checked(self.git_request(caller, &args.space, Method::PUT, uri, old.body, headers).await?)?;
++        let revision = restored.headers.get("x-silverbullet-revision").and_then(|v| v.to_str().ok()).unwrap_or("");
++        let value = json!({"path": args.path, "restoredFrom": args.revision, "revision": revision,
++            "beforeSnapshot": serde_json::from_slice::<Value>(&backup.body).unwrap_or(Value::Null)});
++        Ok(Reply::text(serde_json::to_string(&value).unwrap()).with_structured(value))
++    }
++}
+--- a/server-mcp/src/tools/mod.rs
++++ b/server-mcp/src/tools/mod.rs
+@@ -1,0 +2 @@
++mod git;
+@@ -188,0 +190 @@
++        tools.extend(git::definitions());
+@@ -231,0 +234,6 @@
++            "git_status" => self.git_status(caller, parse(args)?).await,
++            "git_history" => self.git_history(caller, parse(args)?).await,
++            "git_diff" => self.git_diff(caller, parse(args)?).await,
++            "git_read" => self.git_read(caller, parse(args)?).await,
++            "git_commit" => self.git_commit(caller, parse(args)?).await,
++            "git_restore" => self.git_restore(caller, parse(args)?).await,
 --- a/server-search/Cargo.toml
 +++ b/server-search/Cargo.toml
 @@ -12 +12 @@
@@ -2385,10 +2631,12 @@
 -mod tests;
 --- a/server/Cargo.toml
 +++ b/server/Cargo.toml
-@@ -26 +26 @@
+@@ -10,0 +11 @@
++libc = { workspace = true }
+@@ -26 +27 @@
 -reqwest = { workspace = true }
 +url = "2"
-@@ -40 +39,0 @@
+@@ -40 +40,0 @@
 -openidconnect = { version = "4", default-features = false, features = ["reqwest", "rustls-tls"] }
 --- a/server/src/auth/browser_sessions.rs
 +++ b/server/src/auth/browser_sessions.rs
@@ -2928,6 +3176,42 @@
 @@ -87 +87 @@
 -                .header("X-Space-Path", &state.space_folder_path)
 +                .header("X-Space-Path", percent_encoding::utf8_percent_encode(&state.space_folder_path, percent_encoding::NON_ALPHANUMERIC).to_string())
+@@ -590,0 +591,28 @@
++// Additional restore-only containment check, under the same path lock as If-Match/write.
++fn validate_restore_path(root: &str, path: &str) -> Result<(), SpaceError> {
++    use std::path::{Component, Path, PathBuf};
++    let mut current = PathBuf::from(root);
++    let parts: Vec<_> = Path::new(path).components().collect();
++    for (index, component) in parts.iter().enumerate() {
++        let Component::Normal(name) = component else { return Err(SpaceError::PathOutsideRoot); };
++        current.push(name);
++        match std::fs::symlink_metadata(&current) {
++            Ok(meta) => {
++                if meta.file_type().is_symlink() || (index + 1 < parts.len() && !meta.is_dir()) {
++                    return Err(SpaceError::PathOutsideRoot);
++                }
++                if index + 1 == parts.len() {
++                    if !meta.is_file() { return Err(SpaceError::PathOutsideRoot); }
++                    #[cfg(unix)] {
++                        use std::os::unix::fs::MetadataExt;
++                        if meta.nlink() > 1 { return Err(SpaceError::PathOutsideRoot); }
++                    }
++                }
++            }
++            Err(e) if e.kind() == std::io::ErrorKind::NotFound => break,
++            Err(e) => return Err(SpaceError::Io(e)),
++        }
++    }
++    Ok(())
++}
++
+@@ -597,0 +626 @@
++    let restore_regular = headers.get("x-local-git-restore").is_some_and(|v| v == "1");
+@@ -618,0 +648,4 @@
++
++            if restore_regular {
++                validate_restore_path(&state_inner.space_folder_path, &path_inner)?;
++            }
 --- a/server/src/handlers/mcp_oauth.rs
 +++ b/server/src/handlers/mcp_oauth.rs
 @@ -144 +144 @@
@@ -3032,9 +3316,82 @@
 -    }
 +    // Offline build: outbound implementation removed.
 +    (StatusCode::FORBIDDEN, "Offline build: outbound HTTP proxy removed").into_response()
+--- a/server/src/handlers/revisions.rs
++++ b/server/src/handlers/revisions.rs
+@@ -19,0 +20 @@
++    regular: Option<String>,
+@@ -249,0 +251,20 @@
++#[derive(Deserialize)]
++#[serde(deny_unknown_fields)]
++pub struct NamedSnapshot { message: String }
++
++pub async fn handle_named_snapshot(
++    State(state): State<Arc<ServerState>>,
++    axum::Extension(actor): axum::Extension<crate::auth::Actor>,
++    axum::Json(request): axum::Json<NamedSnapshot>,
++) -> Response {
++    if state.boot_config.read_only { return StatusCode::FORBIDDEN.into_response(); }
++    if request.message.trim().is_empty() || request.message.len() > 4096 || request.message.contains('\0') {
++        return (StatusCode::BAD_REQUEST, "commit message must contain 1..4096 bytes without NUL").into_response();
++    }
++    let Some(history) = state.revisions.clone() else { return disabled(); };
++    match run_blocking(move || history.commit_named(&actor, &request.message)).await {
++        Ok(id) => axum::Json(serde_json::json!({"committed": id.is_some(), "commit": id})).into_response(),
++        Err(e) => revisions_error(e),
++    }
++}
++
+@@ -259,0 +281 @@
++    let regular = flag(q.regular.as_ref());
+@@ -302 +324,4 @@
+-            run_blocking(move || read::file_at(history.store(), &path_inner, &rev, parent)).await;
++            run_blocking(move || {
++                if regular { read::file_at_regular(history.store(), &path_inner, &rev, parent) }
++                else { read::file_at(history.store(), &path_inner, &rev, parent) }
++            }).await;
 --- a/server/src/handlers/shell.rs
 +++ b/server/src/handlers/shell.rs
-@@ -40,38 +40,2 @@
+@@ -2 +1,0 @@
+-
+@@ -6,2 +4,0 @@
+-
+-use crate::router::run_blocking;
+@@ -10,6 +7,5 @@
+-#[derive(serde::Deserialize)]
+-struct ShellRequest {
+-    cmd: String,
+-    #[serde(default)]
+-    args: Vec<String>,
+-    stdin: Option<String>,
++pub async fn handle_shell(
++    State(_state): State<Arc<ServerState>>,
++    _body: axum::body::Bytes,
++) -> impl IntoResponse {
++    (StatusCode::FORBIDDEN, "Offline build: shell execution removed").into_response()
+@@ -17,411 +12,0 @@
+-
+-#[derive(serde::Serialize)]
+-struct ShellResponse {
+-    stdout: String,
+-    stderr: String,
+-    code: i32,
+-}
+-
+-fn err_response(status: StatusCode, message: &str) -> (StatusCode, axum::Json<ShellResponse>) {
+-    (
+-        status,
+-        axum::Json(ShellResponse {
+-            stdout: String::new(),
+-            stderr: message.into(),
+-            code: -1,
+-        }),
+-    )
+-}
+-
+-pub async fn handle_shell(
+-    State(state): State<Arc<ServerState>>,
+-    body: axum::body::Bytes,
+-) -> impl IntoResponse {
 -    if state.boot_config.read_only {
 -        return err_response(StatusCode::METHOD_NOT_ALLOWED, "Read-only mode");
 -    }
@@ -3073,8 +3430,356 @@
 -        // run_blocking only errors on a join failure; surface as a shell error.
 -        Err(e) => err_response(StatusCode::OK, &e.to_string()),
 -    }
-+    // Offline build: outbound implementation removed.
-+    (StatusCode::FORBIDDEN, "Offline build: shell execution removed").into_response()
+-}
+-
+-/// Upper bound on a shell command's runtime. A hung command would otherwise
+-/// tie up a blocking-pool thread and its HTTP request indefinitely.
+-const COMMAND_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(60);
+-
+-/// Read a child output pipe to completion on its own thread.
+-fn drain_pipe<R: std::io::Read + Send + 'static>(
+-    pipe: Option<R>,
+-) -> std::thread::JoinHandle<Vec<u8>> {
+-    std::thread::spawn(move || {
+-        let mut buf = Vec::new();
+-        if let Some(mut r) = pipe {
+-            let _ = r.read_to_end(&mut buf);
+-        }
+-        buf
+-    })
+-}
+-
+-/// Run the command synchronously (on the blocking pool), capturing output.
+-///
+-/// stdin is fed from its own thread while stdout/stderr are drained
+-/// concurrently: writing stdin inline before reading output can deadlock
+-/// once the child fills the (~64KB) output pipe while still consuming its
+-/// input. The child is killed if it outlives `COMMAND_TIMEOUT`.
+-fn run_command(request: ShellRequest, cwd: &str) -> ShellResponse {
+-    use std::io::Write;
+-    use std::process::{Command, Stdio};
+-
+-    let spawn_failure = |e: std::io::Error| ShellResponse {
+-        stdout: String::new(),
+-        stderr: e.to_string(),
+-        code: -1,
+-    };
+-
+-    tracing::info!("Running shell command: {} {:?}", request.cmd, request.args);
+-    let mut cmd = Command::new(&request.cmd);
+-    cmd.args(&request.args).current_dir(cwd);
+-    #[cfg(windows)]
+-    {
+-        use std::os::windows::process::CommandExt;
+-        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+-    }
+-
+-    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+-    cmd.stdin(if request.stdin.is_some() {
+-        Stdio::piped()
+-    } else {
+-        Stdio::null()
+-    });
+-
+-    let mut child = match cmd.spawn() {
+-        Ok(c) => c,
+-        Err(e) => return spawn_failure(e),
+-    };
+-
+-    let stdin_writer = request.stdin.and_then(|data| {
+-        child.stdin.take().map(|mut stdin| {
+-            std::thread::spawn(move || {
+-                if let Err(e) = stdin.write_all(data.as_bytes()) {
+-                    tracing::warn!("Failed to write shell command stdin: {e}");
+-                }
+-                // `stdin` drops here, closing the pipe so the child sees EOF.
+-            })
+-        })
+-    });
+-    let stdout_handle = drain_pipe(child.stdout.take());
+-    let stderr_handle = drain_pipe(child.stderr.take());
+-
+-    let start = std::time::Instant::now();
+-    let mut timed_out = false;
+-    let status = loop {
+-        match child.try_wait() {
+-            Ok(Some(status)) => break Ok(status),
+-            Ok(None) => {
+-                if start.elapsed() >= COMMAND_TIMEOUT {
+-                    timed_out = true;
+-                    let _ = child.kill();
+-                    break child.wait();
+-                }
+-                std::thread::sleep(std::time::Duration::from_millis(25));
+-            }
+-            Err(e) => break Err(e),
+-        }
+-    };
+-
+-    // Killing (or exiting) the child closes its pipes, so these all finish.
+-    if let Some(h) = stdin_writer {
+-        let _ = h.join();
+-    }
+-    let stdout = stdout_handle.join().unwrap_or_default();
+-    let mut stderr = stderr_handle.join().unwrap_or_default();
+-    if timed_out {
+-        if !stderr.is_empty() {
+-            stderr.push(b'\n');
+-        }
+-        stderr.extend_from_slice(
+-            format!(
+-                "Command timed out after {}s and was killed",
+-                COMMAND_TIMEOUT.as_secs()
+-            )
+-            .as_bytes(),
+-        );
+-    }
+-
+-    match status {
+-        Ok(status) => ShellResponse {
+-            stdout: String::from_utf8_lossy(&stdout).into_owned(),
+-            stderr: String::from_utf8_lossy(&stderr).into_owned(),
+-            code: if timed_out {
+-                -1
+-            } else {
+-                status.code().unwrap_or(-1)
+-            },
+-        },
+-        Err(e) => ShellResponse {
+-            stdout: String::from_utf8_lossy(&stdout).into_owned(),
+-            stderr: e.to_string(),
+-            code: -1,
+-        },
+-    }
+-}
+-
+-#[cfg(test)]
+-mod tests {
+-    use crate::shell::ShellConfig;
+-    use crate::state::ServerState;
+-    use crate::test_support::test_state;
+-    use axum::body::Body;
+-    use axum::http::{Request, StatusCode};
+-    use std::sync::Arc;
+-    use tower::ServiceExt;
+-
+-    fn state_with(shell: ShellConfig, read_only: bool) -> Arc<ServerState> {
+-        let mut s = test_state();
+-        s.shell = shell;
+-        s.boot_config.read_only = read_only;
+-        Arc::new(s)
+-    }
+-
+-    async fn post_shell(state: Arc<ServerState>, json: &str) -> (StatusCode, String) {
+-        let resp = crate::build_router(state)
+-            .oneshot(
+-                Request::builder()
+-                    .method("POST")
+-                    .uri("/.shell")
+-                    .body(Body::from(json.to_string()))
+-                    .unwrap(),
+-            )
+-            .await
+-            .unwrap();
+-        let status = resp.status();
+-        let bytes = axum::body::to_bytes(resp.into_body(), usize::MAX)
+-            .await
+-            .unwrap();
+-        (status, String::from_utf8_lossy(&bytes).into_owned())
+-    }
+-
+-    #[tokio::test]
+-    async fn read_only_rejects() {
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec![],
+-            },
+-            true,
+-        );
+-        let (status, _) = post_shell(st, r#"{"cmd":"echo","args":["hi"]}"#).await;
+-        assert_eq!(status, StatusCode::METHOD_NOT_ALLOWED);
+-    }
+-
+-    #[tokio::test]
+-    async fn disabled_rejects() {
+-        let st = state_with(ShellConfig::disabled(), false);
+-        let (status, _) = post_shell(st, r#"{"cmd":"echo","args":["hi"]}"#).await;
+-        assert_eq!(status, StatusCode::METHOD_NOT_ALLOWED);
+-    }
+-
+-    #[tokio::test]
+-    async fn non_whitelisted_command_is_refused() {
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec!["git".into()],
+-            },
+-            false,
+-        );
+-        let (status, body) = post_shell(st, r#"{"cmd":"rm","args":["-rf","/"]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(body.contains("whitelist"), "got: {body}");
+-    }
+-
+-    #[cfg(unix)]
+-    #[tokio::test]
+-    async fn runs_an_allowed_command() {
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec![],
+-            },
+-            false,
+-        );
+-        let (status, body) = post_shell(st, r#"{"cmd":"echo","args":["hello"]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(body.contains("hello"), "got: {body}");
+-        assert!(body.contains("\"code\":0"), "got: {body}");
+-    }
+-
+-    #[cfg(unix)]
+-    #[tokio::test]
+-    async fn pipes_stdin_to_the_command() {
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec![],
+-            },
+-            false,
+-        );
+-        let (status, body) =
+-            post_shell(st, r#"{"cmd":"cat","args":[],"stdin":"piped-in-data"}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(
+-            body.contains("piped-in-data"),
+-            "stdout should echo stdin: {body}"
+-        );
+-        assert!(body.contains("\"code\":0"), "got: {body}");
+-    }
+-
+-    #[cfg(unix)]
+-    #[tokio::test]
+-    async fn large_stdin_does_not_deadlock() {
+-        // More than two pipe buffers exposes deadlock if stdin is written
+-        // synchronously before stdout is drained.
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec![],
+-            },
+-            false,
+-        );
+-        let big = "x".repeat(256 * 1024);
+-        let cmd = serde_json::json!({"cmd":"cat","args":[],"stdin":big}).to_string();
+-        let (status, body) = post_shell(st, &cmd).await;
+-        assert_eq!(status, StatusCode::OK);
+-        let v: serde_json::Value = serde_json::from_str(&body).unwrap();
+-        assert_eq!(v["stdout"].as_str().unwrap().len(), 256 * 1024);
+-        assert_eq!(v["code"], 0);
+-    }
+-
+-    /// Build state whose space folder (the shell cwd) is `cwd`, with shell on.
+-    fn state_in_dir(cwd: &str) -> Arc<ServerState> {
+-        let mut s = test_state();
+-        s.shell = ShellConfig {
+-            enabled: true,
+-            whitelist: vec![],
+-        };
+-        s.space_folder_path = cwd.to_string();
+-        Arc::new(s)
+-    }
+-
+-    #[tokio::test]
+-    async fn nonexistent_command_returns_minus_one() {
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec![],
+-            },
+-            false,
+-        );
+-        let (status, body) = post_shell(st, r#"{"cmd":"nonexistent_cmd_12345","args":[]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(
+-            body.contains("\"code\":-1"),
+-            "spawn failure → code -1: {body}"
+-        );
+-    }
+-
+-    #[cfg(unix)]
+-    #[tokio::test]
+-    async fn whitelisted_command_is_allowed() {
+-        let st = state_with(
+-            ShellConfig {
+-                enabled: true,
+-                whitelist: vec!["echo".into()],
+-            },
+-            false,
+-        );
+-        let (status, body) = post_shell(st, r#"{"cmd":"echo","args":["ok"]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(
+-            body.contains("ok") && body.contains("\"code\":0"),
+-            "got: {body}"
+-        );
+-    }
+-
+-    #[cfg(unix)]
+-    #[tokio::test]
+-    async fn runs_in_the_space_folder() {
+-        let dir = tempfile::tempdir().unwrap();
+-        std::fs::write(dir.path().join("marker.txt"), b"x").unwrap();
+-        let st = state_in_dir(dir.path().to_str().unwrap());
+-        let (status, body) = post_shell(st, r#"{"cmd":"ls","args":[]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(
+-            body.contains("marker.txt"),
+-            "ls should run in the space folder: {body}"
+-        );
+-    }
+-
+-    #[cfg(unix)]
+-    #[tokio::test]
+-    async fn captures_both_stdout_and_stderr() {
+-        let dir = tempfile::tempdir().unwrap();
+-        let script = dir.path().join("both.sh");
+-        std::fs::write(&script, b"#!/bin/sh\necho out\necho err >&2\nexit 0\n").unwrap();
+-        let st = state_in_dir(dir.path().to_str().unwrap());
+-        let cmd = serde_json::json!({"cmd": "sh", "args": [script.to_str().unwrap()]}).to_string();
+-        let (status, body) = post_shell(st, &cmd).await;
+-        assert_eq!(status, StatusCode::OK);
+-        let v: serde_json::Value = serde_json::from_str(&body).unwrap();
+-        assert_eq!(v["stdout"].as_str().unwrap().trim(), "out");
+-        assert_eq!(v["stderr"].as_str().unwrap().trim(), "err");
+-    }
+-
+-    // Use a real Windows directory; the default test cwd is Unix-style.
+-    #[cfg(windows)]
+-    #[tokio::test]
+-    async fn runs_an_allowed_command_windows() {
+-        let dir = tempfile::tempdir().unwrap();
+-        let st = state_in_dir(dir.path().to_str().unwrap());
+-        let (status, body) = post_shell(st, r#"{"cmd":"cmd","args":["/C","echo","hello"]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(body.contains("hello"), "got: {body}");
+-        assert!(body.contains("\"code\":0"), "got: {body}");
+-    }
+-
+-    #[cfg(windows)]
+-    #[tokio::test]
+-    async fn runs_in_the_space_folder_windows() {
+-        let dir = tempfile::tempdir().unwrap();
+-        std::fs::write(dir.path().join("marker.txt"), b"x").unwrap();
+-        let st = state_in_dir(dir.path().to_str().unwrap());
+-        let (status, body) = post_shell(st, r#"{"cmd":"cmd","args":["/C","dir","/B"]}"#).await;
+-        assert_eq!(status, StatusCode::OK);
+-        assert!(
+-            body.contains("marker.txt"),
+-            "dir should run in the space folder: {body}"
+-        );
+-    }
+-}
 --- a/server/src/multi/dispatch.rs
 +++ b/server/src/multi/dispatch.rs
 @@ -116 +116 @@
@@ -3086,6 +3791,235 @@
 @@ -146 +146 @@
 -                .and_then(|value| reqwest::Url::parse(value).ok())
 +                .and_then(|value| url::Url::parse(value).ok())
+--- a/server/src/multi/git_connection.rs
++++ b/server/src/multi/git_connection.rs
+@@ -268,198 +268 @@
+-    use serde_json::json;
+-    let folder = draft_dir(root, id, &draft.id)?;
+-    std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
+-    let folder = folder.canonicalize().map_err(|e| e.to_string())?;
+-    let repo = repo.canonicalize().map_err(|e| e.to_string())?;
+-    let detect_remote_default = if draft.remote_branch_selected {
+-        false
+-    } else {
+-        let upstream = git::run(
+-            &repo,
+-            &["config", "--get", &format!("branch.{}.merge", draft.branch)],
+-            &[],
+-        )
+-        .ok()
+-        .and_then(|s| s.trim().strip_prefix("refs/heads/").map(String::from));
+-        draft.remote_branch = upstream.clone().unwrap_or_else(|| draft.branch.clone());
+-        upstream.is_none()
+-    };
+-    let inspection = Inspection(folder.join(format!("inspect-{}", uuid::Uuid::new_v4())));
+-    git::run_with_timeout(
+-        &repo,
+-        &[
+-            "clone",
+-            "--bare",
+-            "--no-hardlinks",
+-            "--",
+-            &repo.to_string_lossy(),
+-            &inspection.0.to_string_lossy(),
+-        ],
+-        &[("SB_GIT_NO_HOOKS", "1")],
+-        CONNECTION_CHECK_TIMEOUT,
+-    )?;
+-    let config_path = git::run(
+-        &repo,
+-        &["rev-parse", "--git-path", "config"],
+-        &[("SB_GIT_NO_HOOKS", "1")],
+-    )?;
+-    let config_path = repo.join(config_path.trim());
+-    std::fs::copy(config_path, inspection.0.join("config")).map_err(|e| e.to_string())?;
+-    git::run(
+-        &inspection.0,
+-        &["config", "core.bare", "true"],
+-        &[("SB_GIT_NO_HOOKS", "1")],
+-    )?;
+-    let _ = git::run(
+-        &inspection.0,
+-        &["config", "--unset", "core.worktree"],
+-        &[("SB_GIT_NO_HOOKS", "1")],
+-    );
+-    configure(&inspection.0, draft)?;
+-    let mut envs = match keys::checked_envs_for_mode(draft.mode, &folder, "key", &inspection.0) {
+-        Ok(envs) => envs,
+-        Err(error) => {
+-            let (kind, message) = crate::revisions::describe_sync_error(&error);
+-            draft.test = Some(
+-                json!({"reachable":false,"writable":false,"kind":kind,"message":message,"checkedUrl":draft.url,"checkedAt":now()}),
+-            );
+-            return Ok(());
+-        }
+-    };
+-    if draft.mode == GitSyncMode::Key {
+-        if let Some((_, path)) = envs
+-            .iter_mut()
+-            .find(|(name, _)| name == "SB_MANAGED_KNOWN_HOSTS")
+-        {
+-            *path = keys::known_hosts_path(root).to_string_lossy().into_owned();
+-        }
+-    }
+-    envs.push(("SB_GIT_NO_HOOKS".into(), "1".into()));
+-    let envs: Vec<_> = envs.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+-    if detect_remote_default {
+-        if let Ok(refs) = git::run_with_timeout(
+-            &inspection.0,
+-            &["ls-remote", "--symref", "--", &draft.url, "HEAD"],
+-            &envs,
+-            CONNECTION_CHECK_TIMEOUT,
+-        ) {
+-            if let Some(branch) = refs.lines().find_map(|line| {
+-                line.strip_prefix("ref: refs/heads/")
+-                    .and_then(|s| s.strip_suffix("\tHEAD"))
+-            }) {
+-                if git::run(
+-                    &inspection.0,
+-                    &["check-ref-format", &format!("refs/heads/{branch}")],
+-                    &[],
+-                )
+-                .is_ok()
+-                {
+-                    draft.remote_branch = branch.to_string();
+-                }
+-            }
+-        }
+-    }
+-    let local_head = git::run(
+-        &inspection.0,
+-        &["rev-parse", "--verify", "HEAD"],
+-        &[("SB_GIT_NO_HOOKS", "1")],
+-    )
+-    .ok()
+-    .map(|s| s.trim().to_string());
+-    let mut result = json!({"reachable":false,"writable":false,"kind":"other","message":"Connection check failed", "checkedUrl":draft.url,"checkedAt":now(),"branch":draft.branch,"remoteBranch":draft.remote_branch,"localHead":local_head,"remoteHead":null,"ahead":null,"behind":null,"unrelated":false,"credentialIdentity":keys::connection_identity(&inspection.0,&folder,"key",draft.mode).ok()});
+-    match git::run_with_timeout(
+-        &inspection.0,
+-        &[
+-            "ls-remote",
+-            "--heads",
+-            "--",
+-            &draft.url,
+-            &format!("refs/heads/{}", draft.remote_branch),
+-        ],
+-        &envs,
+-        CONNECTION_CHECK_TIMEOUT,
+-    ) {
+-        Err(error) => {
+-            let (kind, message) = super::admin_api::classify_git_test_error(&error);
+-            result["kind"] = json!(kind);
+-            result["message"] = json!(message);
+-        }
+-        Ok(refs) => {
+-            result["reachable"] = json!(true);
+-            let remote_head = refs.split_whitespace().next().map(String::from);
+-            result["remoteHead"] = json!(remote_head);
+-            if remote_head.is_some() {
+-                match git::run_with_timeout(
+-                    &inspection.0,
+-                    &["fetch", "--no-tags", "--", &draft.url, &draft.remote_branch],
+-                    &envs,
+-                    CONNECTION_CHECK_TIMEOUT,
+-                ) {
+-                    Ok(_) => {
+-                        if local_head.is_some() {
+-                            if let Ok((ahead, behind)) =
+-                                crate::revisions::sync::ahead_behind(&inspection.0, "HEAD")
+-                            {
+-                                result["ahead"] = json!(ahead);
+-                                result["behind"] = json!(behind);
+-                            }
+-                            result["unrelated"] = json!(git::run(
+-                                &inspection.0,
+-                                &["merge-base", "HEAD", "FETCH_HEAD"],
+-                                &[("SB_GIT_NO_HOOKS", "1")]
+-                            )
+-                            .is_err());
+-                        }
+-                    }
+-                    Err(error) => {
+-                        let (kind, message) = super::admin_api::classify_git_test_error(&error);
+-                        result["kind"] = json!(kind);
+-                        result["message"] = json!(message);
+-                        result["checkedAt"] = json!(now());
+-                        draft.test = Some(result);
+-                        return Ok(());
+-                    }
+-                }
+-            } else {
+-                result["behind"] = json!(0);
+-                result["ahead"] = json!(git::run(
+-                    &inspection.0,
+-                    &["rev-list", "--count", "HEAD"],
+-                    &[("SB_GIT_NO_HOOKS", "1")]
+-                )
+-                .ok()
+-                .and_then(|s| s.trim().parse::<usize>().ok()));
+-            }
+-            if local_head.is_none() {
+-                result["kind"] = json!("emptyRepo");
+-                result["message"] = json!("Repository reachable. Push preflight is inconclusive until this space has a commit.");
+-            } else {
+-                match git::run_with_timeout(
+-                    &inspection.0,
+-                    &[
+-                        "push",
+-                        "--dry-run",
+-                        "-q",
+-                        "--",
+-                        &draft.url,
+-                        &format!("HEAD:refs/heads/{}", draft.remote_branch),
+-                    ],
+-                    &envs,
+-                    CONNECTION_CHECK_TIMEOUT,
+-                ) {
+-                    Ok(_) => {
+-                        result["writable"] = json!(true);
+-                        result["kind"] = json!("ok");
+-                        result["message"] = json!("Repository reachable. Push preflight passed; server hooks and branch protection may still reject a real push.");
+-                    }
+-                    Err(error) => {
+-                        let (kind, message) = super::admin_api::classify_git_test_error(&error);
+-                        result["kind"] = json!(kind);
+-                        result["message"] = json!(message);
+-                    }
+-                }
+-            }
+-        }
+-    }
+-    result["checkedAt"] = json!(now());
+-    draft.test = Some(result);
+-    Ok(())
++    Err("Offline build: Git network connections removed".into())
+@@ -1282,0 +1086,4 @@
++async fn offline_connection() -> Response {
++    (StatusCode::FORBIDDEN, "Offline build: Git network connections removed").into_response()
++}
++
+@@ -1285 +1092 @@
+-        .route("/spaces/{id}/git/draft", post(create))
++        .route("/spaces/{id}/git/draft", post(offline_connection))
+@@ -1288,9 +1095,9 @@
+-            put(update).delete(cancel),
+-        )
+-        .route("/spaces/{id}/git/draft/{draftId}/key", post(generate_key))
+-        .route("/spaces/{id}/git/draft/{draftId}/test", post(test))
+-        .route("/spaces/{id}/git/draft/{draftId}/apply", post(apply))
+-        .route("/spaces/{id}/git/pause", post(pause))
+-        .route("/spaces/{id}/git/resume", post(resume))
+-        .route("/spaces/{id}/git/connection", delete(disconnect))
+-}
++            put(offline_connection).delete(offline_connection),
++        )
++        .route("/spaces/{id}/git/draft/{draftId}/key", post(offline_connection))
++        .route("/spaces/{id}/git/draft/{draftId}/test", post(offline_connection))
++        .route("/spaces/{id}/git/draft/{draftId}/apply", post(offline_connection))
++        .route("/spaces/{id}/git/pause", post(offline_connection))
++        .route("/spaces/{id}/git/resume", post(offline_connection))
++        .route("/spaces/{id}/git/connection", delete(offline_connection))
++}
 --- a/server/src/multi/server_config.rs
 +++ b/server/src/multi/server_config.rs
 @@ -127 +127 @@
@@ -3099,17 +4033,39 @@
 @@ -365 +365 @@
 -    let parsed_host = reqwest::Url::parse(&format!("http://{host}/"))
 +    let parsed_host = url::Url::parse(&format!("http://{host}/"))
+--- a/server/src/revisions/engine.rs
++++ b/server/src/revisions/engine.rs
+@@ -1032,0 +1033,13 @@
++    /// A named local snapshot. Pending events stay queued so concurrent edits are not discarded.
++    pub fn commit_named(&self, actor: &crate::auth::Actor, message: &str) -> Result<Option<String>, String> {
++        if !self.inner.store.auto_commit_allowed() { return Err("revisions are not managed".into()); }
++        let _guard = self.inner.commit_lock.lock().unwrap_or_else(|e| e.into_inner());
++        let _mutation = self.inner.fs_guard.mutation.write().unwrap_or_else(|e| e.into_inner());
++        let attribution = Attribution::Account {
++            name: actor.full_name.clone().or_else(|| actor.username.clone()).unwrap_or_else(|| "SilverBullet".into()),
++            email: actor.email.clone(),
++        };
++        let (name, email) = self.inner.identity_for(&attribution);
++        self.inner.store.commit_all(&name, &email, message)
++    }
++
 --- a/server/src/revisions/git.rs
 +++ b/server/src/revisions/git.rs
 @@ -1 +1 @@
 -use std::io::Read;
-+//! Offline build: external Git transport/execution code removed.
-@@ -3,280 +3,5 @@
--use std::process::{Command, Output, Stdio};
++//! Local Git only. No transport, remote helper, hooks, filters or lazy fetch.
+@@ -4,2 +4,8 @@
 -use std::sync::OnceLock;
 -use std::time::{Duration, Instant};
--
--pub fn available() -> bool {
++use std::time::Duration;
++
++const LOCAL: &[&str] = &[
++    "init", "rev-parse", "symbolic-ref", "config", "diff", "log", "show",
++    "ls-files", "ls-tree", "add", "commit", "status", "check-ref-format",
++    "rev-list", "merge-base", "for-each-ref", "update-ref", "cat-file",
++    "write-tree", "read-tree", "update-index", "hash-object", "merge-file", "reset",
++];
+@@ -8,32 +14 @@
 -    static AVAILABLE: OnceLock<bool> = OnceLock::new();
 -    *AVAILABLE.get_or_init(probe)
 -}
@@ -3142,9 +4098,8 @@
 -    std::env::split_paths(&path)
 -        .map(|d| d.join("git"))
 -        .find(|c| c.is_file())
--}
--
--pub(super) fn git_command() -> Command {
++    git_command().arg("--version").output().is_ok_and(|o| o.status.success())
+@@ -43,54 +18,15 @@
 -    let cmd = Command::new("git");
 -    #[cfg(windows)]
 -    {
@@ -3199,16 +4154,28 @@
 -        }
 -    }
 -    cmd
--}
--
--fn output(mut command: Command, timeout: Duration) -> Result<Output, String> {
++    let mut command = Command::new("git");
++    // The service uses the system PATH. Drop GIT_*, proxy and loader overrides.
++    command.env_clear().env("HOME", std::env::var_os("HOME").unwrap_or_else(|| "/nonexistent".into())).env("PATH", "/usr/bin:/bin")
++        .env("LANG", "C.UTF-8").env("LC_ALL", "C.UTF-8")
++        .env("GIT_CONFIG_NOSYSTEM", "1")
++        .env("GIT_CONFIG_GLOBAL", "/dev/null").env("GIT_CONFIG_SYSTEM", "/dev/null")
++        .env("GIT_ATTR_NOSYSTEM", "1").env("GIT_ALLOW_PROTOCOL", "")
++        .env("GIT_NO_LAZY_FETCH", "1").env("GIT_NO_REPLACE_OBJECTS", "1")
++        .env("GIT_TERMINAL_PROMPT", "0").env("GIT_OPTIONAL_LOCKS", "0")
++        .args(["--no-pager", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false",
++            "-c", "core.attributesFile=/dev/null", "-c", "commit.gpgsign=false",
++            "-c", "tag.gpgsign=false", "-c", "log.showSignature=false",
++            "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "submodule.recurse=false",
++            "-c", "protocol.allow=never", "-c", "init.templateDir=", "-c", "init.defaultBranch=main"]);
++    command
+@@ -100,4 +36 @@
 -    command
 -        .stdout(Stdio::piped())
 -        .stderr(Stdio::piped())
 -        .stdin(Stdio::null());
--    #[cfg(unix)]
--    {
--        use std::os::unix::process::CommandExt;
++    command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
+@@ -107,26 +40,66 @@
 -        command.process_group(0);
 -    }
 -    let mut child = command
@@ -3235,7 +4202,73 @@
 -                let _ = Command::new("kill")
 -                    .args(["-KILL", "--", &format!("-{}", child.id())])
 -                    .status();
--            }
++        let seconds = timeout.as_secs().clamp(1, u32::MAX as u64) as u32;
++        // alarm survives exec; only this child expires. No signalling of host PIDs.
++        unsafe { command.pre_exec(move || {
++            libc::signal(libc::SIGALRM, libc::SIG_DFL);
++            libc::alarm(seconds);
++            Ok(())
++        }); }
++    }
++    command.output().map_err(|e| format!("local Git could not run: {e}"))
++}
++
++fn safe_config_key(key: &str) -> bool {
++    matches!(key,
++        "core.repositoryformatversion" | "core.filemode" | "core.bare" |
++        "core.logallrefupdates" | "core.ignorecase" | "core.precomposeunicode" |
++        "core.autocrlf" | "core.safecrlf" | "core.eol" | "core.symlinks" |
++        "core.protecthfs" | "core.protectntfs" | "core.trustctime" | "core.checkstat" |
++        "user.name" | "user.email" | "silverbullet.managed" | "init.defaultbranch")
++        || (key.starts_with("remote.") && [".url", ".fetch", ".pushurl"].iter().any(|s| key.ends_with(s)))
++        || (key.starts_with("branch.") && [".remote", ".merge", ".pushremote"].iter().any(|s| key.ends_with(s)))
++}
++
++fn validate_repo(repo: &Path, operation: &str) -> Result<(), String> {
++    let directory = repo.join(".git");
++    if directory.is_symlink() { return Err("local Git refuses symlinked metadata".into()); }
++    if !directory.exists() && operation == "init" { return Ok(()); }
++    if !directory.is_dir() || directory.is_symlink() {
++        return Err("local Git requires a dedicated .git directory in this space".into());
++    }
++    for name in ["config", "objects", "refs", "HEAD", "index", "packed-refs", "config.worktree", "info/attributes"] {
++        if directory.join(name).is_symlink() {
++            return Err("local Git refuses symlinked repository metadata".into());
++        }
++    }
++    for name in ["commondir", "objects/info/alternates", "objects/info/http-alternates"] {
++        if directory.join(name).exists() {
++            return Err("local Git refuses shared/alternate object stores".into());
++        }
++    }
++    // Config reads don't execute hooks/filters. Reject indirection before add/log.
++    let mut inspect = git_command();
++    inspect.arg("-C").arg(repo).args(["config", "--local", "--no-includes", "--null", "--list"]);
++    let out = output(inspect, Duration::from_secs(10))?;
++    if !out.status.success() { return Err("local Git configuration could not be read".into()); }
++    for record in out.stdout.split(|b| *b == 0).filter(|r| !r.is_empty()) {
++        let key = String::from_utf8_lossy(record).split('\n').next().unwrap_or("").to_ascii_lowercase();
++        if !safe_config_key(&key) {
++            return Err(format!("local Git refuses unsupported repository setting: {key}"));
++        }
++    }
++    Ok(())
++}
++
++fn command(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Command, String> {
++    let args = if args.starts_with(&["-c", "commit.gpgsign=false"]) { &args[2..] } else { args };
++    let operation = args.first().copied().ok_or("missing local Git operation")?;
++    if !LOCAL.contains(&operation) { return Err("offline build: Git operation is not local/allowed".into()); }
++    if operation == "config" {
++        let read = args.iter().skip(1).take_while(|a| a.starts_with('-')).any(|a| matches!(*a, "--get" | "--get-all" | "--get-regexp" | "--list" | "-l"));
++        if args.iter().any(|a| matches!(*a, "--global" | "--system" | "--file" | "-f" | "--includes")) {
++            return Err("local Git configuration scope is fixed".into());
++        }
++        if !read {
++            let key = args.iter().skip(1).find(|a| !a.starts_with('-')).ok_or("missing configuration key")?;
++            if !matches!(*key, "silverbullet.managed" | "user.name" | "user.email") {
++                return Err("offline build: repository setting is not writable".into());
+@@ -134,143 +107,17 @@
 -            let _ = child.kill();
 -            let _ = child.wait();
 -            return Err("git operation timed out".into());
@@ -3379,26 +4412,39 @@
 -        }
 -        Ok(())
 -    }
--}
++        }
++    }
++    validate_repo(repo, operation)?;
++    let mut command = git_command();
++    command.env("GIT_CEILING_DIRECTORIES", repo.parent().unwrap_or(repo));
++    command.arg("-C").arg(repo).arg(operation);
++    if matches!(operation, "diff" | "log" | "show") { command.args(["--no-ext-diff", "--no-textconv"]); }
++    if operation == "status" { command.arg("--ignore-submodules=all"); }
++    if operation == "init" { command.arg("--object-format=sha1"); }
++    if operation == "config" { command.args(["--local", "--no-includes"]); }
++    command.args(&args[1..]);
++    for (key, value) in envs {
++        if matches!(*key, "GIT_AUTHOR_NAME" | "GIT_AUTHOR_EMAIL" | "GIT_COMMITTER_NAME" | "GIT_COMMITTER_EMAIL" | "GIT_LITERAL_PATHSPECS") {
++            command.env(key, value);
++        }
++    }
++    Ok(command)
+@@ -282,11 +129,3 @@
 -
--pub fn run(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<String, String> {
--    run_with_timeout(repo, args, envs, Duration::from_secs(60))
--}
--
-+use std::process::Command;
-+use std::time::Duration;
-+pub fn available() -> bool { false }
-+pub(super) fn git_command() -> Command { Command::new("/dev/null") }
-+pub fn run(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<String, String> { Err("Offline build: Git integration removed".into()) }
-@@ -288,202 +13,4 @@
+-pub fn run_with_timeout(
+-    repo: &Path,
+-    args: &[&str],
+-    envs: &[(&str, &str)],
+-    timeout: Duration,
 -) -> Result<String, String> {
 -    run_bytes_with_timeout(repo, args, envs, timeout)
 -        .map(|b| String::from_utf8_lossy(&b).into_owned())
 -}
 -
--pub fn run_bytes(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Vec<u8>, String> {
--    run_bytes_with_timeout(repo, args, envs, Duration::from_secs(60))
--}
++pub fn run_with_timeout(repo: &Path, args: &[&str], envs: &[(&str, &str)], timeout: Duration) -> Result<String, String> {
++    run_bytes_with_timeout(repo, args, envs, timeout).map(|b| String::from_utf8_lossy(&b).into_owned())
++}
+@@ -296,34 +135,5 @@
 -
 -fn run_bytes_with_timeout(
 -    repo: &Path,
@@ -3433,23 +4479,34 @@
 -/// Exit-code query: Ok(true) on status 0, Ok(false) on the given "false" code.
 -/// `git diff` signals "differences found" with exit code 1, the way `diff(1)`
 -/// does, so [`run`] would read a perfectly good diff as a failure.
--pub fn run_diff(repo: &Path, args: &[&str]) -> Result<String, String> {
++fn run_bytes_with_timeout(repo: &Path, args: &[&str], envs: &[(&str, &str)], timeout: Duration) -> Result<Vec<u8>, String> {
++    let out = output(command(repo, args, envs)?, timeout)?;
++    if out.status.success() { Ok(out.stdout) }
++    else { Err(format!("local Git failed ({}): {}", out.status, String::from_utf8_lossy(&out.stderr).trim())) }
++}
+@@ -331,4 +141 @@
 -    if !available() {
 -        return Err("git is not installed".to_string());
 -    }
 -    let out = output(command(repo, args, &[]), Duration::from_secs(60))?;
--    match out.status.code() {
++    let out = output(command(repo, args, &[])?, Duration::from_secs(60))?;
+@@ -336,5 +143,4 @@
 -        Some(0) | Some(1) => Ok(String::from_utf8_lossy(&out.stdout).into_owned()),
 -        _ => Err(String::from_utf8_lossy(&out.stderr).trim().to_string()),
 -    }
 -}
 -
--pub fn check(repo: &Path, args: &[&str], false_code: i32) -> Result<bool, String> {
++        Some(0 | 1) => Ok(String::from_utf8_lossy(&out.stdout).into_owned()),
++        _ => Err(String::from_utf8_lossy(&out.stderr).into_owned()),
++    }
++}
+@@ -342,4 +148 @@
 -    if !available() {
 -        return Err("git is not installed".to_string());
 -    }
 -    let out = output(command(repo, args, &[]), Duration::from_secs(60))?;
--    match out.status.code() {
++    let out = output(command(repo, args, &[])?, Duration::from_secs(60))?;
+@@ -347,8 +150,7 @@
 -        Some(0) => Ok(true),
 -        Some(c) if c == false_code => Ok(false),
 -        _ => Err(String::from_utf8_lossy(&out.stderr).trim().to_string()),
@@ -3458,7 +4515,14 @@
 -
 -#[cfg(all(test, unix))]
 -mod transport_tests {
--    use super::*;
++        Some(0) => Ok(true), Some(c) if c == false_code => Ok(false),
++        _ => Err(String::from_utf8_lossy(&out.stderr).into_owned()),
++    }
++}
++
++#[cfg(test)]
++mod offline_tests {
+@@ -356,14 +158,42 @@
 -    use crate::{multi::config::GitSyncMode, revisions::keys};
 -    #[test]
 -    fn git_command_respects_operation_timeout() {
@@ -3473,7 +4537,49 @@
 -    }
 -    #[test]
 -    fn a_late_repository_rewrite_cannot_redirect_the_managed_key() {
--        use std::os::unix::fs::PermissionsExt;
++    use std::fs;
++    use std::sync::atomic::{AtomicU64, Ordering};
++    static NEXT: AtomicU64 = AtomicU64::new(0);
++    struct Repo(std::path::PathBuf);
++    impl Repo {
++        fn new() -> Self {
++            let name = format!("offline-git-{}-{}", std::process::id(), NEXT.fetch_add(1, Ordering::Relaxed));
++            let root = std::env::temp_dir().join(name);
++            fs::create_dir(&root).unwrap();
++            run(&root, &["init", "-q"], &[]).unwrap();
++            Self(root)
++        }
++        fn commit(&self) -> String {
++            run(&self.0, &["add", "-A", "--"], &[]).unwrap();
++            run(&self.0, &["commit", "-q", "-m", "Local test"], &[
++                ("GIT_AUTHOR_NAME", "Test"), ("GIT_AUTHOR_EMAIL", "test@local.invalid"),
++                ("GIT_COMMITTER_NAME", "Test"), ("GIT_COMMITTER_EMAIL", "test@local.invalid"),
++            ]).unwrap();
++            run(&self.0, &["rev-parse", "HEAD"], &[]).unwrap().trim().into()
++        }
++    }
++    impl Drop for Repo { fn drop(&mut self) { let _ = fs::remove_dir_all(&self.0); } }
++
++    #[test]
++    fn local_commit_read_diff_unicode_path() {
++        let repo = Repo::new();
++        fs::write(repo.0.join("Заметка % $.md"), "first\n").unwrap();
++        let commit = repo.commit();
++        assert_eq!(run(&repo.0, &["show", &format!("{commit}:Заметка % $.md")], &[]).unwrap(), "first\n");
++        fs::write(repo.0.join("Заметка % $.md"), "second\n").unwrap();
++        assert!(run_diff(&repo.0, &["diff", "--", "Заметка % $.md"]).unwrap().contains("+second"));
++    }
++    #[test]
++    fn remote_and_arbitrary_operations_rejected_before_execution() {
++        let repo = Repo::new();
++        for operation in ["fetch", "push", "pull", "clone", "ls-remote", "remote", "submodule", "credential", "daemon", "help", "unsafe-alias"] {
++            assert!(run(&repo.0, &[operation, "https://198.51.100.10/repository"], &[]).unwrap_err().contains("not local/allowed"));
++        }
++        assert!(run(&repo.0, &["-c", "alias.unsafe=!touch marker", "unsafe"], &[]).is_err());
++    }
++    #[test]
++    fn hooks_do_not_execute() {
+@@ -371,119 +201,43 @@
 -        let root = tempfile::TempDir::new().unwrap();
 -        let repo = tempfile::TempDir::new().unwrap();
 -        run(repo.path(), &["init", "-q"], &[]).unwrap();
@@ -3593,13 +4699,91 @@
 -        );
 -    }
 -}
-+) -> Result<String, String> { Err("Offline build: Git integration removed".into()) }
-+pub fn run_bytes(repo: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Vec<u8>, String> { Err("Offline build: Git integration removed".into()) }
-+pub fn run_diff(repo: &Path, args: &[&str]) -> Result<String, String> { Err("Offline build: Git integration removed".into()) }
-+pub fn check(repo: &Path, args: &[&str], false_code: i32) -> Result<bool, String> { Err("Offline build: Git integration removed".into()) }
++        let repo = Repo::new();
++        let hook = repo.0.join(".git/hooks/post-commit");
++        fs::create_dir_all(hook.parent().unwrap()).unwrap();
++        fs::write(&hook, "#!/bin/sh\nprintf should-not-run > hook-ran\n").unwrap();
++        fs::set_permissions(hook, fs::Permissions::from_mode(0o755)).unwrap();
++        fs::write(repo.0.join("note.md"), "version\n").unwrap();
++        repo.commit();
++        assert!(!repo.0.join("hook-ran").exists());
++    }
++    #[test]
++    fn unsafe_configs_and_partial_clone_are_rejected() {
++        let repo = Repo::new();
++        let path = repo.0.join(".git/config");
++        let original = fs::read_to_string(&path).unwrap();
++        for setting in [
++            "[alias]\n bad = !touch helper-ran\n",
++            "[filter \"bad\"]\n clean = touch helper-ran\n",
++            "[include]\n path = /nonexistent/offline-test-config\n",
++            "[core]\n fsmonitor = touch helper-ran\n",
++            "[diff \"bad\"]\n textconv = touch helper-ran\n",
++            "[remote \"origin\"]\n url = https://198.51.100.10/repository\n promisor = true\n",
++        ] {
++            fs::write(&path, format!("{original}{setting}")).unwrap();
++            assert!(run(&repo.0, &["status", "--porcelain"], &[]).unwrap_err().contains("unsupported repository setting"));
++            assert!(!repo.0.join("helper-ran").exists());
++        }
++    }
++    #[test]
++    fn metadata_and_alternate_object_stores_are_not_followed() {
++        let repo = Repo::new();
++        let alternate = repo.0.join(".git/objects/info/alternates");
++        fs::create_dir_all(alternate.parent().unwrap()).unwrap();
++        fs::write(alternate, "/nonexistent/offline-test-objects\n").unwrap();
++        assert!(run(&repo.0, &["status", "--porcelain"], &[]).is_err());
++    }
++    #[test]
++    fn child_deadline_needs_no_kill_permission() {
++        use std::os::unix::process::ExitStatusExt;
++        let mut command = Command::new("/usr/bin/sleep"); command.arg("10");
++        let out = output(command, Duration::from_secs(1)).unwrap();
++        assert_eq!(out.status.signal(), Some(libc::SIGALRM));
++    }
++}
+--- a/server/src/revisions/read.rs
++++ b/server/src/revisions/read.rs
+@@ -419,0 +420,21 @@
++/// Restore only actual regular files; a Git symlink blob is a link target, not file content.
++pub fn file_at_regular(store: &RevisionStore, space_path: &str, rev: &str, parent: bool) -> Result<Option<Vec<u8>>, String> {
++    validate_space_path(space_path)?;
++    if !is_hex40(rev) { return Err("invalid revision".into()); }
++    let repo = store.repo_root().ok_or("no repository")?;
++    let Some(rev) = effective_rev(&repo, rev, parent)? else { return Ok(None); };
++    let rel = store.rel(space_path);
++    let historical = path_at_rev(&repo, &rev, &rel, space_prefix(store).as_deref())?;
++    for candidate in std::iter::once(rel).chain(historical) {
++        let tree = git::run_bytes(&repo, &["ls-tree", "-z", &rev, "--", &candidate], &[("GIT_LITERAL_PATHSPECS", "1")])?;
++        for record in tree.split(|b| *b == 0).filter(|r| !r.is_empty()) {
++            let Some(tab) = record.iter().position(|b| *b == b'\t') else { continue; };
++            if &record[tab + 1..] != candidate.as_bytes() { continue; }
++            let mode = record.split(|b| *b == b' ').next().unwrap_or_default();
++            if mode != b"100644" && mode != b"100755" { return Err("historical entry is not a regular file".into()); }
++            return show_blob(&repo, &rev, &candidate);
++        }
++    }
++    Ok(None)
++}
++
+--- a/server/src/revisions/store.rs
++++ b/server/src/revisions/store.rs
+@@ -36,9 +36,3 @@
+-    let mut cur = path.canonicalize().ok()?;
+-    loop {
+-        if cur.join(".git").exists() {
+-            return Some(cur);
+-        }
+-        if !cur.pop() {
+-            return None;
+-        }
+-    }
++    let root = path.canonicalize().ok()?;
++    let metadata = root.join(".git");
++    (metadata.is_dir() && !metadata.is_symlink()).then_some(root)
 --- a/server/src/revisions/sync.rs
 +++ b/server/src/revisions/sync.rs
-@@ -203,7 +203,2 @@
+@@ -203,154 +203,2 @@
 -    match tick_once(repo, envs, allow_unrelated, guard, settings) {
 -        // Someone else pushed between our fetch and our push. A second whole
 -        // tick fetches and merges their commits first, so the retry can
@@ -3607,5 +4791,156 @@
 -        Err(SyncError::PushRejected) => tick_once(repo, envs, allow_unrelated, guard, settings),
 -        other => other,
 -    }
+-}
+-
+-fn tick_once(
+-    repo: &Path,
+-    envs: &[(String, String)],
+-    allow_unrelated: bool,
+-    guard: Option<&crate::fs_guard::FsGuard>,
+-    settings: Option<&super::engine::SyncSettings>,
+-) -> Result<TickOutcome, SyncError> {
+-    if crate::revisions::store::merge_in_progress(repo) {
+-        return Err(SyncError::MergeInProgress);
+-    }
+-    let target = resolve_target(repo)?;
+-    let e = env_refs(envs);
+-    let destination = match settings {
+-        Some(settings) => super::keys::checked_destination(repo, settings.mode)?,
+-        None => target.remote.clone(),
+-    };
+-
+-    let fetched = match git::run(
+-        repo,
+-        &["fetch", "-q", &destination, &target.remote_branch],
+-        &e,
+-    ) {
+-        Ok(_) => true,
+-        Err(err) => match classify(&err) {
+-            SyncError::RemoteBranchMissing => false,
+-            other => return Err(other),
+-        },
+-    };
+-
+-    let (ahead, behind) = if fetched {
+-        ahead_behind(repo, &target.branch)?
+-    } else {
+-        // Nothing on the remote to compare against, so everything local is
+-        // unpushed and the push below is what creates the branch.
+-        (local_commit_count(repo), 0)
+-    };
+-
+-    let merged = if behind > 0 {
+-        let _mutation = guard.map(|g| g.mutation.write().unwrap_or_else(|e| e.into_inner()));
+-        let mut args = vec!["merge", "--no-edit", "-q"];
+-        let consent_path = settings.map(|s| {
+-            s.server_root
+-                .join("git-connections")
+-                .join(format!("{}.consent", s.space_id))
+-        });
+-        let consent = consent_path
+-            .as_ref()
+-            .and_then(|p| std::fs::read(p).ok())
+-            .and_then(|b| serde_json::from_slice::<serde_json::Value>(&b).ok());
+-        let approved = consent
+-            .as_ref()
+-            .is_some_and(|consent| consent_matches(repo, consent));
+-        if consent.is_some() && !approved {
+-            return Err(SyncError::ConsentStale);
+-        }
+-        if (settings.is_none() && allow_unrelated) || approved {
+-            args.push("--allow-unrelated-histories");
+-        }
+-        if let Some(path) = consent_path {
+-            let _ = std::fs::remove_file(path);
+-        }
+-        super::conflicts::begin_merge(repo)?;
+-        args.push("FETCH_HEAD");
+-        match git::run(repo, &args, &super::store::commit_env(None)) {
+-            Ok(_) => true,
+-            Err(err) => {
+-                let conflicts = unmerged_paths(repo);
+-                if !conflicts.is_empty() {
+-                    super::conflicts::capture(repo)?;
+-                    return Ok(TickOutcome::Conflicted(conflicts));
+-                }
+-                return Err(classify(&err));
+-            }
+-        }
+-    } else {
+-        false
+-    };
+-
+-    let ahead = if merged {
+-        ahead_behind(repo, &target.branch)?.0
+-    } else {
+-        ahead
+-    };
+-    let pushed = if ahead > 0 {
+-        let refspec = format!("HEAD:{}", target.remote_branch);
+-        let mut args = vec!["push", "-q"];
+-        if !has_upstream(repo, &target.branch) {
+-            args.push("-u");
+-        }
+-        args.push(&destination);
+-        args.push(&refspec);
+-        if let Some(settings) = settings {
+-            super::keys::checked_envs_for_mode(
+-                settings.mode,
+-                &settings.server_root,
+-                &settings.space_id,
+-                repo,
+-            )?;
+-        }
+-        match git::run(repo, &args, &e) {
+-            Ok(_) => {
+-                if settings.is_some() {
+-                    git::run(
+-                        repo,
+-                        &[
+-                            "config",
+-                            &format!("branch.{}.remote", target.branch),
+-                            &target.remote,
+-                        ],
+-                        &[],
+-                    )
+-                    .map_err(|e| classify(&e))?;
+-                }
+-                let head = git::run(repo, &["rev-parse", "HEAD"], &[]).map_err(|e| classify(&e))?;
+-                git::run(
+-                    repo,
+-                    &[
+-                        "update-ref",
+-                        &format!("refs/remotes/{}/{}", target.remote, target.remote_branch),
+-                        head.trim(),
+-                    ],
+-                    &[],
+-                )
+-                .map_err(|e| classify(&e))?;
+-                let fetch_head = git::run(repo, &["rev-parse", "--git-path", "FETCH_HEAD"], &[])
+-                    .map_err(|e| classify(&e))?;
+-                std::fs::write(
+-                    repo.join(fetch_head.trim()),
+-                    format!("{}\t\tSilverBullet sync\n", head.trim()),
+-                )
+-                .map_err(|e| SyncError::Other(e.to_string()))?;
+-                true
+-            }
+-            Err(err) => return Err(classify(&err)),
+-        }
+-    } else {
+-        false
+-    };
+-
+-    Ok(match (merged, pushed) {
+-        (true, true) => TickOutcome::MergedAndPushed,
+-        (true, false) => TickOutcome::Merged,
+-        (false, true) => TickOutcome::Pushed,
+-        (false, false) => TickOutcome::Idle,
+-    })
 +    // Offline build: outbound implementation removed.
 +    Err(classify("Offline build: Git network synchronization removed"))
+--- a/server/src/router.rs
++++ b/server/src/router.rs
+@@ -305,0 +306 @@
++        .route("/.revisions/_commit", post(revisions::handle_named_snapshot))

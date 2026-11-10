@@ -75,7 +75,7 @@ are also retained in that directory. This notice collection is conservative.
 Runtime exceptions and component-specific notices remain in force. Additional
 license texts in that directory are not a relicense of this wrapper.
 
-Python, systemd and libseccomp are separately installed system components;
+Python, Git, systemd and libseccomp are separately installed system components;
 their executables/libraries are not redistributed inside this runtime archive.
 
 Copyright-holder names and public upstream contact details in legal notices are

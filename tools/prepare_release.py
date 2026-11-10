@@ -12,7 +12,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS = ('agent.md', 'INSTALL.md', 'README.md', 'RELEASING.md', 'LICENSE',
              'LICENSE.silverbullet.md', 'LICENSING.md', 'THIRD_PARTY_NOTICES.md',
-             'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md')
+             'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md')
 
 
 def digest(path):

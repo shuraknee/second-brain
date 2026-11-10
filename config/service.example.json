@@ -8,5 +8,6 @@
   "gateway_socket": null,
   "admin_username": null,
   "space_name": "Second Brain",
+  "history_mode": "managed",
   "data_directory": null
 }

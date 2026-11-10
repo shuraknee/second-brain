@@ -44,7 +44,7 @@ def main():
     files = [ROOT / name for name in ['README.md', 'agent.md', 'AGENTS.md', 'INSTALL.md', 'RELEASING.md',
                                       'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                       'LICENSE.silverbullet.md', 'manifest.json',
-                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md',
+                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md',
                                       'patches/offline.patch', 'patches/source-files.json']]
     for name in ['agent.md', 'INSTALL.md']:
         path = ROOT / name
@@ -64,7 +64,7 @@ def main():
     # Deployment payload is an explicit allowlist. Test sources, evidence,
     # host inventories and builder work files never enter a runtime package.
     files.extend(ROOT / 'tools' / name for name in [
-        'collect_environment.py', 'egress_guard.py', 'ingress.py', 'install.py',
+        'collect_environment.py', 'egress_guard.py', 'git_support.py', 'ingress.py', 'install.py',
         'proxy.py', 'service.py', 'verify_payload.py'])
     files.extend(ROOT / 'templates' / name for name in [
         'silverbullet.service.in', 'silverbullet-ingress.service.in'])

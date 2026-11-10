@@ -38,6 +38,8 @@ the recorded upstream releases. It does not assert ownership of upstream work,
 grant trademark rights, or provide an endorsement by an upstream author.
 
 The offline rebuild removes external transports and fixes UTF-8 path headers.
+The local Git/MCP additions use dependency versions already in that inventory;
+the system Git executable is not redistributed.
 Its Cargo lockfile introduces no new package/version/source compared with the
 reviewed upstream lockfile; the notice collection remains a conservative superset.
 The compiler remains the reviewed Rust 1.99.1; musl notices remain included.
