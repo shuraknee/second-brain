@@ -1,0 +1,12 @@
+{
+  "status": "awaiting-target-probe",
+  "namespace_required": true,
+  "public_url": null,
+  "backend_port": null,
+  "listen_host": null,
+  "listen_port": null,
+  "gateway_socket": null,
+  "admin_username": null,
+  "space_name": "Second Brain",
+  "data_directory": null
+}

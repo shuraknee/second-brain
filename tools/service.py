@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Candidate supervisor; refuses pending config or missing network isolation.
+
+The ingress/proxy service is finalized after the target probe and URL/port choice.
+This process starts only the guarded native SilverBullet server, never downloads.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import secrets
+import signal
+import socket
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+children = []
+owned_socket = None
+
+
+def network_proof():
+    interfaces = sorted(line.split(':', 1)[0].strip()
+                        for line in Path('/proc/net/dev').read_text().splitlines()[2:])
+    routes = Path('/proc/net/route').read_text()
+    if interfaces != ['lo'] or len(routes.splitlines()) != 1:
+        raise RuntimeError('Refusing host network: only lo and no IPv4 routes required')
+    ipv6 = Path('/proc/net/ipv6_route').read_text()
+    if any(line.split()[-1] != 'lo' for line in ipv6.splitlines()):
+        raise RuntimeError('Refusing external IPv6 routes')
+    return {'interfaces': interfaces, 'ipv4_routes': routes, 'ipv6_routes': ipv6,
+            'namespace': os.readlink('/proc/self/ns/net')}
+
+
+def main():
+    global owned_socket
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config', type=Path, required=True)
+    args = parser.parse_args()
+    config = json.loads(args.config.read_text())
+    if config.get('status') != 'target-approved' or config.get('namespace_required') is not True:
+        raise RuntimeError('Target profile/config has not been approved; no server was started')
+    if not isinstance(config.get('backend_port'), int) or not 1024 <= config['backend_port'] <= 65535:
+        raise ValueError('Explicit backend_port in 1024..65535 required')
+    if not isinstance(config.get('public_url'), str) or not config['public_url'].startswith(('http://', 'https://')):
+        raise ValueError('Explicit public_url required')
+    if not isinstance(config.get('admin_username'), str) or not config['admin_username']:
+        raise ValueError('Explicit admin_username required')
+    raw_data = config.get('data_directory')
+    if not isinstance(raw_data, str) or not Path(raw_data).is_absolute():
+        raise ValueError('Explicit absolute data_directory required')
+    gateway = config.get('gateway_socket')
+    if not isinstance(gateway, str) or not Path(gateway).is_absolute() or len(os.fsencode(gateway)) >= 104:
+        raise ValueError('Explicit short absolute gateway_socket required')
+    runtime = Path(config.get('runtime_directory', raw_data))
+    if not runtime.is_absolute() or Path(gateway).parent != runtime:
+        raise ValueError('gateway_socket must be directly inside runtime_directory')
+    proof = network_proof()
+    manifest = json.loads((ROOT / 'manifest.json').read_text())
+    binary = ROOT / 'bin/silverbullet'
+    if hashlib.sha256(binary.read_bytes()).hexdigest() != manifest['binary_sha256']:
+        raise RuntimeError('Pinned SilverBullet hash mismatch')
+    if not __import__('shutil').which('strace'):
+        raise RuntimeError('strace must be prepared before start; installation is never automatic')
+    os.umask(0o077)
+    data = Path(raw_data)
+    data.mkdir(parents=True, exist_ok=True)
+    runtime.mkdir(parents=True, exist_ok=True, mode=0o700)
+    info = runtime.stat()
+    if info.st_uid != os.getuid() or info.st_mode & 0o077:
+        raise RuntimeError('runtime_directory must be owned by this user, mode 0700')
+    if Path(gateway).exists() or Path(gateway).is_symlink():
+        raise RuntimeError('Existing gateway socket/path; inspect owner before cleanup')
+    # Lock the owned data directory, never another service or port.
+    import fcntl
+    lock = open(str(data / '.supply-service.lock'), 'a')
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    audit = data / 'audit'
+    audit.mkdir(exist_ok=True)
+    (audit / 'network-namespace.json').write_text(json.dumps(proof, indent=2))
+    # Explicit server feature policy; no proxy/cloud/environment inheritance.
+    env = {'PATH': os.defpath, 'HOME': str(data), 'TMPDIR': str(data),
+           'LANG': 'C.UTF-8', 'RUST_LOG': 'info', 'SB_RUNTIME_API': '0',
+           'SB_SHELL_BACKEND': 'off', 'SB_HOSTNAME': '127.0.0.1',
+           'SB_PORT': str(config['backend_port'])}
+    def command(label, arguments):
+        return [config.get('strace_binary', __import__('shutil').which('strace')), '-f', '-qq', '-s', '128', '-e',
+                'trace=connect,socket,sendto,sendmsg,sendmmsg', '-e',
+                'raw=sendto,sendmsg,sendmmsg', '-o', str(audit / (label + '.trace')),
+                sys.executable, '-I', '-B', str(ROOT / 'tools/egress_guard.py'),
+                '--', str(binary)] + arguments
+    if not (data / 'users.json').exists():
+        if (data / 'initial-credentials.json').exists():
+            raise RuntimeError('Incomplete prior provisioning; inspect before retry')
+        credentials = {'username': config['admin_username'], 'password': secrets.token_urlsafe(24)}
+        secret_fd = os.open(str(data / 'initial-credentials.json'), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        with os.fdopen(secret_fd, 'w') as stream:
+            json.dump(credentials, stream)
+        provisioning = subprocess.run(command('setup-network', ['setup', str(data), '--admin',
+            credentials['username'] + ':' + credentials['password'],
+            '--space', config.get('space_name', 'Second Brain'), '--at', '/']),
+            env=env, check=False, close_fds=True)
+        if provisioning.returncode:
+            # Do not put the --admin argument/password into an exception log.
+            raise RuntimeError('Provisioning failed; inspect retained data and audit before retry')
+        (data / 'server.json').write_text(json.dumps({'primaryUrl': config['public_url'],
+            'serverName': config.get('space_name', 'Second Brain'), 'runtimeApi': False,
+            'mcp': True, 'search': {}}))
+    else:
+        server_config = json.loads((data / 'server.json').read_text())
+        if server_config.get('primaryUrl') != config['public_url'] or server_config.get('runtimeApi') is not False or server_config.get('search', {}).get('model'):
+            raise RuntimeError('Existing settings differ from the approved offline profile')
+    process = subprocess.Popen(command('server-network', [str(data)]), env=env, close_fds=True, start_new_session=True)
+    children.append(process)
+    for attempt in range(100):
+        if process.poll() is not None:
+            raise RuntimeError('Server exited before becoming ready')
+        try:
+            with socket.create_connection(('127.0.0.1', config['backend_port']), timeout=.2):
+                break
+        except OSError:
+            time.sleep(.1)
+    else:
+        raise RuntimeError('Server readiness timeout')
+    proxy = subprocess.Popen([sys.executable, '-I', '-B', str(ROOT / 'tools/proxy.py'),
+                              '--config', str(args.config)], env=env, close_fds=True, start_new_session=True)
+    children.append(proxy)
+    for attempt in range(50):
+        if proxy.poll() is not None:
+            raise RuntimeError('Proxy exited before becoming ready')
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+                connection.connect(gateway)
+            owned_socket = (Path(gateway), Path(gateway).stat().st_ino)
+            break
+        except OSError:
+            time.sleep(.1)
+    else:
+        raise RuntimeError('Proxy readiness timeout')
+    print('SUPPLY_READY: isolated server and fixed Unix gateway', flush=True)
+    while all(child.poll() is None for child in children):
+        time.sleep(.2)
+    raise RuntimeError('A required child exited')
+
+
+def stop(*args):
+    raise SystemExit(0)
+
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    sys.excepthook = sys.__excepthook__
+    try:
+        main()
+    finally:
+        for child in children:
+            try:
+                os.killpg(child.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                child.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                os.killpg(child.pid, signal.SIGKILL)
+                child.wait()
+        if owned_socket:
+            path, inode = owned_socket
+            if path.exists() and path.stat().st_ino == inode:
+                path.unlink()

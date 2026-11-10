@@ -1,0 +1,7 @@
+/**
+  A javascript Bezier curve library by Pomax.
+
+  Based on http://pomax.github.io/bezierinfo
+
+  This code is MIT licensed.
+**/

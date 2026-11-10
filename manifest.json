@@ -1,0 +1,45 @@
+{
+  "source": "https://api.github.com/repos/silverbulletmd/silverbullet/releases/tags/edge",
+  "revision": "0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
+  "channel": "edge-experimental",
+  "release_asset_id": 728380550,
+  "asset_url": "https://github.com/silverbulletmd/silverbullet/releases/download/edge/silverbullet-server-linux-x86_64.zip",
+  "zip_size": 19562079,
+  "zip_sha256": "ff9bd132cf74817ef03653033bd4770ab69b43aab0ab9cd67a8b63fd3abf1d05",
+  "binary_sha256": "2e0bb5325e6612e78572f47206e91b9bf5307852d92e52ab689b94d6734dfa34",
+  "source_url": "https://codeload.github.com/silverbulletmd/silverbullet/tar.gz/0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
+  "source_sha256": "04c00a77b09188b0b84ca425e81e8b62b77333db881f89569d90d5216ca47f6a",
+  "supply_status": "generic-candidate-awaiting-target-acceptance",
+  "target_profile": "Linux x86_64, Python >=3.9, systemd --user",
+  "runtime_pip_dependencies": [],
+  "namespace_policy": "required; fail closed",
+  "server_features": {
+    "runtime_api": false,
+    "shell": false,
+    "semantic_search": false,
+    "mcp": true
+  },
+  "supply_revision": "offline-licensed-20261110",
+  "installer": {
+    "target": "explicit --target",
+    "python": "invoking interpreter",
+    "unit_directory": "XDG_CONFIG_HOME/systemd/user",
+    "runtime_directory": "XDG_RUNTIME_DIR/target-derived-identity",
+    "namespace_preflight": "real transient user unit; fail closed"
+  },
+  "packaging_policy": {
+    "deployment_metadata": "excluded",
+    "test_sources_and_reports": "excluded",
+    "archive_owner_and_timestamps": "normalized",
+    "upstream_binary": "unmodified; pinned SHA256"
+  },
+  "license_review": {
+    "status": "verified-notices-and-source-offer",
+    "own_code": "MIT",
+    "upstream": "MIT; original copyright retained",
+    "third_party_notice": "THIRD_PARTY_NOTICES.md",
+    "legal_inventory": "licenses/audit.json",
+    "mpl_source_packages": "included locally",
+    "third_party_fonts": "OFL-1.1; notices retained"
+  }
+}
