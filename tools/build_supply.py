@@ -34,9 +34,13 @@ def main():
         raise RuntimeError('Output exists; choose a new archive path')
     if not output.parent.is_dir():
         raise RuntimeError('Select an existing output directory')
-    files = [ROOT / name for name in ['README.md', 'agent.md', 'AGENTS.md', 'INSTALL.md',
+    files = [ROOT / name for name in ['README.md', 'agent.md', 'AGENTS.md', 'INSTALL.md', 'RELEASING.md',
                                       'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                       'LICENSE.silverbullet.md', 'manifest.json']]
+    for name in ['agent.md', 'INSTALL.md']:
+        path = ROOT / name
+        if path.is_symlink() or not path.is_file() or not path.read_text(encoding='utf-8').strip():
+            raise RuntimeError('Required installation instruction is missing/empty: ' + name)
     legal = json.loads((ROOT / 'licenses/audit.json').read_text())
     if legal.get('status') != 'verified-notices-and-source-offer' or legal.get('unresolved_packages') != 0:
         raise RuntimeError('Legal review is incomplete; packaging blocked')
