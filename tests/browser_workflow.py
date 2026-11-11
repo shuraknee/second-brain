@@ -2,11 +2,14 @@
 """Local browser/MCP acceptance helper; browser and test account paths are explicit."""
 import argparse
 import base64
+from contextlib import contextmanager
 import hashlib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
 import secrets
+import threading
 import time
 import traceback
 import urllib.parse
@@ -17,16 +20,48 @@ parser.add_argument('--browser', required=True)
 parser.add_argument('--credentials', required=True)
 parser.add_argument('--report', required=True)
 parser.add_argument('--previous-report')
+parser.add_argument('--base-url', default='http://127.0.0.1:3098')
+parser.add_argument('--oauth-callback')
 args = parser.parse_args()
 ROOT = Path(args.report).parent
-BASE = 'http://127.0.0.1:3098'  # Synthetic isolated-test fixture.
+BASE = args.base_url.rstrip('/')
+CALLBACK = args.oauth_callback or BASE + '/offline-oauth-callback'
 report = {'passed': False, 'checks': {}, 'browser_external_requests': [], 'browser_errors': []}
 report['console_errors'] = []
 report['failed_requests'] = []
 
+
+@contextmanager
+def callback_listener():
+    if not args.oauth_callback:
+        yield
+        return
+    parsed = urllib.parse.urlsplit(CALLBACK)
+    assert parsed.scheme == 'http' and parsed.hostname == '127.0.0.1' and parsed.port
+    class CallbackHandler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+        def do_GET(self):
+            content = b'OAuth test callback'
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.send_header('Content-Length', str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+    server = ThreadingHTTPServer((parsed.hostname, parsed.port), CallbackHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def main():
     credentials = json.loads(Path(args.credentials).read_text())
-    with sync_playwright() as p:
+    with sync_playwright() as p, callback_listener():
         browser = p.chromium.launch(executable_path=args.browser,
             headless=True, args=['--no-sandbox', '--disable-background-networking',
                 '--disable-component-update', '--disable-domain-reliability',
@@ -35,7 +70,9 @@ def main():
         page = context.new_page()
         def request_seen(request):
             parsed = urllib.parse.urlsplit(request.url)
-            if parsed.scheme in ['http', 'https', 'ws', 'wss'] and parsed.netloc != '127.0.0.1:3098':
+            if (parsed.scheme in ['http', 'https', 'ws', 'wss']
+                    and parsed.netloc != urllib.parse.urlsplit(BASE).netloc
+                    and not (args.oauth_callback and request.url.startswith(CALLBACK + '?'))):
                 report['browser_external_requests'].append(request.url.split('?', 1)[0])
         context.on('request', request_seen)
         page.on('pageerror', lambda error: report['browser_errors'].append(str(error)))
@@ -51,26 +88,27 @@ def main():
         page.wait_for_timeout(1500)
         assert page.locator('input[name="password"]').count() == 0, page.locator('body').inner_text()[:1000]
         report['checks']['browser_login'] = True
+        report['browser_context'] = page.evaluate("({secure: isSecureContext, serviceWorker: !!navigator.serviceWorker})")
 
         # MCP OAuth uses local dynamic registration and PKCE; no remote
         # metadata document or remote identity provider is involved.
         api = context.request
         registration = api.post(BASE + '/.auth/register', data={
             'client_name': 'Offline acceptance test',
-            'redirect_uris': [BASE + '/offline-oauth-callback'],
+            'redirect_uris': [CALLBACK],
             'token_endpoint_auth_method': 'none'})
         assert registration.status == 201, registration.text()
         client_id = registration.json()['client_id']
         verifier = secrets.token_urlsafe(48)
         challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('=')
         params = {'response_type': 'code', 'client_id': client_id,
-            'redirect_uri': BASE + '/offline-oauth-callback', 'scope': 'mcp',
+            'redirect_uri': CALLBACK, 'scope': 'mcp',
             'resource': BASE + '/.mcp', 'state': secrets.token_urlsafe(16),
             'code_challenge': challenge, 'code_challenge_method': 'S256'}
         page.goto(BASE + '/.auth/mcp/authorize?' + urllib.parse.urlencode(params))
         page.get_by_role('button', name='Allow', exact=True).wait_for()
         page.get_by_role('button', name='Allow', exact=True).click()
-        page.wait_for_url(BASE + '/offline-oauth-callback?*')
+        page.wait_for_url(CALLBACK + '?*')
         callback = urllib.parse.parse_qs(urllib.parse.urlsplit(page.url).query)
         assert callback['state'][0] == params['state']
         response = api.post(BASE + '/.auth/mcp/token', form={

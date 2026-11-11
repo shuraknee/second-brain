@@ -148,6 +148,28 @@ def fresh_units(directory, units):
             raise RuntimeError('Unit name is already managed: ' + name)
 
 
+def canonical_public_url(value):
+    public = urlsplit(value)
+    if (public.scheme not in ['http', 'https'] or not public.hostname or public.username
+            or public.password or public.path not in ['', '/'] or public.query or public.fragment
+            or any(c.isspace() for c in value)):
+        raise ValueError('public-url must be an HTTP(S) origin without credentials/path/query')
+    host = public.hostname.encode('idna').decode().lower()
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        address = None
+    if address is not None and address.is_unspecified:
+        raise ValueError('public-url needs a reachable server address, not a wildcard bind address')
+    port = public.port
+    if port is not None and not 1 <= port <= 65535:
+        raise ValueError('Invalid public URL port')
+    authority = '[' + host + ']' if ':' in host else host
+    if port and port != (443 if public.scheme == 'https' else 80):
+        authority += ':' + str(port)
+    return public.scheme + '://' + authority
+
+
 def make_plan(args):
     files = payload()
     target = absolute(args.target)
@@ -161,14 +183,7 @@ def make_plan(args):
     check_port('127.0.0.1', args.backend_port)
     if args.port == args.backend_port:
         raise ValueError('External and backend ports must differ')
-    public = urlsplit(args.public_url)
-    if public.scheme not in ['http', 'https'] or not public.hostname or public.username or public.password or public.path not in ['', '/'] or public.query or public.fragment or any(c.isspace() for c in args.public_url):
-        raise ValueError('public-url must be an HTTP(S) origin without credentials/path/query')
-    host = public.hostname.encode('idna').decode().lower()
-    authority = '[' + host + ']' if ':' in host else host
-    if public.port and public.port != (443 if public.scheme == 'https' else 80):
-        authority += ':' + str(public.port)
-    public_url = public.scheme + '://' + authority
+    public_url = canonical_public_url(args.public_url)
     identity = hashlib.sha256(os.fsencode(target)).hexdigest()[:16]
     name = 'second-brain-' + identity
     runtime_base = args.runtime_dir or os.environ.get('XDG_RUNTIME_DIR')
@@ -379,15 +394,29 @@ def main():
     repair_apply = sub.add_parser('repair-apply')
     repair_apply.add_argument('--plan', type=Path, required=True)
     repair_apply.add_argument('--sha256', required=True)
+    config_plan = sub.add_parser('configure-plan')
+    config_plan.add_argument('--target', required=True)
+    config_plan.add_argument('--listen-host', required=True)
+    config_plan.add_argument('--port', type=int, required=True)
+    config_plan.add_argument('--public-url', required=True)
+    config_plan.add_argument('--backup', required=True)
+    config_plan.add_argument('--output', type=Path, required=True)
+    config_plan.add_argument('--no-start', action='store_true')
+    config_apply = sub.add_parser('configure-apply')
+    config_apply.add_argument('--plan', type=Path, required=True)
+    config_apply.add_argument('--sha256', required=True)
     for operation in ['start', 'stop', 'status']:
         control_parser = sub.add_parser(operation)
         control_parser.add_argument('--target', required=True)
     args = parser.parse_args()
     if args.operation == 'preflight':
         print(json.dumps(preflight(), indent=2))
-    elif args.operation in ['plan', 'repair-plan']:
-        result = (make_plan(args) if args.operation == 'plan'
-                  else load_module(SOURCE / 'tools/repair.py').make_plan(args))
+    elif args.operation in ['plan', 'repair-plan', 'configure-plan']:
+        if args.operation == 'plan':
+            result = make_plan(args)
+        else:
+            module = 'repair.py' if args.operation == 'repair-plan' else 'configure.py'
+            result = load_module(SOURCE / 'tools' / module).make_plan(args)
         with args.output.open('x') as stream:
             json.dump(result, stream, ensure_ascii=False, indent=2)
             stream.write('\n')
@@ -398,6 +427,8 @@ def main():
         apply_plan(args)
     elif args.operation == 'repair-apply':
         load_module(SOURCE / 'tools/repair.py').apply(args)
+    elif args.operation == 'configure-apply':
+        load_module(SOURCE / 'tools/configure.py').apply(args)
     else:
         control(absolute(args.target), args.operation)
 

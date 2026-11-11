@@ -33,14 +33,15 @@
       "restore"
     ]
   },
-  "supply_revision": "offline-plain-service-20261110",
+  "supply_revision": "offline-lan-access-20261111",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
     "unit_directory": "XDG_CONFIG_HOME/systemd/user",
     "runtime_directory": "XDG_RUNTIME_DIR/target-derived-identity",
     "service_preflight": "real transient user unit with NoNewPrivileges and inherited seccomp; no namespaces or capability changes",
-    "repair": "explicit plan/apply for recorded local-Git/IPv4-only wrappers; same core, preserved data, metadata backup"
+    "repair": "explicit plan/apply for recorded local-Git/IPv4-only wrappers; same core, preserved data, metadata backup",
+    "endpoint_configuration": "configure-plan/apply with paired service/public origin update and backup; no SSH tunnel required"
   },
   "packaging_policy": {
     "deployment_metadata": "excluded",
@@ -85,6 +86,7 @@
     "ipv6_unavailable_result": "EAFNOSUPPORT at socket creation; reported separately from EPERM",
     "missing_ipv6_route_table": "not read; route-based namespace checks removed",
     "service_isolation": "ordinary user-systemd units; no namespace/capability directives; core/Git no-connect seccomp",
-    "validation": "real user-systemd install/repair and UI/MCP/Git; actual host namespaces, CapEff=0 and inherited seccomp; traced and without strace; simulated AF_INET6 EAFNOSUPPORT"
+    "validation": "real user-systemd wrapper update and endpoint reconfiguration; non-loopback IP HTTP browser (not secure context), OAuth PKCE/MCP/Git and restart; backend loopback only; inherited core seccomp traced",
+    "direct_browser_access": "explicit listen-host plus matching public-url; backend remains loopback; HTTP remote-origin browser fallback supported"
   }
 }

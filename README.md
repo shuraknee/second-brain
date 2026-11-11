@@ -41,8 +41,8 @@ IPv6 необязателен; отключённое в ядре семейст
 
 ## Получить готовые файлы
 
-Во вкладке Releases текущего репозитория выберите **offline-plain-service-20261110**.
-Скачайте `silverbullet-linux-x86_64-py39-offline-plain-service-20261110.tar.gz` и одноимённый
+Во вкладке Releases текущего репозитория выберите **offline-lan-access-20261111**.
+Скачайте `silverbullet-linux-x86_64-py39-offline-lan-access-20261111.tar.gz` и одноимённый
 `.sha256`. Инструкции agent.md и INSTALL.md приложены отдельно.
 Получение файлов выполняется заранее через разрешённый браузер/канал.
 
@@ -51,7 +51,8 @@ IPv6 необязателен; отключённое в ядре семейст
 ```sh
 "$PYTHON" -I -B "$SOURCE/tools/install.py" plan \
   --target "$TARGET" --port "$PORT" --backend-port "$BACKEND_PORT" \
-  --public-url "$PUBLIC_URL" --admin-user "$ADMIN_USER" --output "$PLAN"
+  --listen-host "$LISTEN_HOST" --public-url "$PUBLIC_URL" \
+  --admin-user "$ADMIN_USER" --output "$PLAN"
 "$PYTHON" -I -B "$SOURCE/tools/install.py" apply --plan "$PLAN" --sha256 "$PLAN_SHA256"
 "$PYTHON" -I -B "$TARGET/tools/install.py" status --target "$TARGET"
 ```
@@ -64,6 +65,26 @@ IPv6 необязателен; отключённое в ядре семейст
 Пробелы, кириллица, `%` и `$` в TARGET поддерживаются. Для длинного TARGET
 Unix-сокет получает отдельный короткий путь в XDG_RUNTIME_DIR; доступен явный
 `--runtime-dir`. Стандартные `/proc` и XDG — инфраструктура ОС, не путь проекта.
+
+## Доступ из браузера по IP и порту
+
+SSH-туннель не требуется. При новой установке задать `--listen-host` с IP
+сетевого интерфейса сервера и `--public-url` равным адресу, который будет открыт
+в браузере: `http://IP:PORT`. Внутренний backend остаётся на loopback, запрет
+исходящих соединений у SilverBullet/Git сохраняется. Default 127.0.0.1 означает
+локальный вход; для удалённого браузера его нужно явно заменить выбранным IP.
+
+Для уже установленного plain-service выпуска есть `configure-plan` / `configure-apply`:
+они согласованно меняют входной адрес/порт и primaryUrl, сохраняют прежние configs
+в отдельный backup и не меняют заметки, учётные записи или unit-файлы.
+Для прежних выпусков сначала обновить обвязку через repair по INSTALL.md;
+это также исправляет CSP страницы MCP OAuth для возврата локальному клиенту.
+Команды и ограничения — [INSTALL.md](INSTALL.md). Порт должен быть доступен
+с рабочего места по правилам корпоративной сети; установщик firewall не меняет.
+
+HTTP поддерживает онлайн-редактор без Service Worker и шифрования клиентского
+кэша. HTTP не шифрует передачу паролей/данных. HTTPS можно предоставить через
+корпоративный TLS-прокси; SSH-туннель для него также не требуется.
 
 ## Обезличивание
 

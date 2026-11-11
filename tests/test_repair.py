@@ -166,7 +166,7 @@ class RepairTests(unittest.TestCase):
         manifest['supply_revision'] = 'unrecognized-release'
         path.write_text(json.dumps(manifest))
         self.sums(self.target)
-        with self.assertRaisesRegex(RuntimeError, 'recorded local-Git/IPv4-only'):
+        with self.assertRaisesRegex(RuntimeError, 'recorded releases'):
             self.plan()
         self.no_stops()
 

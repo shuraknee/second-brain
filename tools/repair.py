@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('repair_installer', str(ROOT / 'tools/install.py'))
 install = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(install)
-SUPPORTED = {'offline-ipv4-only-20261110', 'offline-local-git-20261110'}
+SUPPORTED = {'offline-ipv4-only-20261110', 'offline-local-git-20261110', 'offline-plain-service-20261110'}
 
 
 def inputs(target):
@@ -41,7 +41,7 @@ def inputs(target):
     current = install.payload()
     manifest = json.loads((target / 'manifest.json').read_text())
     if manifest['supply_revision'] not in SUPPORTED:
-        raise RuntimeError('Repair supports only the recorded local-Git/IPv4-only releases')
+        raise RuntimeError('Repair supports only the recorded releases')
     if manifest['binary_sha256'] != json.loads((install.SOURCE / 'manifest.json').read_text())['binary_sha256']:
         raise RuntimeError('Repair must not replace the SilverBullet core or migrate data')
     if not set(previous).issubset(current):

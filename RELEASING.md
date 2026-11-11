@@ -65,6 +65,7 @@ Runtime-архив собирается только по allowlist tools/build_
 "$PYTHON" -I -B tests/test_ipv6.py -v
 "$PYTHON" -I -B tests/test_install.py -v
 "$PYTHON" -I -B tests/test_repair.py -v
+"$PYTHON" -I -B tests/test_configure.py -v
 "$PYTHON" -I -B tests/test_package.py -v
 ```
 
@@ -85,6 +86,10 @@ clone не должны возвращаться в разрешённые ко�
 с явно выбранным прежним архивом и тестовым браузером: настоящие units, HTTP,
 браузер/MCP/Git и repair с сохранением данных. Ни namespaces, ни изменение
 capabilities не должны возвращаться в профиль обычных служб.
+Для изменения адреса входа выполнить tests/lan_service.py с явным прежним
+архивом и браузером: настоящий user-systemd, переход с loopback на адрес
+интерфейса, браузер без insecure-origin bypass, OAuth/MCP/Git и перезапуск.
+Адрес VM не публиковать; подтверждать границы CSP формы OAuth отдельно от connect-src.
 Проверка стенда не означает приёмку корпоративного сервера.
 
 ## 5. Подготовка Release Assets

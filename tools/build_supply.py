@@ -64,7 +64,7 @@ def main():
     # Deployment payload is an explicit allowlist. Test sources, evidence,
     # host inventories and builder work files never enter a runtime package.
     files.extend(ROOT / 'tools' / name for name in [
-        'collect_environment.py', 'egress_guard.py', 'git_support.py', 'ingress.py', 'install.py',
+        'collect_environment.py', 'configure.py', 'egress_guard.py', 'git_support.py', 'ingress.py', 'install.py',
         'proxy.py', 'repair.py', 'service.py', 'verify_payload.py'])
     files.extend(ROOT / 'templates' / name for name in [
         'silverbullet.service.in', 'silverbullet-ingress.service.in'])

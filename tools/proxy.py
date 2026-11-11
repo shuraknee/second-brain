@@ -17,6 +17,14 @@ HOP = {'connection', 'transfer-encoding', 'keep-alive', 'proxy-authenticate',
        'proxy-authorization', 'te', 'trailer', 'upgrade', 'content-length'}
 
 
+def response_csp(path):
+    if path.split('?', 1)[0] == '/.auth/mcp/authorize':
+        # OAuth validates the registered redirect URI before returning it.
+        # Browsers also apply form-action to the consent POST's redirect.
+        return CSP.replace("form-action 'self'", "form-action 'self' https: http://127.0.0.1:* http://localhost:*")
+    return CSP
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
 
@@ -52,7 +60,7 @@ class Handler(BaseHTTPRequestHandler):
             for key, value in response.getheaders():
                 if key.lower() not in HOP and key.lower() != 'content-security-policy':
                     self.send_header(key, value)
-            self.send_header('Content-Security-Policy', CSP)
+            self.send_header('Content-Security-Policy', response_csp(self.path))
             self.send_header('Referrer-Policy', 'same-origin')
             self.send_header('X-Content-Type-Options', 'nosniff')
             has_body = self.command != 'HEAD' and response.status >= 200 and response.status not in [204, 304]
