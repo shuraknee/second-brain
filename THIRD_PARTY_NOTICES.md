@@ -20,6 +20,14 @@ third-party software.
 
 ## Dependencies
 
+The knowledge workflows under `knowledge-base/pages/Library/Second Brain/`
+are adapted from James Croft's Obsidian AI Second Brain (MIT, copyright 2026).
+The pinned source revision and original skill checksums are in
+`knowledge-base/manifest.json`. The complete upstream MIT notice is preserved
+in the imported `Library/Second Brain/Происхождение.md` page, so it accompanies
+both the archive and the pages installed in a space. This is an independent
+SilverBullet/offline adaptation; no upstream endorsement is implied.
+
 `licenses/dependency-inventory.json` records the verified package versions,
 license declarations, exact source locations and notice directories. The notice
 set conservatively covers all upstream Cargo.lock registry crates, production

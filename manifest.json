@@ -33,7 +33,7 @@
       "restore"
     ]
   },
-  "supply_revision": "offline-lan-access-20261111",
+  "supply_revision": "offline-knowledge-skills-20261116",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -88,5 +88,14 @@
     "service_isolation": "ordinary user-systemd units; no namespace/capability directives; core/Git no-connect seccomp",
     "validation": "real user-systemd wrapper update and endpoint reconfiguration; non-loopback IP HTTP browser (not secure context), OAuth PKCE/MCP/Git and restart; backend loopback only; inherited core seccomp traced",
     "direct_browser_access": "explicit listen-host plus matching public-url; backend remains loopback; HTTP remote-origin browser fallback supported"
+  },
+  "knowledge_skills": {
+    "bundle": "knowledge-base/manifest.json",
+    "source": "jamesmcroft/obsidian-ai-second-brain",
+    "revision": "6640ad2430a4b9d190157e531226ec22c3e74390",
+    "license": "MIT",
+    "fresh_space_seed": true,
+    "existing_space_import": "tools/knowledge.py; creates missing pages only",
+    "runtime_network": false
   }
 }

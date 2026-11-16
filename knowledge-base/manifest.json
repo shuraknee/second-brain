@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "bundle_version": "2026-11-16",
+  "upstream": {
+    "repository": "https://github.com/jamesmcroft/obsidian-ai-second-brain",
+    "revision": "6640ad2430a4b9d190157e531226ec22c3e74390",
+    "license": "MIT",
+    "files": [
+      {
+        "path": ".github/skills/vault-knowledge-retrieval/SKILL.md",
+        "sha256": "6d2756cefd8b0ba17a8f1c2c8fbb18a9a002757840b3bbc46f8b93e61d15c2bf"
+      },
+      {
+        "path": ".github/skills/vault-note-creation/SKILL.md",
+        "sha256": "98ba27e445912f65a5c66825d20663330c2ac5161582d52ed04bc77bced634d6"
+      },
+      {
+        "path": ".github/skills/vault-note-update/SKILL.md",
+        "sha256": "3c149f187a59d1ec908c05ddbed878bea1ee94ad4ea1a12de7a3018ee85097f6"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "96aff83fae3dea4d5a3a5ac12e224e08e9acb6c5794988408a383e3e5e7835c0"
+      }
+    ]
+  },
+  "files": {
+    "Library/Second Brain/Templates/Инструкция.md": "aeb94585e1cb4634cccb3ddd6699c7d39069a749dbadd9da436c2f2187e37801",
+    "Library/Second Brain/Templates/Источник.md": "4531c82c54464e690bc8e0956a5a300dd75b13dbe85a73ea175bef1a4ea250cd",
+    "Library/Second Brain/Templates/Область.md": "80d0f8644ba37e6431bc5452668bc2302b597a832a21bc65b43a68866d8adf4f",
+    "Library/Second Brain/Templates/Проект.md": "f8eaa720aaa486ef15f04e976a5fa14fee042155807b09449764896b601bdc3a",
+    "Library/Second Brain/Templates/Человек.md": "a57eacba669d059c7793fc12865cd8589643984337bb804ffcabf02b30d9d7c7",
+    "Library/Second Brain/vault-knowledge-retrieval.md": "d2aee1392cc8d6dab76dc3710d34c2dbfea02e40ec747e3dc6dbac0809a02b94",
+    "Library/Second Brain/vault-note-creation.md": "0b8476cd11f629a5b4422ce01de1d757aae3e6bc7cfed764052e495dfa96edeb",
+    "Library/Second Brain/vault-note-update.md": "213eca14bd9f4e5ca481aee10f7bcec85144131a2266cbe9d90bcdd4bf1c26f7",
+    "Library/Second Brain/Правила.md": "b57d141ea4ef026c927ea3fccd3b5b933350759121ec3e805b5c8bfd064e51f2",
+    "Library/Second Brain/Происхождение.md": "1febca81f290806fa4b0f6b63ded18e19ee8e0c5f62e9f6f305fbd419029d879"
+  }
+}

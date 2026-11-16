@@ -48,6 +48,12 @@ under MIT. Patch/source provenance is recorded in manifest.json and patches/.
 
 ## Release rules
 
+The separately bundled knowledge workflows are adapted from James Croft's
+MIT-licensed Obsidian AI Second Brain at the revision in
+`knowledge-base/manifest.json`. Preserve the full original MIT notice in
+`Library/Second Brain/Происхождение.md` when distributing/importing these pages.
+No new binary or runtime dependency is introduced by this adaptation.
+
 - Keep the original and offline binary checksums, source reference and patch. A different upstream
   binary requires a new dependency/resource license review.
 - Ship `LICENSE`, `LICENSE.silverbullet.md`, `THIRD_PARTY_NOTICES.md`, this file,

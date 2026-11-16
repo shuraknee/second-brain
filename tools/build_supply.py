@@ -3,6 +3,7 @@
 import argparse
 import gzip
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import shutil
@@ -44,7 +45,7 @@ def main():
     files = [ROOT / name for name in ['README.md', 'agent.md', 'AGENTS.md', 'INSTALL.md', 'RELEASING.md',
                                       'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                       'LICENSE.silverbullet.md', 'manifest.json',
-                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md',
+                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md',
                                       'patches/offline.patch', 'patches/source-files.json']]
     for name in ['agent.md', 'INSTALL.md']:
         path = ROOT / name
@@ -65,7 +66,13 @@ def main():
     # host inventories and builder work files never enter a runtime package.
     files.extend(ROOT / 'tools' / name for name in [
         'collect_environment.py', 'configure.py', 'egress_guard.py', 'git_support.py', 'ingress.py', 'install.py',
-        'proxy.py', 'repair.py', 'service.py', 'verify_payload.py'])
+        'knowledge.py', 'proxy.py', 'repair.py', 'service.py', 'verify_payload.py'])
+    spec = importlib.util.spec_from_file_location('knowledge_bundle', ROOT / 'tools/knowledge.py')
+    knowledge = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(knowledge)
+    pages = knowledge.bundle_files()
+    files.append(ROOT / 'knowledge-base/manifest.json')
+    files.extend(ROOT / 'knowledge-base/pages' / name for name in pages)
     files.extend(ROOT / 'templates' / name for name in [
         'silverbullet.service.in', 'silverbullet-ingress.service.in'])
     files.append(ROOT / 'config/service.example.json')

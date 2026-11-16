@@ -37,6 +37,9 @@ class InstallTests(unittest.TestCase):
             destination = self.source / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, destination)
+        shutil.copy2(ROOT / 'tools/knowledge.py', self.source / 'tools/knowledge.py')
+        shutil.copy2(ROOT / 'KNOWLEDGE-SKILLS.md', self.source / 'KNOWLEDGE-SKILLS.md')
+        shutil.copytree(ROOT / 'knowledge-base', self.source / 'knowledge-base')
         binary = self.source / 'bin/silverbullet'
         binary.parent.mkdir()
         binary.write_bytes(b'never executed in mocked installation tests')
@@ -178,9 +181,9 @@ class InstallTests(unittest.TestCase):
     def test_disabled_history_does_not_require_git(self):
         args = self.arguments()
         args.history_mode = 'disabled'
-        with patch.object(installer, 'load_module') as module:
+        with patch.object(installer, 'load_module', wraps=installer.load_module) as module:
             plan = self.plan(args)
-        module.assert_not_called()
+        self.assertFalse(any(call.args[0].name == 'git_support.py' for call in module.call_args_list))
         self.assertEqual(plan['config']['history_mode'], 'disabled')
 
     def test_busy_port_is_never_freed(self):

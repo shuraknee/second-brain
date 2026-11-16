@@ -22,6 +22,7 @@ parser.add_argument('--report', required=True)
 parser.add_argument('--previous-report')
 parser.add_argument('--base-url', default='http://127.0.0.1:3098')
 parser.add_argument('--oauth-callback')
+parser.add_argument('--check-knowledge', action='store_true')
 args = parser.parse_args()
 ROOT = Path(args.report).parent
 BASE = args.base_url.rstrip('/')
@@ -153,6 +154,24 @@ def main():
         help_result = call('help', {})
         assert 'Synthetic runtime test' in json.dumps(help_result)
         space = 'Synthetic runtime test'
+        if args.check_knowledge:
+            prefix = 'Library/Second Brain/'
+            skills = ['Правила', 'vault-knowledge-retrieval', 'vault-note-creation', 'vault-note-update']
+            overview = json.dumps(help_result, ensure_ascii=False)
+            for name in skills:
+                assert '**' + name + '**' in overview, name
+                skill = call('help', {'space': space, 'topic': prefix + name})
+                assert not skill.get('isError')
+                page_text = json.dumps(skill, ensure_ascii=False)
+                assert 'James Croft' in page_text
+                assert prefix + name in page_text
+            for name in ['Область', 'Инструкция', 'Источник', 'Проект', 'Человек']:
+                template = call('read', {'space': space, 'page': prefix + 'Templates/' + name})
+                assert 'meta/template/page' in json.dumps(template)
+            notice = call('read', {'space': space, 'page': prefix + 'Происхождение'})
+            assert 'Copyright (c) 2026 James Croft' in json.dumps(notice)
+            report['checks']['knowledge_skills_discovered_and_loaded_via_help'] = True
+            report['checks']['five_templates_and_upstream_license_readable_via_mcp'] = True
         note_name = 'Offline acceptance ' + time.strftime('%Y%m%d-%H%M%S')
         marker = 'OFFLINECHECK' + secrets.token_hex(5)
         content = '# Offline acceptance\n\n' + marker + '\n\n[[index]]\n'
@@ -165,6 +184,14 @@ def main():
         assert conflict.get('isError'), conflict
         call('edit', {'space': space, 'page': note_name, 'ifRevision': meta['revision'],
             'edits': [{'oldText': 'Offline acceptance', 'newText': 'Offline acceptance verified'}]})
+        if args.check_knowledge:
+            stale = rpc('tools/call', {'name': 'edit', 'arguments': {
+                'space': space, 'page': note_name, 'ifRevision': meta['revision'],
+                'edits': [{'oldText': marker, 'newText': 'MUST_NOT_BE_WRITTEN'}]}})
+            assert stale.get('isError'), stale
+            current = call('read', {'space': space, 'page': note_name})
+            assert marker in json.dumps(current) and 'MUST_NOT_BE_WRITTEN' not in json.dumps(current)
+            report['checks']['stale_mcp_edit_revision_is_refused_without_content_change'] = True
         search = call('search', {'space': space, 'text': marker, 'mode': 'words'})
         assert note_name in json.dumps(search), search
         report['checks']['mcp_initialize_list_help_write_read_edit_search'] = True

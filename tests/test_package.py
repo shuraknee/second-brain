@@ -34,7 +34,8 @@ class PackageTests(unittest.TestCase):
                 self.assertEqual(first.read_bytes(), second.read_bytes())
                 with tarfile.open(first) as archive:
                     legal_files = sum(1 for p in (ROOT / 'licenses').rglob('*') if p.is_file())
-                    self.assertEqual(len(archive.getmembers()), 30 + legal_files)
+                    knowledge_files = 1 + sum(1 for p in (ROOT / 'knowledge-base/pages').rglob('*.md'))
+                    self.assertEqual(len(archive.getmembers()), 32 + legal_files + knowledge_files)
                     for entry in archive.getmembers():
                         parts = Path(entry.name).parts
                         self.assertEqual(entry.uid, 0)
@@ -54,7 +55,7 @@ class PackageTests(unittest.TestCase):
                     config = json.load(archive.extractfile('silverbullet-offline/config/service.example.json'))
                     for key in ['public_url', 'backend_port', 'listen_host', 'listen_port', 'gateway_socket', 'admin_username', 'data_directory']:
                         self.assertIsNone(config[key], key)
-                    for name in ['agent.md', 'INSTALL.md', 'MCP-GIT.md', 'RELEASING.md', 'LICENSE', 'LICENSE.silverbullet.md', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
+                    for name in ['agent.md', 'INSTALL.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md', 'RELEASING.md', 'LICENSE', 'LICENSE.silverbullet.md', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                  'licenses/sources/option-ext-0.2.0.crate', 'licenses/sources/htmlescape-0.3.1.crate',
                                  'licenses/fonts/Inter-OFL-1.1.txt']:
                         self.assertIn('silverbullet-offline/' + name, archive.getnames())

@@ -76,6 +76,13 @@ def payload(source=None):
     manifest = json.loads((source / 'manifest.json').read_text())
     if result['bin/silverbullet'] != manifest['binary_sha256']:
         raise RuntimeError('Pinned server hash mismatch')
+    if manifest.get('knowledge_skills'):
+        extra = ['tools/knowledge.py', 'KNOWLEDGE-SKILLS.md', 'knowledge-base/manifest.json']
+        if any(name not in result for name in extra):
+            raise RuntimeError('Incomplete knowledge payload')
+        pages = load_module(source / 'tools/knowledge.py').bundle_files(source / 'knowledge-base')
+        if any('knowledge-base/pages/' + name not in result for name in pages):
+            raise RuntimeError('Knowledge page omitted from payload checksums')
     return result
 
 

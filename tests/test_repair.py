@@ -32,6 +32,9 @@ class RepairTests(unittest.TestCase):
             path = self.source / name
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, path)
+        shutil.copy2(ROOT / 'tools/knowledge.py', self.source / 'tools/knowledge.py')
+        shutil.copy2(ROOT / 'KNOWLEDGE-SKILLS.md', self.source / 'KNOWLEDGE-SKILLS.md')
+        shutil.copytree(ROOT / 'knowledge-base', self.source / 'knowledge-base')
         binary = self.source / 'bin/silverbullet'
         binary.parent.mkdir()
         binary.write_bytes(b'never executed: synthetic unchanged core')

@@ -6,6 +6,7 @@ This process starts only the guarded native SilverBullet server, never downloads
 """
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -40,6 +41,13 @@ def process_policy_proof():
     proof = json.loads(result.stdout)
     validate_guard_checks(proof)
     return {'policy': 'seccomp-no-connect', 'namespace_required': False, 'guard': proof}
+
+
+def seed_knowledge(data):
+    spec = importlib.util.spec_from_file_location('second_brain_knowledge', ROOT / 'tools/knowledge.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.seed_fresh_spaces(data)
 
 
 def main():
@@ -124,6 +132,7 @@ def main():
         (data / 'server.json').write_text(json.dumps({'primaryUrl': config['public_url'],
             'serverName': config.get('space_name', 'Second Brain'), 'runtimeApi': False,
             'mcp': True, 'search': {}}))
+        seed_knowledge(data)
     else:
         server_config = json.loads((data / 'server.json').read_text())
         if server_config.get('primaryUrl') != config['public_url'] or server_config.get('runtimeApi') is not False or server_config.get('search', {}).get('model'):

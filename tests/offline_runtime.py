@@ -39,7 +39,7 @@ def inside():
             assert checks['public_ipv6'] == 'unavailable:EAFNOSUPPORT (socket creation)'
             assert checks['public_ipv4'] == checks['loopback'] == 'EPERM'
     deployed = work / 'произвольный каталог % $ с пробелами' / 'длинный путь установки'
-    for name in ['tools', 'templates']:
+    for name in ['tools', 'templates', 'knowledge-base']:
         shutil.copytree(ROOT / name, deployed / name, ignore=shutil.ignore_patterns('__pycache__'))
     (deployed / 'bin').mkdir()
     shutil.copy2(ROOT / 'bin/silverbullet', deployed / 'bin/silverbullet')
