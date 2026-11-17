@@ -70,7 +70,7 @@ class Backend:
             connection.request('POST', PREFIX + operation, json.dumps(payload).encode('utf-8'), headers)
             response = connection.getresponse()
             if response.status == 401:
-                raise BridgeError('Credential rejected or expired; run client login again')
+                raise BridgeError('Credential rejected or expired; renew the personal token with client issue-token')
             if response.status == 404:
                 raise BridgeError('Private MCP service is disabled or this server version does not support it')
             if response.status == 429:

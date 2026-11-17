@@ -27,3 +27,5 @@ evidence/supply-unpack-*/
 *environment*.json
 *inventory*.json
 !licenses/dependency-inventory.json
+
+*.mcp-token.json

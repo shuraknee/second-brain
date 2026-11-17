@@ -34,7 +34,7 @@
     ],
     "ssh_personal_mcp": true
   },
-  "supply_revision": "second-brain-20261117",
+  "supply_revision": "second-brain-20261117-r2",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -111,7 +111,13 @@
       "Linux Secret Service"
     ],
     "oauth_required": false,
-    "acceptance": "local Linux loopback SSH with shared key and two personal accounts, token revocation and checkpoint attribution; native desktop stores and corporate OpenCode/GigaCode untested"
+    "acceptance": "real token issuance/export, default env and explicit file CLI over local loopback SSH, independent revocation and attribution; no OS credential store; corporate clients and native desktop stores require workstation acceptance",
+    "default_credential_source": "MCP config environment; no OS credential-store calls or module loading",
+    "credential_sources": [
+      "profile-bound MCP process environment (default)",
+      "explicit private token export file",
+      "native OS credential store (explicit opt-in only)"
+    ]
   },
   "agent_workflow": {
     "mode": "dedicated secondbrain subagent",

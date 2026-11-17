@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Owned loopback-only SSH integration; never reads real client/server configuration.
 
-Requires existing sshd, ssh-keygen and strace on the test host. The credential
-store is an in-memory test double: native desktop stores need OS acceptance.
+Requires existing sshd, ssh-keygen and strace on the test host. Personal tokens
+are really exported, read from the MCP config environment and revoked. OS
+credential stores must not be opened.
 """
 import getpass
 import http.cookiejar
@@ -32,13 +33,6 @@ client = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(client)
 
 
-class MemoryStore:
-    def __init__(self): self.data = {}
-    def get(self, key): return self.data.get(key)
-    def set(self, key, value): self.data[key] = value
-    def delete(self, key): self.data.pop(key, None)
-
-
 def port():
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))
@@ -46,7 +40,7 @@ def port():
 
 
 def main():
-    report = {'passed': False, 'checks': {}, 'scope': 'owned local loopback SSH and Linux server; native credential store replaced by memory; no corporate acceptance',
+    report = {'passed': False, 'checks': {}, 'scope': 'owned local loopback SSH and Linux server; real private token export and config environment; no OS credential store; no corporate acceptance',
         'binary_sha256': json.loads((ROOT / 'manifest.json').read_text())['binary_sha256']}
     with tempfile.TemporaryDirectory(prefix='sb-ssh-', dir=os.environ['XDG_RUNTIME_DIR']) as temporary:
         work = Path(temporary)
@@ -138,21 +132,35 @@ def main():
             def command(profile):
                 args = original_command(profile)
                 return [args[0], '-F', str(ssh_config)] + args[1:]
-            store = MemoryStore()
             profiles = {name: client.configure(work / name, 'test', 'synthetic-secondbrain',
                 str(ROOT / 'ssh_mcp/bridge.py'), str(bridge_config)) for name in passwords}
-            with patch.object(client, 'ssh_command', side_effect=command):
+            exports = {name: work / name / 'token-export.json' for name in passwords}
+            environments = {}
+            original_popen = subprocess.Popen
+            def credential_safe_popen(args, **kwargs):
+                if Path(args[0]).name == 'ssh':
+                    assert client.TOKEN_ENV not in kwargs['env']
+                    assert client.PROFILE_ENV not in kwargs['env']
+                return original_popen(args, **kwargs)
+            with patch.object(client, 'ssh_command', side_effect=command), \
+                    patch.object(client, 'open_native_store', side_effect=AssertionError('OS credential store must not be opened')), \
+                    patch.object(client.subprocess, 'Popen', side_effect=credential_safe_popen):
                 for name in passwords:
-                    assert client.login(profiles[name], store, name, passwords[name]) == name
-                alice_token = store.get(client.credential_key(profiles['alice']))
-                bob_token = store.get(client.credential_key(profiles['bob']))
+                    assert client.issue_token(profiles[name], exports[name], name, passwords[name]) == name
+                    exported = json.loads(exports[name].read_text())
+                    assert exported['username'] == name
+                    assert exports[name].stat().st_mode & 0o777 == 0o600
+                    environments[name] = exported['environment']
+                alice_token = environments['alice'][client.TOKEN_ENV]
+                bob_token = environments['bob'][client.TOKEN_ENV]
                 assert alice_token != bob_token
                 users = (data / 'users.json').read_text()
                 assert alice_token not in users and bob_token not in users
                 report['checks']['one_shared_ssh_key_two_personal_hashed_tokens'] = True
+                report['checks']['existing_accounts_issue_private_exports_without_os_store'] = True
 
                 counter = 0
-                def rpc(name, method, params=None):
+                def rpc(name, method, params=None, token_file=False):
                     nonlocal counter
                     counter += 1
                     # A fresh stdio process is intentional: credentials persist on the client,
@@ -161,8 +169,12 @@ def main():
                     output = io.BytesIO()
                     streams = SimpleNamespace(stdin=SimpleNamespace(buffer=io.BytesIO((json.dumps(packet)+'\n').encode())),
                         stdout=SimpleNamespace(buffer=output), stderr=log)
-                    with patch.object(client, 'sys', streams):
-                        assert client.mcp(profiles[name], store) == 0
+                    arguments = ['--config-dir', str(work / name), 'mcp', '--profile', 'test']
+                    if token_file:
+                        arguments += ['--token-file', str(exports[name])]
+                    with patch.object(client, 'sys', streams), patch.dict(os.environ,
+                            {} if token_file else environments[name]):
+                        assert client.main(arguments) == 0
                     replies = [json.loads(line) for line in output.getvalue().splitlines()]
                     assert len(replies) == 1 and replies[0]['id'] == counter
                     assert 'error' not in replies[0], replies[0]
@@ -172,6 +184,8 @@ def main():
                     assert rpc(name, 'initialize', {'protocolVersion': '2025-11-25', 'capabilities': {},
                         'clientInfo': {'name': 'synthetic-cli', 'version': '1'}})['serverInfo']
                     assert rpc(name, 'tools/list')['tools']
+                assert rpc('alice', 'ping', token_file=True) == {}
+                report['checks']['default_env_and_explicit_token_file_cli_with_clean_ssh_environment'] = True
                 common = {'space': 'Synthetic runtime test'}
                 help_text = json.dumps(call('alice', 'help', {}), ensure_ascii=False)
                 assert 'vault-note-creation' in help_text
@@ -208,14 +222,13 @@ def main():
                 assert request('/.dashboard/api/admin/users', headers={'Authorization': 'Bearer ' + bob_token})[0] in [401, 403]
                 assert request('/.mcp', {}, headers={'Authorization': 'Bearer ' + bob_token})[0] == 401
                 report['checks']['personal_tokens_cannot_access_admin_or_public_oauth_mcp'] = True
-                client.logout(profiles['alice'], store)
-                assert not store.get(client.credential_key(profiles['alice']))
+                client.logout(profiles['alice'], client.file_store(profiles['alice'], exports['alice']))
                 try: client.exchange(profiles['alice'], {'bridge_version': 1, 'action': 'connect', 'token': alice_token})
                 except client.ClientError: pass
                 else: raise AssertionError('Revoked credential accepted')
                 assert call('bob', 'read', {**common, 'page': 'alice note'})['structuredContent']
                 report['checks']['revocation_is_personal_and_other_user_still_works'] = True
-                client.logout(profiles['bob'], store)
+                client.logout(profiles['bob'], client.EnvironmentStore(profiles['bob'], dict(environments['bob'])))
             report['passed'] = True
         finally:
             for process in reversed(processes):

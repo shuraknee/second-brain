@@ -43,9 +43,9 @@ IPv6 необязателен; отключённое в ядре семейст
 
 Единая итоговая поставка находится на [странице последнего релиза](https://github.com/shuraknee/second-brain/releases/latest).
 Тег из `supply_revision` в manifest.json для этой версии:
-**second-brain-20261117**: архив
-`silverbullet-linux-x86_64-py39-second-brain-20261117.tar.gz` и одноимённый
-`.sha256`. Файлы доступны на [странице релиза](https://github.com/shuraknee/second-brain/releases/tag/second-brain-20261117).
+**second-brain-20261117-r2**: архив
+`silverbullet-linux-x86_64-py39-second-brain-20261117-r2.tar.gz` и одноимённый
+`.sha256`. Файлы доступны на [странице релиза](https://github.com/shuraknee/second-brain/releases/tag/second-brain-20261117-r2).
 Инструкции agent.md, INSTALL.md, KNOWLEDGE-SKILLS.md, SSH-MCP.md и
 SECOND-BRAIN-SUBAGENT.md входят в архив
 и release assets. Это итоговая комплектация приложения, MCP и клиентских
@@ -164,7 +164,7 @@ Assets, его SHA проверяется при сборке и запуске.
 ## Личный MCP через SSH
 
 [SSH-MCP.md](SSH-MCP.md) описывает персональный вход поверх общего SSH-ключа,
-хранение токена в macOS Keychain / Windows Credential Manager / Linux Secret Service
+личный токен из пользовательского config без Keychain/хранилища ОС
 и подключение OpenCode 1.19.5 и GigaCode 26.10.104 через stdio. OAuth для этого
 пути не требуется. Нужны новая серверная сборка и фиксированная SSH-команда
 моста; прежнее ядро не обновляется командой repair. Имена личной учётки и
@@ -179,3 +179,10 @@ Assets, его SHA проверяется при сборке и запуске.
 выполняет работу и возвращает результат со ссылками. Подробные процедуры и
 прочитанные страницы остаются в его контексте. Это клиентская настройка;
 обновление ядра или сервера относительно SSH-релиза не требуется.
+
+Для режима без интеграции с хранилищем ОС используйте client.py issue-token:
+выдаётся токен вашей существующей учётки, а не создаётся отдельный пользователь
+для агента. По умолчанию MCP читает переменные из config, без fallback к Keychain.
+Альтернатива — явно указанный приватный файл экспорта. Нативное хранилище
+остаётся только по явному --credential-source os-store. Сервер и мост прежние;
+для перехода обновляется локальный client.py и пользовательская настройка MCP.
