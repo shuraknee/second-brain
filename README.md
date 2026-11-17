@@ -42,10 +42,12 @@ IPv6 необязателен; отключённое в ядре семейст
 ## Получить готовые файлы
 
 Выберите релиз с тегом из `supply_revision` в manifest.json. Для этой версии это
-**offline-knowledge-skills-20261116**: архив
-`silverbullet-linux-x86_64-py39-offline-knowledge-skills-20261116.tar.gz` и одноимённый
-`.sha256`. До публикации используйте подготовленный проверенный архив этой версии.
-Инструкции agent.md, INSTALL.md и KNOWLEDGE-SKILLS.md входят в архив и release assets.
+**offline-ssh-personal-20261116**: архив
+`silverbullet-linux-x86_64-py39-offline-ssh-personal-20261116.tar.gz` и одноимённый
+`.sha256`. Файлы доступны на [странице релиза](https://github.com/shuraknee/second-brain/releases/tag/offline-ssh-personal-20261116).
+Инструкции agent.md, INSTALL.md, KNOWLEDGE-SKILLS.md и SSH-MCP.md входят в архив
+и release assets. Это prerelease: выполнены локальные проверки; приёмка на
+целевом сервере и рабочих местах выполняется отдельно.
 Получение файлов выполняется заранее через разрешённый браузер/канал.
 
 После проверки SHA и распаковки отдельно от TARGET:
@@ -155,3 +157,12 @@ Assets, его SHA проверяется при сборке и запуске.
 диапазонов, а не параметрами чьего-либо сервера.
 
 Сборка изменённого ядра из подготовленных исходников: [BUILD-OFFLINE.md](BUILD-OFFLINE.md).
+
+## Личный MCP через SSH
+
+[SSH-MCP.md](SSH-MCP.md) описывает персональный вход поверх общего SSH-ключа,
+хранение токена в macOS Keychain / Windows Credential Manager / Linux Secret Service
+и подключение OpenCode 1.19.5 и GigaCode 26.10.104 через stdio. OAuth для этого
+пути не требуется. Нужны новая серверная сборка и фиксированная SSH-команда
+моста; прежнее ядро не обновляется командой repair. Имена личной учётки и
+подключения сервер добавляет к Git-снимкам, создаваемым через этот MCP.

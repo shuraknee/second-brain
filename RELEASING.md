@@ -68,6 +68,7 @@ Runtime-архив собирается только по allowlist tools/build_
 "$PYTHON" -I -B tests/test_configure.py -v
 "$PYTHON" -I -B tests/test_package.py -v
 "$PYTHON" -I -B tests/test_knowledge.py -v
+"$PYTHON" -I -B tests/test_ssh_mcp.py -v
 ```
 
 Проверки должны подтвердить произвольные пути установки, защиту существующих
@@ -137,3 +138,15 @@ RELEASE_NOTES.md с двумя ссылками на инструкции в т�
 авторизации, если репозиторий публичный. GitHub Source code содержит исходники
 обвязки; для установки требуется runtime-архив из Release Assets.
 Исправления выпускаются новым тегом/архивом, а не подменой опубликованных файлов.
+
+## Изменения личного SSH MCP
+
+SSH-MCP.md и ssh_mcp/{client.py,secret_store.py,bridge.py,bridge.example.json}
+входят в allowlist; SSH-MCP.md также поставляется отдельным asset с SHA256.
+При смене этого пути выполнить tests/ssh_runtime.py на машине испытаний с
+заранее установленными ssh/sshd/ssh-keygen/strace: только временный loopback,
+собственные ключи, два личных пользователя и один общий SSH-ключ. Проверять
+разделение токенов, отзывы, серверную атрибуцию снимков и запрет публичного входа.
+Хранилище ОС в этом тесте — подмена памятью; не выдавать её за приёмку Keychain,
+Credential Manager/Secret Service или корпоративных клиентов. Нативную приёмку
+проводить отдельно на нужных рабочих местах. Секреты тестов в assets не включать.

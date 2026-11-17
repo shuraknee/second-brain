@@ -6,7 +6,7 @@
   "asset_url": "https://github.com/silverbulletmd/silverbullet/releases/download/edge/silverbullet-server-linux-x86_64.zip",
   "zip_size": 19562079,
   "zip_sha256": "ff9bd132cf74817ef03653033bd4770ab69b43aab0ab9cd67a8b63fd3abf1d05",
-  "binary_sha256": "cd6d500e4e685ed35132a449e501ba2b5cf9678c18a4e083cc2af947261d968a",
+  "binary_sha256": "d9491b8b8eacb6e232a0e0552d1645470d28baa98d410c24e1c8da86622a0639",
   "source_url": "https://codeload.github.com/silverbulletmd/silverbullet/tar.gz/0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
   "source_sha256": "04c00a77b09188b0b84ca425e81e8b62b77333db881f89569d90d5216ca47f6a",
   "supply_status": "generic-candidate-awaiting-target-acceptance",
@@ -31,9 +31,10 @@
       "read",
       "commit",
       "restore"
-    ]
+    ],
+    "ssh_personal_mcp": true
   },
-  "supply_revision": "offline-knowledge-skills-20261116",
+  "supply_revision": "offline-ssh-personal-20261116",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -60,14 +61,14 @@
   },
   "upstream_binary_sha256": "2e0bb5325e6612e78572f47206e91b9bf5307852d92e52ab689b94d6734dfa34",
   "binary_origin": "locally rebuilt from pinned upstream with offline patch",
-  "binary_version": "2.12.1-offline.2+0fbe7b51",
+  "binary_version": "2.12.1-offline.3+0fbe7b51",
   "offline_build": {
     "audit_status": "source-and-runtime-verified",
     "core_source_revision": "0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
     "new_dependency_versions": 0,
     "runtime_strace_required": false,
-    "patch_sha256": "5bd2e531b2bfc93e0cef60ce5fa9b039441cf0b518459920f00a6ffc790bf837",
-    "source_files_sha256": "9495e0bb3046bbe0c644ab134b7533d63a5835c480333e40ac83fa598be3f023",
+    "patch_sha256": "2449a8ed57d87840d908d3a6d4242d884734abffc1adde7981f8d06dc1e3e8a1",
+    "source_files_sha256": "67748253ac8b893c3d5d929898548ca014a869a9be16152214b4c6f78d765e81",
     "trace_coverage": "all traced setup/server tasks and descendants; not only main PID",
     "outbound_connect_attempts_in_tested_workflow": 0,
     "browser_external_requests_in_tested_workflow": 0,
@@ -77,7 +78,7 @@
       "npm": "11.19.1",
       "musl": "1.2.4"
     },
-    "source_epoch_seconds": 1794272400,
+    "source_epoch_seconds": 1794787200,
     "local_git_contract_tests": 6,
     "local_git_runtime_tests": "MCP status/history/diff/read/commit/restore; stale revisions and links refused; restart persistence; traced and without strace"
   },
@@ -97,5 +98,19 @@
     "fresh_space_seed": true,
     "existing_space_import": "tools/knowledge.py; creates missing pages only",
     "runtime_network": false
+  },
+  "ssh_mcp": {
+    "enabled_by_wrapper": true,
+    "private_prefix": "/.ssh-mcp",
+    "backend": "fixed IPv4 loopback port",
+    "authentication": "personal password login over SSH; MCP-only hashed tokens",
+    "token_lifetime_days": 90,
+    "credential_stores": [
+      "macOS Keychain",
+      "Windows Credential Manager",
+      "Linux Secret Service"
+    ],
+    "oauth_required": false,
+    "acceptance": "local Linux loopback SSH with shared key and two personal accounts, token revocation and checkpoint attribution; native desktop stores and corporate OpenCode/GigaCode untested"
   }
 }

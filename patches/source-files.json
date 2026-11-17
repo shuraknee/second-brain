@@ -14,7 +14,7 @@
     {
       "path": "bin/silverbullet/src/multi.rs",
       "before_sha256": "2ed6e5b884bfbe4e4f6b5b3cab623e8ed689a45fa91d974d36d2385f649790a4",
-      "after_sha256": "c1cd2478791dfe8ad524f2c3cd94943355c236f3007cc35565fdad0616a03950"
+      "after_sha256": "d3c8e5c01bf5c19b7b9db1ddcdf51024d3032047121d4ab0a5f69fbba976d09a"
     },
     {
       "path": "build/build_client.ts",
@@ -24,7 +24,7 @@
     {
       "path": "build/version.ts",
       "before_sha256": "847a3bf8dd30ab72b804003af3165f763b00cf4e739f4e9d5c92a159a2a6890b",
-      "after_sha256": "1a502ae418bdc153ce0684ca38cb94ce580d79c656a2513f66d294356afcb42c"
+      "after_sha256": "3528d5a91f1e160d788f3b4ff1b97b9d43e54eded386d2f7b488e844a4c12d5d"
     },
     {
       "path": "client/offline_network.ts",
@@ -54,7 +54,7 @@
     {
       "path": "server-common/build.rs",
       "before_sha256": "4999bead127707df76b770a88b46cb3a5591cf29dd70a510121e7bc2c15ddbfe",
-      "after_sha256": "7996efe55c6453cbbb0709424e9cedae0ee60eb2eea111c256b6b7a4003e4b1f"
+      "after_sha256": "7c0feab9512703e9091901c03042f72544601744f126adf4d2cdb37542db57be"
     },
     {
       "path": "server-common/src/space/http.rs",
@@ -82,14 +82,39 @@
       "after_sha256": "3e7098c1293072aaf603f1d63b3b2794ee066046310e3770a02a4f74e43b8566"
     },
     {
+      "path": "server-mcp/src/lib.rs",
+      "before_sha256": "e3e504a4c286dc9273860af24a1506bfbd25b8e6234397ea579effb552aaabac",
+      "after_sha256": "386f952dc0084091c26886604e5e274b8498a8ce3b88fca8ca66b1dd584e4142"
+    },
+    {
+      "path": "server-mcp/src/multi_host.rs",
+      "before_sha256": "1b4769406072cd4ea467223dc5bc4d0780db893012bf2f87c39b1e071230133c",
+      "after_sha256": "192b1fe50c39db73ad49ae4e97603a9d8e3b9a4987413af289b63616a1f898f6"
+    },
+    {
+      "path": "server-mcp/src/personal.rs",
+      "before_sha256": null,
+      "after_sha256": "7f719ff7cd2ac0bc4156fbcd1b0cc4181d487254e57fa6cffcf89999dd8e3cce"
+    },
+    {
+      "path": "server-mcp/src/tool.rs",
+      "before_sha256": "c1e68382fcfff9f7e36c5c5d81c30595bdcc15c8fd44ec88f8427edf86692035",
+      "after_sha256": "525681ca8f491a5ee228ace022e569e23b27ad11f1163aa796b260405d2e397e"
+    },
+    {
       "path": "server-mcp/src/tools/git.rs",
       "before_sha256": null,
-      "after_sha256": "d8cbced2c72616b866b176c5ccf674460246d1ab3fbacd9c3ec5f8156240296a"
+      "after_sha256": "06b1e4654a1e8943f745df4c5c3a826985445ba17b90800f0a88711b0df9c321"
     },
     {
       "path": "server-mcp/src/tools/mod.rs",
       "before_sha256": "bdb2ab5203970d644e06dc582dd322013fa57e5b68fab22ec4cd6d7f4e8d353c",
       "after_sha256": "6a71cbef24fce30d0cd90dcc4ea7927a9d54d27f6d2242498bdccb3ed5c0a741"
+    },
+    {
+      "path": "server-mcp/tests/personal.rs",
+      "before_sha256": null,
+      "after_sha256": "e1992547a660ada09fca09d12bb57fc0001920e09198316b3eff5bf5ece2f08d"
     },
     {
       "path": "server-search/Cargo.toml",
@@ -195,6 +220,11 @@
       "path": "server/src/multi/server_config.rs",
       "before_sha256": "2b3daff128d1d3ac5746d43e8c6cae7787457163f61714304ce11fe6f27e2b40",
       "after_sha256": "ba248b26cd260e001f592476eab4cb705fa46bd9161e56931fbb370d83c7e501"
+    },
+    {
+      "path": "server/src/multi/users.rs",
+      "before_sha256": "7e52f1fb47c4a46feaefe5e77372a855c0ecc335def9b14e044a13950a162a0a",
+      "after_sha256": "c52db10c43ebacf0a92bd913027f7523f05af26e3d91f2bce166d6787ef0e45a"
     },
     {
       "path": "server/src/multi/validate.rs",

@@ -105,6 +105,7 @@ def main():
     # Explicit server feature policy; no proxy/cloud/environment inheritance.
     env = {'PATH': os.defpath, 'HOME': str(data), 'TMPDIR': str(data),
            'LANG': 'C.UTF-8', 'RUST_LOG': 'info', 'SB_RUNTIME_API': '0',
+           'SB_SSH_MCP': '1',
            'SB_SHELL_BACKEND': 'off', 'SB_HOSTNAME': '127.0.0.1',
            'SB_PORT': str(config['backend_port'])}
     def command(arguments):

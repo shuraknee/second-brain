@@ -396,7 +396,18 @@
 -silverbullet-server-runtime-chrome = { path = "../../server-runtime-chrome" }
 --- a/bin/silverbullet/src/multi.rs
 +++ b/bin/silverbullet/src/multi.rs
-@@ -449,51 +449,2 @@
+@@ -310,0 +311,6 @@
++    let personal_host = Arc::new(MultiHost::new(manager.clone(), users.clone()).with_personal_tokens(authenticator.clone()));
++    let personal_tools = Arc::new(Tools::new(personal_host.clone(), crate::VERSION).with_bundled_pages(bundled_std_pages()));
++    let personal_gate = manager.clone();
++    let personal_opt_in = std::env::var("SB_SSH_MCP").as_deref() == Ok("1");
++    let personal_enabled: Arc<dyn Fn() -> bool + Send + Sync> = Arc::new(move || personal_opt_in && mcp_env_enabled && personal_gate.mcp_enabled());
++    let personal = silverbullet_server_mcp::personal::router(personal_tools, personal_host, users.clone(), central_login.clone(), personal_enabled);
+@@ -320 +326,2 @@
+-    .merge(mcp);
++    .merge(mcp)
++    .merge(personal);
+@@ -449,51 +456,2 @@
 -    use silverbullet_server_runtime_chrome::RuntimeUnavailable;
 -
 -    let (pool, availability) = match if single_instance {
@@ -500,7 +511,7 @@
 -
 -    gitProcess.on("error", reject);
 -  });
-+  return writeFile("./version.json", JSON.stringify({version: "2.12.1-offline.2+0fbe7b51"}) + "\n");
++  return writeFile("./version.json", JSON.stringify({version: "2.12.1-offline.3+0fbe7b51"}) + "\n");
 --- /dev/null
 +++ b/client/offline_network.ts
 @@ -0,0 +1,34 @@
@@ -616,7 +627,7 @@
 -        .duration_since(std::time::UNIX_EPOCH)
 -        .map(|d| d.as_millis() as i64)
 -        .unwrap_or(1);
-+    let build_ts_ms: i64 = 1794272400000; // Fixed source epoch for offline build.
++    let build_ts_ms: i64 = 1794787200000; // Fixed source epoch for offline build.
 --- a/server-common/src/space/http.rs
 +++ b/server-common/src/space/http.rs
 @@ -1,9 +1,3 @@
@@ -1862,9 +1873,177 @@
 +a deleted file); it saves a checkpoint and restores one regular file as a new
 +edit, preserving history. Commit ids and content revisions are different.
 +Never rewrite a file using a truncated preview. See the supplied MCP-GIT.md.
+--- a/server-mcp/src/lib.rs
++++ b/server-mcp/src/lib.rs
+@@ -9,0 +10 @@
++pub mod personal;
+--- a/server-mcp/src/multi_host.rs
++++ b/server-mcp/src/multi_host.rs
+@@ -23,0 +24,2 @@
++    personal: bool,
++    forward_auth: Option<Arc<Authenticator>>,
+@@ -36,0 +39,2 @@
++            personal: false,
++            forward_auth: None,
+@@ -44,0 +49 @@
++        self.forward_auth = Some(authenticator.clone());
+@@ -48,0 +54,7 @@
++        self
++    }
++
++    /// A separate SSH-only router opts in; the public OAuth endpoint stays unchanged.
++    pub fn with_personal_tokens(mut self, authenticator: Arc<Authenticator>) -> Self {
++        self.personal = true;
++        self.forward_auth = Some(authenticator);
+@@ -72,0 +85 @@
++            CallerCredential::PersonalToken { .. } => self.personal,
+@@ -131,12 +144,7 @@
+-        let (
+-            CallerCredential::Grant {
+-                credential_version, ..
+-            },
+-            Some(oauth),
+-        ) = (&caller.credential, &self.oauth)
+-        else {
+-            return Err(unavailable());
+-        };
+-        oauth
+-            .authenticator
+-            .issue_space_forward_token(&caller.username, credential_version.clone(), space)
++        let version = match &caller.credential {
++            CallerCredential::Grant { credential_version, .. } => credential_version.clone(),
++            CallerCredential::PersonalToken { credential_version, .. } if self.personal => Some(credential_version.clone()),
++            _ => return Err(unavailable()),
++        };
++        self.forward_auth.as_ref().ok_or_else(unavailable)?
++            .issue_space_forward_token(&caller.username, version, space)
+@@ -174,0 +183,5 @@
++        }
++        if self.personal {
++            let (username, credential_version, token_name) = self.users.resolve_mcp_token(token)
++                .ok_or(AuthFailure::InvalidToken)?;
++            return Ok(Caller { username, credential: CallerCredential::PersonalToken { token_name, credential_version } });
+@@ -253 +266 @@
+-                let runtime = self.manager.runtime_enabled()
++                let runtime = !self.personal && self.manager.runtime_enabled()
+@@ -278,0 +292,14 @@
++        if self.personal {
++            if req.path_and_query.starts_with("/.runtime") {
++                return Err(HostError::NotAvailable("Runtime API is not available to SSH tokens".into()));
++            }
++            if req.method != axum::http::Method::GET && req.method != axum::http::Method::HEAD {
++                if let Some(path) = req.path_and_query.split('?').next().unwrap_or("").strip_prefix("/.fs/") {
++                    let path = percent_encoding::percent_decode_str(path).decode_utf8_lossy();
++                    if !self.users.is_admin(&caller.username)
++                        && (path.starts_with("Library/") || matches!(path.as_ref(), "AGENTS.md" | "CONFIG.md")) {
++                        return Err(HostError::NotAvailable("Only an administrator may change rules, templates or configuration".into()));
++                    }
++                }
++            }
++        }
+--- /dev/null
++++ b/server-mcp/src/personal.rs
+@@ -0,0 +1,92 @@
++//! Non-OAuth, MCP-only credentials for the private SSH bridge surface.
++//! The public Python ingress must refuse this entire prefix. No browser login,
++//! arbitrary forwarding, user-selected backend, or server signing key is exposed.
++use std::sync::Arc;
++use axum::extract::{DefaultBodyLimit, State};
++use axum::http::{header, HeaderMap, StatusCode};
++use axum::response::{IntoResponse, Response};
++use axum::routing::{any, post};
++use axum::{Json, Router};
++use serde::Deserialize;
++use serde_json::json;
++use silverbullet_server::auth::LoginManager;
++use silverbullet_server::multi::users::UserStore;
++use crate::{Authenticate, CallerCredential, MultiHost, ToolSet};
++
++struct PersonalState { users: Arc<UserStore>, login: Arc<LoginManager>, host: Arc<MultiHost> }
++
++#[derive(Deserialize)]
++#[serde(deny_unknown_fields)]
++struct Login { username: String, password: String, label: String }
++
++fn answer(status: StatusCode, value: serde_json::Value) -> Response {
++    (status, [(header::CACHE_CONTROL, "no-store")], Json(value)).into_response()
++}
++
++async fn login(State(state): State<Arc<PersonalState>>, headers: HeaderMap, Json(body): Json<Login>) -> Response {
++    // Browsers are never a client of the private surface.
++    if headers.contains_key(header::ORIGIN) || headers.contains_key("sec-fetch-site") {
++        return StatusCode::FORBIDDEN.into_response();
++    }
++    if body.username.len() > 128 || body.password.len() > 4096 || body.label.len() > 160 {
++        return StatusCode::BAD_REQUEST.into_response();
++    }
++    if state.login.is_locked() {
++        return answer(StatusCode::TOO_MANY_REQUESTS, json!({"ok": false, "error": "Login temporarily locked"}));
++    }
++    let result = tokio::task::spawn_blocking(move || {
++        if !state.login.authorize(&body.username, &body.password) {
++            state.login.record_failure();
++            return Err(());
++        }
++        let token = state.users.create_mcp_token(&body.username, &body.label).map_err(|_| ())?;
++        state.users.record_login(&body.username).map_err(|_| ())?;
++        Ok((body.username, token))
++    }).await;
++    match result {
++        Ok(Ok((username, token))) => answer(StatusCode::OK, json!({"ok": true, "username": username, "token": token, "expires_in": 90 * 24 * 3600})),
++        _ => answer(StatusCode::UNAUTHORIZED, json!({"ok": false, "error": "Sign-in failed"})),
++    }
++}
++
++async fn identity(State(state): State<Arc<PersonalState>>, headers: HeaderMap) -> Response {
++    match state.host.authenticate(&headers) {
++        Ok(caller) => {
++            let label = match caller.credential { CallerCredential::PersonalToken { token_name, .. } => token_name, _ => String::new() };
++            answer(StatusCode::OK, json!({"ok": true, "username": caller.username, "connection": label}))
++        },
++        Err(_) => answer(StatusCode::UNAUTHORIZED, json!({"ok": false, "error": "Sign in again"})),
++    }
++}
++
++async fn logout(State(state): State<Arc<PersonalState>>, headers: HeaderMap) -> Response {
++    let Ok(caller) = state.host.authenticate(&headers) else {
++        return answer(StatusCode::UNAUTHORIZED, json!({"ok": false, "error": "Sign in again"}));
++    };
++    let CallerCredential::PersonalToken { token_name, .. } = caller.credential else { return StatusCode::FORBIDDEN.into_response(); };
++    match state.users.delete_token(&caller.username, &token_name) {
++        Ok(()) => answer(StatusCode::OK, json!({"ok": true})),
++        Err(_) => answer(StatusCode::INTERNAL_SERVER_ERROR, json!({"ok": false, "error": "Could not revoke credential"})),
++    }
++}
++
++pub fn router(tools: Arc<dyn ToolSet>, host: Arc<MultiHost>, users: Arc<UserStore>, login_manager: Arc<LoginManager>, enabled: Arc<dyn Fn() -> bool + Send + Sync>) -> Router {
++    let state = Arc::new(PersonalState { users, login: login_manager, host: host.clone() });
++    let account = Router::new().route("/login", post(login)).route("/identity", post(identity))
++        .route("/logout", post(logout)).layer(DefaultBodyLimit::max(16 * 1024)).with_state(state);
++    let rpc = Router::new().route("/rpc", any(crate::protocol::handle))
++        .layer(DefaultBodyLimit::max(16 * 1024 * 1024))
++        .with_state(crate::protocol::McpState { tools, auth: host });
++    Router::new().nest("/.ssh-mcp", account.merge(rpc)).layer(axum::middleware::from_fn(
++        move |req: axum::extract::Request, next: axum::middleware::Next| {
++            let enabled = enabled.clone();
++            async move {
++                if !enabled() { return StatusCode::NOT_FOUND.into_response(); }
++                if req.headers().contains_key(header::ORIGIN) || req.headers().contains_key("sec-fetch-site") {
++                    return StatusCode::FORBIDDEN.into_response();
++                }
++                next.run(req).await
++            }
++        }
++    ))
++}
+--- a/server-mcp/src/tool.rs
++++ b/server-mcp/src/tool.rs
+@@ -23,0 +24,2 @@
++    /// An MCP-only personal token, checked again on every request.
++    PersonalToken { token_name: String, credential_version: String },
 --- /dev/null
 +++ b/server-mcp/src/tools/git.rs
-@@ -0,0 +1,199 @@
+@@ -0,0 +1,207 @@
 +//! Bounded local-history tools. All requests run in-process as the MCP caller.
 +use axum::http::{header, HeaderName, Method, StatusCode};
 +use base64::{engine::general_purpose::STANDARD, Engine};
@@ -1874,7 +2053,7 @@
 +use serde_json::{json, Value};
 +use sha2::{Digest, Sha256};
 +use crate::host::{SpaceRequest, SpaceResponse};
-+use crate::tool::{Caller, ToolDef};
++use crate::tool::{Caller, CallerCredential, ToolDef};
 +use super::args::{input_schema, SPACE};
 +use super::reply::{Outcome, Reply, ToolError};
 +use super::{annotations, Tools};
@@ -1979,6 +2158,14 @@
 +    }
 +    async fn local_commit(&self, caller: &Caller, space: &str, message: &str) -> Result<SpaceResponse, ToolError> {
 +        if message.trim().is_empty() || message.len() > 4096 || message.contains('\0') { return Err("commit message must contain 1..4096 bytes without NUL".into()); }
++        let message = if let CallerCredential::PersonalToken { token_name, .. } = &caller.credential {
++            if message.lines().any(|line| {
++                let lower = line.trim_start().to_ascii_lowercase();
++                lower.starts_with("secondbrain-user:") || lower.starts_with("secondbrain-connection:")
++            }) { return Err("personal attribution fields are reserved for the server".into()); }
++            format!("{}\n\nSecondBrain-User: {}\nSecondBrain-Connection: {}", message.trim_end(), caller.username, token_name)
++        } else { message.to_owned() };
++        if message.len() > 4096 { return Err("commit message plus server attribution exceeds 4096 bytes".into()); }
 +        checked(self.git_request(caller, space, Method::POST, "/.revisions/_commit".into(),
 +            serde_json::to_vec(&json!({"message": message})).unwrap(),
 +            vec![(header::CONTENT_TYPE, "application/json".into())]).await?)
@@ -2077,6 +2264,76 @@
 +            "git_read" => self.git_read(caller, parse(args)?).await,
 +            "git_commit" => self.git_commit(caller, parse(args)?).await,
 +            "git_restore" => self.git_restore(caller, parse(args)?).await,
+--- /dev/null
++++ b/server-mcp/tests/personal.rs
+@@ -0,0 +1,67 @@
++mod support;
++use axum::body::Body;
++use axum::http::{HeaderMap, HeaderValue, Method, Request, StatusCode};
++use serde_json::json;
++use silverbullet_server_mcp::{Authenticate, McpHost, MultiHost, SpaceRequest};
++use support::{send, Fixture, HOST};
++use std::sync::Arc;
++use silverbullet_server::auth::LoginManager;
++use silverbullet_server::multi::access::{AnyUserAuth, SessionPolicy};
++use silverbullet_server_mcp::Tools;
++
++fn headers(token: &str) -> HeaderMap {
++    let mut result = HeaderMap::new();
++    result.insert("authorization", HeaderValue::from_str(&format!("Bearer {token}")).unwrap());
++    result.insert("host", HeaderValue::from_static(HOST));
++    result
++}
++
++#[tokio::test]
++async fn private_tokens_preserve_identity_membership_and_direct_configuration_boundary() {
++    let f = Fixture::new();
++    let space = f.space("Team", "/team", "none", json!({"writer-one": {"role":"write"}, "reader":{"role":"read"}, "keeper":{"role":"write"}}));
++    let private = MultiHost::new(f.manager.clone(), f.users.clone()).with_personal_tokens(f.authenticator.clone());
++    let token = f.users.create_mcp_token("writer-one", "OpenCode").unwrap();
++    assert!(f.host.authenticate(&headers(&token)).is_err());
++    assert!(private.authenticate(&headers(&f.tokens["writer-one"])).is_err());
++    let caller = private.authenticate(&headers(&token)).unwrap();
++    assert_eq!(caller.username, "writer-one");
++    assert_eq!(private.spaces(&caller).len(), 1);
++    let req = |path: &str, method: Method| SpaceRequest { method, path_and_query: path.into(), headers: vec![], body: b"Content".to_vec() };
++    for path in ["/.fs/Library/Config.md", "/.fs/%4cibrary%2fConfig.md", "/.fs/AGENTS.md", "/.runtime/lua"] {
++        assert!(private.request(&caller, &space, req(path, Method::PUT)).await.is_err(), "{path}");
++    }
++    assert!(private.request(&caller, &space, req("/.fs/Note.md", Method::PUT)).await.unwrap().status.is_success());
++    let reader_token = f.users.create_mcp_token("reader", "GigaCode").unwrap();
++    let reader = private.authenticate(&headers(&reader_token)).unwrap();
++    assert!(private.spaces(&reader).is_empty());
++    assert!(private.request(&reader, &space, req("/.fs/Note.md", Method::PUT)).await.is_err());
++    f.users.delete_token("writer-one", "OpenCode").unwrap();
++    assert!(private.authenticate(&headers(&token)).is_err());
++}
++
++#[tokio::test]
++async fn password_login_issues_scoped_token_and_private_routes_reject_browser_origin() {
++    let f = Fixture::new();
++    let host = Arc::new(MultiHost::new(f.manager.clone(), f.users.clone()).with_personal_tokens(f.authenticator.clone()));
++    let login = Arc::new(LoginManager::new(f.authenticator.clone(), Arc::new(AnyUserAuth {store:f.users.clone()}), 48, SessionPolicy::default().lockout(), String::new()));
++    let tools = Arc::new(Tools::new(host.clone(), "test"));
++    let router = silverbullet_server_mcp::personal::router(tools, host, f.users.clone(), login, Arc::new(|| true));
++    let request = |password: &str| Request::post("/.ssh-mcp/login").header("content-type", "application/json")
++        .body(Body::from(json!({"username":"writer-one", "password":password, "label":"laptop"}).to_string())).unwrap();
++    let denied = send(&router, request("wrong-password")).await;
++    assert_eq!(denied.status, StatusCode::UNAUTHORIZED);
++    let good = send(&router, request("fixture-password")).await;
++    assert_eq!(good.status, StatusCode::OK);
++    let data = good.body;
++    let token = data["token"].as_str().unwrap();
++    assert!(f.users.resolve_token(token).is_none());
++    assert_eq!(f.users.resolve_mcp_token(token).unwrap().0, "writer-one");
++    let mut browser = request("fixture-password");
++    browser.headers_mut().insert("origin", HeaderValue::from_static("http://notes.example.test"));
++    assert_eq!(send(&router, browser).await.status, StatusCode::FORBIDDEN);
++    let logout = Request::post("/.ssh-mcp/logout").header("authorization", format!("Bearer {token}"))
++        .body(Body::empty()).unwrap();
++    assert_eq!(send(&router, logout).await.status, StatusCode::OK);
++    assert!(f.users.resolve_mcp_token(token).is_none());
++}
 --- a/server-search/Cargo.toml
 +++ b/server-search/Cargo.toml
 @@ -12 +12 @@
@@ -4028,6 +4285,110 @@
 @@ -208 +208 @@
 -        reqwest::Url::parse(value).map_err(|_| "enter a valid HTTP or HTTPS origin".to_string())?;
 +        url::Url::parse(value).map_err(|_| "enter a valid HTTP or HTTPS origin".to_string())?;
+--- a/server/src/multi/users.rs
++++ b/server/src/multi/users.rs
+@@ -24,0 +25,7 @@
++    /// MCP-only tokens cannot authenticate browser/admin/ordinary HTTP APIs.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub purpose: Option<String>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub credential_version: Option<String>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub expires_at: Option<u64>,
+@@ -436 +443 @@
+-                crate::auth::config::constant_time_eq(t.token_hash.as_bytes(), want.as_bytes())
++                t.purpose.is_none() && crate::auth::config::constant_time_eq(t.token_hash.as_bytes(), want.as_bytes())
+@@ -717,0 +725,3 @@
++            purpose: None,
++            credential_version: None,
++            expires_at: None,
+@@ -733,0 +744,49 @@
++    }
++
++    /// A distinct, revocable credential accepted only by the SSH MCP surface.
++    pub fn create_mcp_token(&self, user: &str, label: &str) -> Result<String, String> {
++        if label.is_empty() || label.len() > 160 || label.chars().any(char::is_control) {
++            return Err("invalid connection label".into());
++        }
++        let plaintext = format!("sbm_{}", generate_token());
++        self.mutate(|config| {
++            let u = config.users.get_mut(user).filter(|u| !u.disabled)
++                .ok_or_else(|| "account is unavailable".to_string())?;
++            if u.tokens.get(label).is_some_and(|t| t.purpose.as_deref() != Some("mcp-ssh")) {
++                return Err("connection label is used by an ordinary API token".into());
++            }
++            if !u.tokens.contains_key(label) && u.tokens.len() >= 100 {
++                return Err("too many account tokens".into());
++            }
++            let version = u.credential_version(user);
++            let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
++                .map(|d| d.as_secs()).unwrap_or(0);
++            u.tokens.insert(label.into(), TokenEntry {
++                token_hash: hash_token(&plaintext), created_at: now_rfc3339(),
++                purpose: Some("mcp-ssh".into()), credential_version: Some(version),
++                expires_at: Some(now + 90 * 24 * 3600),
++            });
++            Ok(())
++        })?;
++        Ok(plaintext)
++    }
++
++    pub fn resolve_mcp_token(&self, token: &str) -> Option<(String, String, String)> {
++        if !token.starts_with("sbm_") { return None; }
++        let want = hash_token(token);
++        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
++            .map(|d| d.as_secs()).unwrap_or(0);
++        let guard = self.read();
++        for (username, user) in &guard.users {
++            if user.disabled { continue; }
++            let version = user.credential_version(username);
++            for (label, entry) in &user.tokens {
++                if entry.purpose.as_deref() == Some("mcp-ssh")
++                    && entry.expires_at.is_some_and(|until| until > now)
++                    && entry.credential_version.as_deref() == Some(version.as_str())
++                    && crate::auth::config::constant_time_eq(entry.token_hash.as_bytes(), want.as_bytes()) {
++                    return Some((username.clone(), version, label.clone()));
++                }
++            }
++        }
++        None
+@@ -772 +831 @@
+-                serde_json::json!({ "createdAt": token.created_at }),
++                serde_json::json!({ "createdAt": token.created_at, "purpose": token.purpose, "expiresAt": token.expires_at }),
+@@ -1556,0 +1616,33 @@
++
++#[cfg(test)]
++mod personal_mcp_tests {
++    use super::*;
++
++    #[test]
++    fn mcp_credentials_are_scoped_revocable_rotatable_and_stored_hashed() {
++        let dir = tempfile::tempdir().unwrap();
++        let users = UserStore::create_empty(dir.path()).unwrap();
++        users.create_user("alice", "alice-pass", false, Profile::default()).unwrap();
++        users.create_user("bob", "bob-pass", false, Profile::default()).unwrap();
++        let api = users.create_token("alice", "ordinary").unwrap();
++        assert!(users.resolve_token(&api).is_some());
++        assert!(users.resolve_mcp_token(&api).is_none());
++        let first = users.create_mcp_token("alice", "OpenCode laptop").unwrap();
++        assert_eq!(users.resolve_mcp_token(&first).unwrap().0, "alice");
++        assert!(users.resolve_token(&first).is_none());
++        assert!(!std::fs::read_to_string(dir.path().join(USERS_FILE)).unwrap().contains(&first));
++        let second = users.create_mcp_token("alice", "OpenCode laptop").unwrap();
++        assert!(users.resolve_mcp_token(&first).is_none());
++        assert!(users.resolve_mcp_token(&second).is_some());
++        assert!(users.create_mcp_token("alice", "ordinary").is_err());
++        let bob = users.create_mcp_token("bob", "GigaCode").unwrap();
++        users.delete_token("alice", "OpenCode laptop").unwrap();
++        assert!(users.resolve_mcp_token(&second).is_none());
++        assert_eq!(users.resolve_mcp_token(&bob).unwrap().0, "bob");
++        users.set_password("bob", "changed-pass").unwrap();
++        assert!(users.resolve_mcp_token(&bob).is_none());
++        let current = users.create_mcp_token("bob", "GigaCode").unwrap();
++        users.set_disabled("bob", true).unwrap();
++        assert!(users.resolve_mcp_token(&current).is_none());
++    }
++}
 --- a/server/src/multi/validate.rs
 +++ b/server/src/multi/validate.rs
 @@ -365 +365 @@

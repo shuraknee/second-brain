@@ -4,9 +4,10 @@ import argparse
 import http.client
 from http.server import BaseHTTPRequestHandler
 import json
+import posixpath
 from pathlib import Path
 import socketserver
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 CSP = "; ".join(["default-src 'self'", "connect-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob:",
@@ -15,6 +16,17 @@ CSP = "; ".join(["default-src 'self'", "connect-src 'self'",
     "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'"])
 HOP = {'connection', 'transfer-encoding', 'keep-alive', 'proxy-authenticate',
        'proxy-authorization', 'te', 'trailer', 'upgrade', 'content-length'}
+
+
+def private_ssh_path(path):
+    path = path.split('?', 1)[0]
+    for unused in range(4):
+        decoded = unquote(path)
+        if decoded == path:
+            break
+        path = decoded
+    path = posixpath.normpath('/' + path.lstrip('/'))
+    return path == '/.ssh-mcp' or path.startswith('/.ssh-mcp/')
 
 
 def response_csp(path):
@@ -32,6 +44,9 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def forward(self):
+        if private_ssh_path(self.path):
+            self.send_error(404)
+            return
         if not self.path.startswith('/') or self.path.startswith('//') or self.headers.get('Transfer-Encoding'):
             self.send_error(400)
             return

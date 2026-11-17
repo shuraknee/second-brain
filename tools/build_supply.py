@@ -45,7 +45,7 @@ def main():
     files = [ROOT / name for name in ['README.md', 'agent.md', 'AGENTS.md', 'INSTALL.md', 'RELEASING.md',
                                       'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                       'LICENSE.silverbullet.md', 'manifest.json',
-                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md',
+                                      'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md', 'SSH-MCP.md',
                                       'patches/offline.patch', 'patches/source-files.json']]
     for name in ['agent.md', 'INSTALL.md']:
         path = ROOT / name
@@ -76,6 +76,8 @@ def main():
     files.extend(ROOT / 'templates' / name for name in [
         'silverbullet.service.in', 'silverbullet-ingress.service.in'])
     files.append(ROOT / 'config/service.example.json')
+    files.extend(ROOT / 'ssh_mcp' / name for name in [
+        'client.py', 'secret_store.py', 'bridge.py', 'bridge.example.json'])
     with tempfile.TemporaryDirectory(prefix='supply-build-', dir=output.parent) as temporary:
         stage = Path(temporary) / 'silverbullet-offline'
         stage.mkdir()
