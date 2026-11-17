@@ -42,10 +42,11 @@ IPv6 необязателен; отключённое в ядре семейст
 ## Получить готовые файлы
 
 Выберите релиз с тегом из `supply_revision` в manifest.json. Для этой версии это
-**offline-ssh-personal-20261116**: архив
-`silverbullet-linux-x86_64-py39-offline-ssh-personal-20261116.tar.gz` и одноимённый
-`.sha256`. Файлы доступны на [странице релиза](https://github.com/shuraknee/second-brain/releases/tag/offline-ssh-personal-20261116).
-Инструкции agent.md, INSTALL.md, KNOWLEDGE-SKILLS.md и SSH-MCP.md входят в архив
+**offline-subagent-guide-20261117**: архив
+`silverbullet-linux-x86_64-py39-offline-subagent-guide-20261117.tar.gz` и одноимённый
+`.sha256`. Файлы доступны на [странице релиза](https://github.com/shuraknee/second-brain/releases/tag/offline-subagent-guide-20261117).
+Инструкции agent.md, INSTALL.md, KNOWLEDGE-SKILLS.md, SSH-MCP.md и
+SECOND-BRAIN-SUBAGENT.md входят в архив
 и release assets. Это prerelease: выполнены локальные проверки; приёмка на
 целевом сервере и рабочих местах выполняется отдельно.
 Получение файлов выполняется заранее через разрешённый браузер/канал.
@@ -166,3 +167,13 @@ Assets, его SHA проверяется при сборке и запуске.
 пути не требуется. Нужны новая серверная сборка и фиксированная SSH-команда
 моста; прежнее ядро не обновляется командой repair. Имена личной учётки и
 подключения сервер добавляет к Git-снимкам, создаваемым через этот MCP.
+
+## Работа с базой через сабагента
+
+При настройке MCP создавайте отдельного сабагента **secondbrain** по
+[SECOND-BRAIN-SUBAGENT.md](SECOND-BRAIN-SUBAGENT.md). Готовый профиль OpenCode V1
+лежит в [agents/secondbrain.md](agents/secondbrain.md). Основной агент передаёт
+короткое поручение, а сабагент сам читает серверные правила и нужные навыки,
+выполняет работу и возвращает результат со ссылками. Подробные процедуры и
+прочитанные страницы остаются в его контексте. Это клиентская настройка;
+обновление ядра или сервера относительно SSH-релиза не требуется.

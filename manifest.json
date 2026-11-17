@@ -34,7 +34,7 @@
     ],
     "ssh_personal_mcp": true
   },
-  "supply_revision": "offline-ssh-personal-20261116",
+  "supply_revision": "offline-subagent-guide-20261117",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -112,5 +112,13 @@
     ],
     "oauth_required": false,
     "acceptance": "local Linux loopback SSH with shared key and two personal accounts, token revocation and checkpoint attribution; native desktop stores and corporate OpenCode/GigaCode untested"
+  },
+  "agent_workflow": {
+    "mode": "dedicated secondbrain subagent",
+    "instructions": "SECOND-BRAIN-SUBAGENT.md",
+    "profile": "agents/secondbrain.md",
+    "primary_routing": "agents/opencode-routing.example.json",
+    "server_changes_required": false,
+    "acceptance": "OpenCode V1 profile parsing under isolated test; native context routing and closed GigaCode require workstation acceptance"
   }
 }

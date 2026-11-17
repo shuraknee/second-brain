@@ -35,7 +35,7 @@ class PackageTests(unittest.TestCase):
                 with tarfile.open(first) as archive:
                     legal_files = sum(1 for p in (ROOT / 'licenses').rglob('*') if p.is_file())
                     knowledge_files = 1 + sum(1 for p in (ROOT / 'knowledge-base/pages').rglob('*.md'))
-                    self.assertEqual(len(archive.getmembers()), 37 + legal_files + knowledge_files)
+                    self.assertEqual(len(archive.getmembers()), 40 + legal_files + knowledge_files)
                     for entry in archive.getmembers():
                         parts = Path(entry.name).parts
                         self.assertEqual(entry.uid, 0)
@@ -55,7 +55,8 @@ class PackageTests(unittest.TestCase):
                     config = json.load(archive.extractfile('silverbullet-offline/config/service.example.json'))
                     for key in ['public_url', 'backend_port', 'listen_host', 'listen_port', 'gateway_socket', 'admin_username', 'data_directory']:
                         self.assertIsNone(config[key], key)
-                    for name in ['agent.md', 'INSTALL.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md', 'SSH-MCP.md',
+                    for name in ['agent.md', 'INSTALL.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md', 'SSH-MCP.md', 'SECOND-BRAIN-SUBAGENT.md',
+                                 'agents/secondbrain.md', 'agents/opencode-routing.example.json',
                                  'ssh_mcp/client.py', 'ssh_mcp/secret_store.py', 'ssh_mcp/bridge.py', 'ssh_mcp/bridge.example.json', 'RELEASING.md', 'LICENSE', 'LICENSE.silverbullet.md', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                  'licenses/sources/option-ext-0.2.0.crate', 'licenses/sources/htmlescape-0.3.1.crate',
                                  'licenses/fonts/Inter-OFL-1.1.txt']:

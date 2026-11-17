@@ -3,6 +3,11 @@
 Краткая инструкция для пользователя: [как работают описания, где хранятся
 скиллы и как их править](docs/KNOWLEDGE-USER-GUIDE.md).
 
+Штатная схема — отдельный сабагент **secondbrain** по
+[SECOND-BRAIN-SUBAGENT.md](SECOND-BRAIN-SUBAGENT.md). Правила и нужные процедуры
+он загружает в собственный контекст; основной агент получает краткий результат
+и ссылки. Описания навыков не нужно копировать в общий системный промпт.
+
 Поставка содержит адаптацию трёх скиллов James Croft из
 [obsidian-ai-second-brain](https://github.com/jamesmcroft/obsidian-ai-second-brain)
 (MIT, фиксированная ревизия в `knowledge-base/manifest.json`).
