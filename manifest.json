@@ -9,7 +9,7 @@
   "binary_sha256": "d9491b8b8eacb6e232a0e0552d1645470d28baa98d410c24e1c8da86622a0639",
   "source_url": "https://codeload.github.com/silverbulletmd/silverbullet/tar.gz/0fbe7b51a35fe3d1ef1fe0a4063448ae98b2e052",
   "source_sha256": "04c00a77b09188b0b84ca425e81e8b62b77333db881f89569d90d5216ca47f6a",
-  "supply_status": "generic-candidate-awaiting-target-acceptance",
+  "supply_status": "consolidated-final-distribution-awaiting-target-acceptance",
   "target_profile": "Linux x86_64, Python >=3.9, systemd --user; system Git >=2.34 for history",
   "runtime_pip_dependencies": [],
   "namespace_policy": "not used; inherited seccomp no-connect required for SilverBullet and Git",
@@ -34,7 +34,7 @@
     ],
     "ssh_personal_mcp": true
   },
-  "supply_revision": "offline-subagent-guide-20261117",
+  "supply_revision": "second-brain-20261117",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",
@@ -120,5 +120,11 @@
     "primary_routing": "agents/opencode-routing.example.json",
     "server_changes_required": false,
     "acceptance": "OpenCode V1 profile parsing under isolated test; native context routing and closed GigaCode require workstation acceptance"
+  },
+  "release": {
+    "kind": "consolidated-distribution",
+    "github_prerelease": false,
+    "target_acceptance": "required; known MCP and client limitations retained",
+    "retention": "previous release pages/assets removed by explicit owner request after verified offline backup; source tags retained"
   }
 }

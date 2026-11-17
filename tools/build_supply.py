@@ -46,7 +46,8 @@ def main():
                                       'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md',
                                       'LICENSE.silverbullet.md', 'manifest.json',
                                       'OFFLINE-AUDIT.md', 'BUILD-OFFLINE.md', 'MCP-GIT.md', 'KNOWLEDGE-SKILLS.md', 'SSH-MCP.md', 'SECOND-BRAIN-SUBAGENT.md',
-                                      'patches/offline.patch', 'patches/source-files.json']]
+                                      'patches/offline.patch', 'patches/source-files.json',
+                                      'docs/KNOWLEDGE-USER-GUIDE.md']]
     for name in ['agent.md', 'INSTALL.md']:
         path = ROOT / name
         if path.is_symlink() or not path.is_file() or not path.read_text(encoding='utf-8').strip():

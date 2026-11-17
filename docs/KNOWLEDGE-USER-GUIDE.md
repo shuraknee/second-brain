@@ -1,6 +1,6 @@
 # Как работают инструкции Second Brain и как их менять
 
-Набор относится к поставке `offline-knowledge-skills-20261116` и работе через
+Набор включён в единую поставку `second-brain-20261117` и предназначен для работы через
 MCP SilverBullet. Импорт в существующее пространство описан в
 [KNOWLEDGE-SKILLS.md](../KNOWLEDGE-SKILLS.md).
 
