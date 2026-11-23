@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 import secrets
 import shlex
+import shutil
 import signal
 import socket
 import subprocess
@@ -105,7 +106,24 @@ def main():
 
             for filename in ['host', 'shared']:
                 subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(work / filename)], check=True)
-            bridge_command = shlex.join([sys.executable, '-I', '-B', str(ROOT / 'ssh_mcp/bridge.py'), '--config', str(bridge_config)])
+            # Stage the operator-controlled release files as the archive installs them.
+            staged = work / 'installed project' / 'ssh_mcp'
+            staged.mkdir(parents=True)
+            for filename in ('bridge.py', 'client.py', 'connect.py'):
+                shutil.copyfile(ROOT / 'ssh_mcp' / filename, staged / filename)
+                (staged / filename).chmod(0o644)
+            (work / 'installed project/config').mkdir()
+            shutil.copyfile(config, work / 'installed project/config/service.json')
+            prepare = [sys.executable, '-I', '-B', staged / 'bridge.py', '--prepare', staged.parent]
+            prepared = subprocess.check_output(prepare)
+            assert prepared.startswith(b'restrict,command="') and prepared.endswith(b' PUBLIC_KEY\n')
+            assert subprocess.check_output(prepare) == prepared
+            printed = subprocess.check_output(prepare + ['--ssh-alias', 'synthetic-secondbrain'], text=True)
+            windows_line, unix_line = printed.splitlines()[2::2]
+            assert windows_line.startswith('python -I ') and unix_line.startswith('python3 -I ')
+            assert windows_line[6:] == unix_line[7:]
+            bridge_config = staged.parent / 'config/ssh-mcp.json'
+            bridge_command = shlex.join([sys.executable, '-I', '-B', str(staged / 'bridge.py'), '--config', str(bridge_config)])
             authorized = work / 'authorized_keys'
             authorized.write_text('restrict,command="' + bridge_command.replace('"', '\\"') + '" ' + (work / 'shared.pub').read_text())
             authorized.chmod(0o600)
@@ -128,12 +146,85 @@ def main():
                 if (work / 'sshd.pid').exists(): break
                 time.sleep(.05)
             else: raise AssertionError('sshd readiness failed')
+            # Run the actual installer against this sshd with a synthetic home. The
+            # agent CLI is a recorder. A real agent binary can be tested separately.
+            fixture_bin = work / 'user-bin'
+            fixture_bin.mkdir()
+            for name, body in {
+                    'ssh': 'exec /usr/bin/ssh -F ' + shlex.quote(str(ssh_config)) + ' "$@"',
+                    'opencode': 'exec ' + shlex.join([sys.executable, '-I', '-B', '-c',
+                        'import json, sys; print(json.dumps(sys.argv[1:]), file=open('
+                        + repr(str(work / 'registered.json')) + ', "w"))']) + ' "$@"'}.items():
+                path = fixture_bin / name
+                path.write_text('#!/bin/sh\n' + body + '\n')
+                path.chmod(0o700)
+            home = work / 'employee'
+            home.mkdir()
+            root = home / '.silverbullet/ssh-mcp'
+            env = dict(os.environ, HOME=str(home), PATH=str(fixture_bin) + os.pathsep + os.environ['PATH'])
+            # Seed an existing token exactly as on a second setup, to exercise the
+            # noninteractive retry without handling a user's password in subprocess argv.
+            test_profile = client.configure(root, 'team', 'synthetic-secondbrain',
+                                            str(staged / 'bridge.py'), str(bridge_config))
+            with patch.dict(os.environ, env):
+                client.issue_token(test_profile, root / 'personal-token.json', 'alice', passwords['alice'])
+                for filename in ('connect.py', 'client.py'):
+                    path = staged / filename
+                    original = path.read_bytes()
+                    try:
+                        path.write_bytes(original + b'\n# changed after the operator generated the command\n')
+                        invalid = subprocess.run(['/bin/sh', '-c', unix_line], input=b'',
+                                                 capture_output=True, cwd=home, timeout=60)
+                        assert invalid.returncode and b'SHA256' in invalid.stderr
+                        assert not (root / 'client.py').exists()
+                    finally:
+                        path.write_bytes(original)
+                subprocess.run(['/bin/sh', '-c', unix_line], cwd=home, input=b'1\n', check=True, timeout=60)
+                report['checks']['generated_command_rejects_changed_installer_and_client'] = True
+            assert (root / 'client.py').read_bytes() == (staged / 'client.py').read_bytes()
+            registered = json.loads((work / 'registered.json').read_text())
+            assert registered[:4] == ['mcp', 'add', 'secondbrain', '--']
+            assert str(root / 'client.py') in registered and registered[-1] == str(root / 'personal-token.json')
+            report['checks']['fixed_ssh_download_setup_mcp_probe_and_recorded_cli_registration'] = True
+            if os.environ.get('SB_TEST_OPENCODE'):
+                # Optional workstation-style acceptance using the supplied real
+                # OpenCode executable and a PTY. pexpect is only used on the test VM.
+                import pexpect
+                real_home = work / 'new employee'
+                real_home.mkdir()
+                (fixture_bin / 'opencode').unlink()
+                (fixture_bin / 'opencode').symlink_to(Path(os.environ['SB_TEST_OPENCODE']).resolve(strict=True))
+                env.update(HOME=str(real_home), OPENCODE_PURE='1', OPENCODE_DISABLE_AUTOUPDATE='1')
+                env.pop('OPENCODE_CONFIG', None)
+                for name in ('CONFIG', 'CACHE', 'STATE', 'DATA'):
+                    env['XDG_' + name + '_HOME'] = str(real_home / name.lower())
+                cmd = shlex.split(unix_line)
+                for extra in ([], [], ['--renew']):
+                    child = pexpect.spawn(cmd[0], cmd[1:] + extra, cwd=str(real_home), env=env,
+                                          encoding='utf-8', timeout=45)
+                    child.expect_exact('3 — оба: ')
+                    child.sendline('1')
+                    stage = child.expect_exact(['Логин Second Brain: ', 'Проверено:'])
+                    if stage == 0:
+                        child.sendline('alice')
+                        child.expect_exact('Second Brain password: ')
+                        child.sendline(passwords['alice'])
+                    child.expect(pexpect.EOF)
+                    child.close()
+                    assert child.exitstatus == 0, 'Interactive setup failed'
+                    config_files = list((real_home / 'config/opencode').glob('opencode.json*'))
+                    assert len(config_files) == 1
+                    entry = json.loads(config_files[0].read_text())['mcp']['secondbrain']
+                    assert entry['type'] == 'local'
+                    with patch.dict(os.environ, env):
+                        client.verify_mcp(entry['command'])
+                report['checks']['interactive_first_login_repeat_renew_and_real_opencode_config'] = True
             original_command = client.ssh_command
             def command(profile):
                 args = original_command(profile)
                 return [args[0], '-F', str(ssh_config)] + args[1:]
             profiles = {name: client.configure(work / name, 'test', 'synthetic-secondbrain',
-                str(ROOT / 'ssh_mcp/bridge.py'), str(bridge_config)) for name in passwords}
+                str(staged / 'bridge.py'), str(bridge_config)) for name in passwords}
             exports = {name: work / name / 'token-export.json' for name in passwords}
             environments = {}
             original_popen = subprocess.Popen

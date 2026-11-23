@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import runpy
 import shutil
 import tarfile
 import tempfile
@@ -74,6 +75,17 @@ def read_package(path):
                     raise RuntimeError('Payload checksum mismatch: ' + name)
         if checksums.get('bin/silverbullet') != manifest['binary_sha256']:
             raise RuntimeError('Binary differs from the pinned manifest')
+        launcher = read('ssh_mcp/connect.py')
+        if launcher != (ROOT / 'ssh_mcp/connect.py').read_bytes():
+            raise RuntimeError('Client installer differs from this checkout')
+        documents['connect.py'] = launcher
+        bridge = ROOT / 'ssh_mcp/bridge.py'
+        if digest(bridge) != checksums['ssh_mcp/bridge.py']:
+            raise RuntimeError('SSH bridge differs from this checkout')
+        commands = runpy.run_path(str(bridge))['install_commands']
+        windows, unix = commands('secondbrain', checksums['ssh_mcp/connect.py'], checksums['ssh_mcp/client.py'])
+        documents['CONNECT-WINDOWS.txt'] = (windows + '\n').encode('ascii')
+        documents['CONNECT-MAC-LINUX.txt'] = (unix + '\n').encode('ascii')
         return documents, manifest
 
 

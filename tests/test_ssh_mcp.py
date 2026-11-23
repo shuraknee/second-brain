@@ -76,6 +76,26 @@ class SshMcpTests(unittest.TestCase):
         with self.assertRaises(client.ClientError):
             client.validate_target('-oProxyCommand=bad', '/x', '/y')
 
+    def test_setup_registers_both_clis_with_the_verified_command_and_reuses_token(self):
+        args = client.argparse.Namespace(ssh_target='ssh-alias', remote_bridge='/tools/bridge.py',
+                                        remote_config='/tools/bridge.json', renew=False)
+        profile = client.configure(self.root, 'team', args.ssh_target, args.remote_bridge, args.remote_config)
+        token_path = self.root / 'personal-token.json'
+        with patch.object(client, 'issue_credential', return_value={'username':'me', 'token':'sbm_PRIVATE'}):
+            client.issue_token(profile, token_path, 'me', 'test-password')
+        with patch('builtins.input', side_effect=['3']), patch.object(client, 'read_password', side_effect=AssertionError), \
+             patch.object(client.shutil, 'which', side_effect=lambda name: '/test/' + name), \
+             patch.object(client, 'verify_mcp') as probe, patch.object(client.subprocess, 'run') as register:
+            register.return_value.returncode = 0
+            client.setup_agents(self.root, args)
+        runtime = probe.call_args.args[0]
+        self.assertEqual(runtime[-2:], ['--token-file', str(token_path)])
+        self.assertEqual([call.args[0] for call in register.call_args_list], [
+            ['/test/opencode', 'mcp', 'add', 'secondbrain', '--', *runtime],
+            ['/test/gigacode', 'mcp', 'add', 'secondbrain', runtime[0], '--transport', 'stdio',
+             '--scope', 'user', '--', *runtime[1:]]])
+
+
     def test_login_secret_travels_in_stdin_and_token_only_goes_to_store(self):
         store = MemoryStore()
         reply = subprocess.CompletedProcess([], 0, b'{"ok":true,"username":"alice","token":"sbm_PRIVATE"}', b'')

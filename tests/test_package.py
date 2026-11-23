@@ -35,7 +35,7 @@ class PackageTests(unittest.TestCase):
                 with tarfile.open(first) as archive:
                     legal_files = sum(1 for p in (ROOT / 'licenses').rglob('*') if p.is_file())
                     knowledge_files = 1 + sum(1 for p in (ROOT / 'knowledge-base/pages').rglob('*.md'))
-                    self.assertEqual(len(archive.getmembers()), 41 + legal_files + knowledge_files)
+                    self.assertEqual(len(archive.getmembers()), 42 + legal_files + knowledge_files)
                     for entry in archive.getmembers():
                         parts = Path(entry.name).parts
                         self.assertEqual(entry.uid, 0)
@@ -69,6 +69,8 @@ class PackageTests(unittest.TestCase):
                                 '--repository', 'example/second-brain', '--notes-file', str(notes)],
                                check=True, stdout=subprocess.DEVNULL)
                 with tarfile.open(first) as archive:
+                    self.assertEqual((assets / 'connect.py').read_bytes(),
+                                     archive.extractfile('silverbullet-offline/ssh_mcp/connect.py').read())
                     for name in release.DOCUMENTS:
                         self.assertEqual((assets / name).read_bytes(),
                                          archive.extractfile('silverbullet-offline/' + name).read())

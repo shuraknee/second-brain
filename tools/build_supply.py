@@ -80,7 +80,7 @@ def main():
     files.extend(ROOT / 'agents' / name for name in [
         'secondbrain.md', 'opencode-routing.example.json'])
     files.extend(ROOT / 'ssh_mcp' / name for name in [
-        'client.py', 'secret_store.py', 'bridge.py', 'bridge.example.json'])
+        'connect.py', 'client.py', 'secret_store.py', 'bridge.py', 'bridge.example.json'])
     with tempfile.TemporaryDirectory(prefix='supply-build-', dir=output.parent) as temporary:
         stage = Path(temporary) / 'silverbullet-offline'
         stage.mkdir()

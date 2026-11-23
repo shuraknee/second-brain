@@ -34,7 +34,7 @@
     ],
     "ssh_personal_mcp": true
   },
-  "supply_revision": "second-brain-20261117-r2",
+  "supply_revision": "second-brain-20261123-ssh-setup-r2",
   "installer": {
     "target": "explicit --target",
     "python": "invoking interpreter",

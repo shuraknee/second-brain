@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Fixed-loopback stdio/HTTP bridge. Secrets arrive only in the SSH stdin preface."""
 import argparse
+import base64
+import hashlib
 import http.client
 import json
 import os
 from pathlib import Path
+import re
+import shlex
 import stat
 import sys
 
@@ -150,12 +154,84 @@ def serve(backend, incoming=None, outgoing=None):
             write_packet(message, outgoing)
 
 
+def prepare(target):
+    bridge = Path(__file__).resolve()
+    directory = target.resolve() / 'config'
+    service = json.loads((directory / 'service.json').read_bytes())
+    port = service['backend_port']
+    if type(port) is not int or not 1024 <= port <= 65535:
+        raise BridgeError('Invalid backend_port in the service configuration')
+    config = directory / 'ssh-mcp.json'
+    if not config.exists():
+        with os.fdopen(os.open(config, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as f:
+            json.dump({'backend_port': port}, f)
+            f.write('\n')
+    if load_config(config) != port:
+        raise BridgeError('Existing ssh-mcp.json specifies a different backend port')
+    command = shlex.join([sys.executable, '-I', '-B', str(bridge), '--config', str(config)])
+    if any(ord(c) < 32 for c in command):
+        raise BridgeError('Unsupported control character in a server path')
+    quoted = command.replace(chr(92), chr(92) * 2).replace('"', chr(92) + '"')
+    print('restrict,command="' + quoted + '" PUBLIC_KEY')
+
+
+def release_file(name):
+    path = Path(__file__).resolve().with_name(name)
+    if path.is_symlink() or not path.is_file() or path.stat().st_mode & 0o022:
+        raise BridgeError('Expected an operator-controlled release file: ' + name)
+    return path.read_bytes()
+
+
+def install_commands(alias, installer_hash, client_hash):
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.@:-]{0,254}', alias):
+        raise BridgeError('Specify a single SSH host alias or user@host')
+    # Use Python for byte-exact transfer on Windows PowerShell 5 as well as POSIX.
+    # Only fixed ASCII source inside the outer quotes; all variable data is argv.
+    download = (
+        "import hashlib,pathlib,subprocess as s,sys,tempfile; "
+        "host,installer,client=sys.argv[1:4]; "
+        "data=s.check_output(['ssh','-nT','-oBatchMode=yes','-oStrictHostKeyChecking=yes',"
+        "'-oClearAllForwardings=yes','-oForwardAgent=no','-oPermitLocalCommand=no',"
+        "'-oConnectTimeout=20',host,'secondbrain-installer-v1'],timeout=45); "
+        "hashlib.sha256(data).hexdigest()==installer or sys.exit('Installer SHA256 mismatch'); "
+        "d=tempfile.TemporaryDirectory(); p=pathlib.Path(d.name)/'connect.py'; p.write_bytes(data); "
+        "rc=s.call([sys.executable,'-I','-B',str(p),host,'--sha256',client,*sys.argv[4:]]); "
+        "d.cleanup(); sys.exit(rc)"
+    )
+    arguments = f'-I -B -c "{download}" {alias} {installer_hash} {client_hash}'
+    return 'python ' + arguments, 'python3 ' + arguments
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--prepare', type=Path, metavar='TARGET', help='Prepare the installed bridge and print its forced command')
+    mode.add_argument('--config', type=Path)
+    parser.add_argument('--ssh-alias', metavar='HOST', help='With --prepare, print commands for employees')
     args = parser.parse_args()
+    if args.ssh_alias is not None and args.prepare is None:
+        parser.error('--ssh-alias requires --prepare')
     try:
-        serve(Backend(load_config(args.config)))
+        if args.prepare:
+            prepare(args.prepare)
+            if args.ssh_alias is not None:
+                hashes = [hashlib.sha256(release_file(name)).hexdigest() for name in ('connect.py', 'client.py')]
+                windows, unix = install_commands(args.ssh_alias, *hashes)
+                print('Windows (PowerShell)', windows, 'macOS / Linux', unix, sep='\n')
+            return 0
+        port = load_config(args.config)
+        request = os.environ.get('SSH_ORIGINAL_COMMAND')
+        if request == 'secondbrain-installer-v1':
+            sys.stdout.buffer.write(release_file('connect.py'))
+            return 0
+        if request == 'secondbrain-client-v1':
+            bridge = Path(__file__).resolve()
+            code = release_file('client.py')
+            write_packet({'format': 1, 'bridge': str(bridge), 'config': str(args.config.resolve()),
+                          'sha256': hashlib.sha256(code).hexdigest(),
+                          'client': base64.b64encode(code).decode('ascii')})
+            return 0
+        serve(Backend(port))
         return 0
     except BridgeError as error:
         print(str(error), file=sys.stderr)

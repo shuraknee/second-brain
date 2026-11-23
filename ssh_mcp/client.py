@@ -347,6 +347,77 @@ def mcp(profile, store):
                 process.wait()
 
 
+def verify_mcp(command):
+    messages = [
+        {'jsonrpc': '2.0', 'id': 1, 'method': 'initialize', 'params': {
+            'protocolVersion': '2025-11-25', 'capabilities': {},
+            'clientInfo': {'name': 'secondbrain-setup', 'version': '1'}}},
+        {'jsonrpc': '2.0', 'method': 'notifications/initialized'},
+        {'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list', 'params': {}}]
+    data = ''.join(json.dumps(item) + '\n' for item in messages).encode()
+    try:
+        result = subprocess.run(command, input=data, stdout=subprocess.PIPE, timeout=60)
+    except subprocess.TimeoutExpired:
+        raise ClientError('Истекло время проверки MCP. Проверьте состояние SSH-моста.') from None
+    replies = {v.get('id'): v.get('result', {}) for v in
+               (json.loads(line) for line in result.stdout.splitlines())}
+    names = {tool.get('name') for tool in replies.get(2, {}).get('tools', [])}
+    if result.returncode or not replies.get(1, {}).get('protocolVersion') or 'help' not in names:
+        raise ClientError('Не удалось получить список инструментов. Проверьте доступ и срок токена.')
+    print('Проверено: сервер принял личный токен и вернул список инструментов MCP.')
+
+
+def setup_agents(root, args):
+    print('Куда записать MCP-подключение secondbrain? Выбранный клиент может заменить одноимённую запись.')
+    choice = input('1 — OpenCode, 2 — GigaCode, 3 — оба: ').strip()
+    clients = {'1': ['opencode'], '2': ['gigacode'], '3': ['opencode', 'gigacode']}.get(choice)
+    if not clients:
+        raise ClientError('Ожидалось 1, 2 или 3.')
+    executables = {}
+    for name in clients:
+        executable = shutil.which(name)
+        if not executable:
+            raise ClientError('Команда %s не найдена в PATH.' % name)
+        executables[name] = executable
+    alias = 'team'
+    destination = (args.ssh_target, args.remote_bridge, args.remote_config)
+    if not profile_path(root, alias).exists():
+        configure(root, alias, *destination)
+    profile = load_profile(root, alias)
+    if tuple(profile[k] for k in ('ssh_target', 'remote_bridge', 'remote_config')) != destination:
+        raise ClientError('Профиль team уже связан с другим адресом или мостом.')
+    token = private_export_path(root / 'personal-token.json')
+    if args.renew or not token.exists():
+        output = token if not token.exists() else root / ('renew-' + uuid.uuid4().hex + '.json')
+        username = input('Логин Second Brain: ').strip()
+        issue_token(profile, output, username, read_password())
+        if output != token:
+            try:
+                os.replace(output, token)
+            except OSError:
+                raise ClientError('Новый токен сохранён в %s. Переместите его на место %s.' % (output, token)) from None
+    else:
+        file_store(profile, token)
+    runtime = [sys.executable, '-I', '-B', str(Path(__file__).resolve()), '--config-dir', str(root),
+               'mcp', '--profile', alias, '--token-file', str(token)]
+    verify_mcp(runtime)
+    for name, executable in executables.items():
+        if name == 'opencode':
+            register = [executable, 'mcp', 'add', 'secondbrain', '--', *runtime]
+        else:
+            register = [executable, 'mcp', 'add', 'secondbrain', runtime[0], '--transport', 'stdio',
+                        '--scope', 'user', '--', *runtime[1:]]
+        # Windows batch entry points are parsed by cmd even with shell=False.
+        if os.name == 'nt' and Path(executable).suffix.lower() in ('.bat', '.cmd') and any(
+                any(c in arg for c in '%!^&|<>()"\r\n') for arg in register):
+            raise ClientError('Для таких путей используйте штатный .exe клиента вместо .cmd/.bat.')
+        if subprocess.run(register, cwd=root).returncode:
+            raise ClientError('Команда регистрации %s завершилась ошибкой. Токен сохранён. '
+                              'Проверьте %s mcp list. Повторите настройку только нужного клиента.' % (name, name))
+        print('%s: команда регистрации выполнена.' % name)
+    print('Откройте новую сессию выбранного агента и проверьте чтение страницы через secondbrain.')
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config-dir', type=Path, default=None, help='Non-secret connector profile directory')
@@ -356,6 +427,10 @@ def main(argv=None):
     setup.add_argument('--ssh-target', required=True)
     setup.add_argument('--remote-bridge', required=True)
     setup.add_argument('--remote-config', required=True)
+    onboarding = sub.add_parser('setup', help='Interactive registration in OpenCode or GigaCode')
+    for arg in ('--ssh-target', '--remote-bridge', '--remote-config'):
+        onboarding.add_argument(arg, required=True)
+    onboarding.add_argument('--renew', action='store_true')
     issue = sub.add_parser('issue-token', help='Issue a token into a private JSON export without an OS credential store')
     issue.add_argument('--profile', required=True)
     issue.add_argument('--username', help='Your existing Second Brain account, not a separate agent account')
@@ -372,6 +447,9 @@ def main(argv=None):
             command.add_argument('--username', help='Login name only; password is read interactively')
     args = parser.parse_args(argv)
     try:
+        if args.action == 'setup':
+            setup_agents(args.config_dir or Path.home() / '.silverbullet' / 'ssh-mcp', args)
+            return 0
         root = args.config_dir or config_root()
         if args.action == 'configure':
             configure(root, args.profile, args.ssh_target, args.remote_bridge, args.remote_config)
